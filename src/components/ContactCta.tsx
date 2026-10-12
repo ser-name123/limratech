@@ -10,7 +10,6 @@ export default function ContactCta() {
     email: '',
     phone: '',
     service_needed: 'Technical SEO Dominance',
-    budget: '₹50,000 - ₹1,00,000/mo',
     message: '',
   });
 
@@ -41,7 +40,6 @@ export default function ContactCta() {
           email: '',
           phone: '',
           service_needed: 'Technical SEO Dominance',
-          budget: '₹50,000 - ₹1,00,000/mo',
           message: '',
         });
       } else {
@@ -198,20 +196,6 @@ export default function ContactCta() {
                       <option value="UI/UX & Brand Identity">Creative UI/UX &amp; Brand Systems (Figma)</option>
                     </select>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Estimated Growth Budget</label>
-                  <select
-                    value={formData.budget}
-                    onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-purple-600 focus:bg-white transition-colors"
-                  >
-                    <option value="₹35,000 - ₹50,000/mo">₹35,000 - ₹50,000 / month (Starter Engine)</option>
-                    <option value="₹50,000 - ₹1,00,000/mo">₹50,000 - ₹1,00,000 / month (Growth Engine)</option>
-                    <option value="₹1,00,000 - ₹3,00,000/mo">₹1,00,000 - ₹3,00,000 / month (Scale Engine)</option>
-                    <option value="₹3,00,000+/mo">₹3,00,000+ / month (Enterprise Dominance)</option>
-                  </select>
                 </div>
 
                 <div>
