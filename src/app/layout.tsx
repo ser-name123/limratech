@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ScrollProgressBar from '@/components/ScrollProgressBar';
 import AdvancedPreloader from '@/components/AdvancedPreloader';
+import PageTransition from '@/components/PageTransition';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -48,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${plusJakarta.variable} ${outfit.variable} scroll-smooth`} suppressHydrationWarning>
+    <html lang="en" className={`${plusJakarta.variable} ${outfit.variable}`} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/logo.png" sizes="any" />
       </head>
@@ -56,7 +57,9 @@ export default function RootLayout({
         <AdvancedPreloader />
         <ScrollProgressBar />
         <Header />
-        <main className="flex-grow">{children}</main>
+        <main className="flex-grow flex flex-col">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Footer />
         <WhatsAppButton />
       </body>
