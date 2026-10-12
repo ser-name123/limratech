@@ -72,6 +72,7 @@ export interface BlogPost {
   cover_image: string;
   author: string;
   date: string;
+  published_at?: string;
   category: string;
   read_time: string;
   comments_count?: number;
