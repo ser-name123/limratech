@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ScrollProgressBar from '@/components/ScrollProgressBar';
+import AdvancedPreloader from '@/components/AdvancedPreloader';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -52,6 +53,7 @@ export default function RootLayout({
         <link rel="icon" href="/logo.png" sizes="any" />
       </head>
       <body suppressHydrationWarning className="font-sans antialiased min-h-screen flex flex-col bg-[#f8fafc] text-slate-600 selection:bg-purple-600 selection:text-white font-normal text-sm sm:text-base leading-relaxed">
+        <AdvancedPreloader />
         <ScrollProgressBar />
         <Header />
         <main className="flex-grow">{children}</main>
