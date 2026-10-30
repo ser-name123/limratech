@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Vercel deployment requires the standard .next directory.
-  // In local development on Windows, isolate to .build_dist to avoid file lock issues.
-  ...(process.env.VERCEL || process.env.NODE_ENV === "production" ? {} : { distDir: ".build_dist" }),
   typedRoutes: false,
   turbopack: {
     rules: {
@@ -13,6 +10,22 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async redirects() {
+    return [
+      { source: "/about-us", destination: "/about", permanent: true },
+      { source: "/contact", destination: "/contact-us", permanent: true },
+      { source: "/our-services", destination: "/services", permanent: true },
+      { source: "/blog", destination: "/blogs", permanent: true },
+      { source: "/web-development", destination: "/website-development-services", permanent: true },
+      { source: "/digital-marketing", destination: "/digital-marketing-agency-india", permanent: true },
+      { source: "/lead-generation", destination: "/lead-generation-company-india", permanent: true },
+      { source: "/graphic-design", destination: "/creative-design-solutions-india", permanent: true },
+      { source: "/app-development", destination: "/mobile-app-developer-india", permanent: true },
+      { source: "/software-development", destination: "/software-developers-india", permanent: true },
+      { source: "/terms-of-use", destination: "/terms-and-conditions", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;
+

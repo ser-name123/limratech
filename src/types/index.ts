@@ -37,7 +37,10 @@ export interface ServiceItem {
   full_description: string;
   icon: string;
   features: string[];
+  sub_services?: { name: string; desc: string; tag: string }[];
   tech_stack: string[];
+  image?: string;
+  imageAlt?: string;
   order_index?: number;
 }
 

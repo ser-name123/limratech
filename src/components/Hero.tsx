@@ -2,15 +2,17 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { 
-  ArrowRight, 
-  Sparkles, 
-  TrendingUp, 
-  Zap, 
-  ShieldCheck, 
-  CheckCircle2, 
+import Image from 'next/image';
+import {
+  ArrowRight,
+  Sparkles,
+  TrendingUp,
+  Zap,
+  ShieldCheck,
+  CheckCircle2,
   Activity,
-  Terminal
+  Terminal,
+  Layers
 } from 'lucide-react';
 import AnimatedCounter from '@/components/AnimatedCounter';
 
@@ -22,7 +24,7 @@ const liveRankKeywords = [
 ];
 
 export default function Hero() {
-  const [activeTab, setActiveTab] = useState<'seo' | 'speed' | 'leads'>('seo');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'seo' | 'speed' | 'leads'>('dashboard');
   const [kwIndex, setKwIndex] = useState(0);
 
   React.useEffect(() => {
@@ -40,28 +42,28 @@ export default function Hero() {
 
       <div className="max-w-[1520px] w-full mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-center">
-          
+
           {/* Left Column: Headlines, Trust, & Action (7 cols) */}
           <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-center lg:text-left">
-            
+
             {/* Elegant Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium shadow-sm backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-spin-slow" />
-              <span>India&apos;s Elite SEO &amp; Next-Gen Web Engineering Lab</span>
+              <span>Transforming Businesses With Smart Digital Solutions</span>
             </div>
 
             {/* Harmonious Headline with sleek, refined font weight and balanced scale */}
             <h1 className="text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-medium text-slate-900 tracking-tight leading-[1.16]">
-              Rank #1 on Google.{' '}
+              Smart Digital Solutions For{' '}
               <span className="gradient-text-glow font-medium">
-                Deploy Sub-Second
+                Scalable Business Growth
               </span>{' '}
-              Web Applications.
+              &amp; Market Dominance.
             </h1>
 
             {/* Description */}
             <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              We architect blazing-fast serverless Next.js web applications and execute data-backed technical SEO that captures high-intent search traffic and delivers measurable, compound revenue across India.
+              LIMRA Digitech is your full-spectrum digital marketing, web development, and technology solutions partner. From Next.js, WordPress &amp; Shopify platforms to SEO, Google/Meta Ads, lead generation, creative branding, and custom mobile/software apps — we turn traffic into measurable revenue.
             </p>
 
             {/* CTAs & Quick Social Trust */}
@@ -72,16 +74,16 @@ export default function Hero() {
                   className="w-full sm:w-auto relative group overflow-hidden rounded-xl font-medium text-xs sm:text-sm shadow-md shadow-purple-200 hover:shadow-lg hover:shadow-purple-300 transition-all"
                 >
                   <span className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 text-white rounded-xl">
-                    <span>Start Your High-Growth Project</span>
+                    <span>Get a Quote / Start Working With Us</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-purple-200" />
                   </span>
                 </Link>
 
                 <Link
-                  href="/website-development-services"
+                  href="/portfolio"
                   className="w-full sm:w-auto px-5 py-3 rounded-xl text-slate-700 hover:text-purple-700 font-medium text-xs sm:text-sm border border-slate-300 hover:border-purple-300 bg-white hover:bg-slate-50 shadow-sm transition-all flex items-center justify-center gap-2"
                 >
-                  <span>View Architecture</span>
+                  <span>Explore Portfolio &amp; Work</span>
                 </Link>
               </div>
 
@@ -126,9 +128,9 @@ export default function Hero() {
           {/* Right Column: Interactive Benchmark Terminal (5 cols) */}
           <div className="lg:col-span-5">
             <div className="relative mx-auto max-w-lg lg:max-w-none">
-              
+
               <div className="relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xl shadow-slate-200/60">
-                
+
                 {/* Window Top Bar */}
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
                   <div className="flex items-center gap-1.5">
@@ -146,32 +148,89 @@ export default function Hero() {
                 </div>
 
                 {/* Tabs */}
-                <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-lg mb-3 text-xs font-medium">
+                <div className="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-lg mb-3 text-[11px] sm:text-xs font-medium">
+                  <button
+                    onClick={() => setActiveTab('dashboard')}
+                    className={`py-1.5 rounded-md transition-all truncate px-1 text-center ${activeTab === 'dashboard' ? 'bg-purple-600 text-white shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                  >
+                    Live Dashboard
+                  </button>
                   <button
                     onClick={() => setActiveTab('seo')}
-                    className={`py-1.5 rounded-md transition-all ${
-                      activeTab === 'seo' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                    className={`py-1.5 rounded-md transition-all truncate px-1 text-center ${activeTab === 'seo' ? 'bg-purple-600 text-white shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
+                      }`}
                   >
                     SEO Engine
                   </button>
                   <button
                     onClick={() => setActiveTab('speed')}
-                    className={`py-1.5 rounded-md transition-all ${
-                      activeTab === 'speed' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                    className={`py-1.5 rounded-md transition-all truncate px-1 text-center ${activeTab === 'speed' ? 'bg-purple-600 text-white shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
+                      }`}
                   >
-                    Next.js Vitals
+                    Vitals 100
                   </button>
                   <button
                     onClick={() => setActiveTab('leads')}
-                    className={`py-1.5 rounded-md transition-all ${
-                      activeTab === 'leads' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                    className={`py-1.5 rounded-md transition-all truncate px-1 text-center ${activeTab === 'leads' ? 'bg-purple-600 text-white shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-900'
+                      }`}
                   >
                     Lead Funnel
                   </button>
                 </div>
+
+                {/* Tab 0: Live Visual SEO Dashboard Image */}
+                {activeTab === 'dashboard' && (
+                  <div className="space-y-3 animate-in fade-in duration-200">
+                    <div className="relative rounded-xl overflow-hidden border border-purple-200/90 shadow-md group bg-slate-950">
+                      <div className="relative h-56 sm:h-64 w-full">
+                        <Image
+                          src="/images/seo-analytics-performance-dashboard.jpg"
+                          alt="Google SERP Rank 1 and Core Web Vitals 100 Analytics Dashboard - LIMRA Digitech India"
+                          fill
+                          priority
+                          sizes="(max-width: 768px) 100vw, 550px"
+                          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
+
+                        {/* Floating Telemetry Badges */}
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                          <span className="bg-purple-950/90 text-purple-300 border border-purple-400/50 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold backdrop-blur-md shadow-sm">
+                            LIVE SERP ENGINE
+                          </span>
+                          <span className="bg-emerald-500/90 text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1 backdrop-blur-md">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                            100/100 CWV
+                          </span>
+                        </div>
+
+                        {/* Bottom Overlay Metric Bar */}
+                        <div className="absolute bottom-2.5 inset-x-2.5 bg-slate-900/90 backdrop-blur-md border border-slate-700/70 rounded-lg p-2 text-white flex items-center justify-between text-[11px]">
+                          <div>
+                            <span className="text-slate-400 font-mono text-[9px] block">ORGANIC GROWTH</span>
+                            <span className="font-bold text-emerald-400">+450% MoM Verified</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-slate-400 font-mono text-[9px] block">GOOGLE SEARCH IMPRESSIONS</span>
+                            <span className="font-bold text-slate-100">1.25M+ Monthly</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                      <div className="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                        <span className="text-slate-500 text-[10px] block">Target SERP #1</span>
+                        <span className="font-bold text-purple-700 text-sm">85+ Keywords</span>
+                      </div>
+                      <div className="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                        <span className="text-slate-500 text-[10px] block">Average Edge Latency</span>
+                        <span className="font-bold text-emerald-600 text-sm">&lt; 0.24s Edge</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Tab 1: SEO Metrics */}
                 {activeTab === 'seo' && (

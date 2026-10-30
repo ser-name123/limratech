@@ -229,81 +229,81 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 2: SEO & Digital Dominance (2.5 cols) */}
+          {/* Column 2: Services Directory (2.5 cols) */}
           <div className="lg:col-span-2 space-y-3.5">
             <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />
-              SEO &amp; Growth
+              Core Services
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-600">
               <li>
-                <Link href="/digital-marketing-agency-india" className="hover:text-purple-700 transition-colors">
-                  Technical SEO Architecture
+                <Link href="/website-development-services" className="hover:text-purple-700 transition-colors">
+                  Website Development
                 </Link>
               </li>
               <li>
                 <Link href="/digital-marketing-agency-india" className="hover:text-purple-700 transition-colors">
-                  Google Page #1 Strategy
+                  Digital Marketing &amp; SEO
                 </Link>
               </li>
               <li>
                 <Link href="/lead-generation-company-india" className="hover:text-purple-700 transition-colors">
-                  High-ROI Lead Generation
+                  Lead Generation Funnels
                 </Link>
               </li>
               <li>
-                <Link href="/digital-marketing-agency-india" className="hover:text-purple-700 transition-colors">
-                  Core Web Vitals 100/100
+                <Link href="/creative-design-solutions-india" className="hover:text-purple-700 transition-colors">
+                  Creative Design Studio
                 </Link>
               </li>
               <li>
-                <Link href="/digital-marketing-agency-india" className="hover:text-purple-700 transition-colors">
-                  Schema &amp; Entity Graphs
+                <Link href="/mobile-app-developer-india" className="hover:text-purple-700 transition-colors">
+                  App Development (iOS/Android)
                 </Link>
               </li>
               <li>
-                <Link href="/lead-generation-company-india" className="hover:text-purple-700 transition-colors">
-                  Conversion Rate Optimization
+                <Link href="/software-developers-india" className="hover:text-purple-700 transition-colors">
+                  Custom Software &amp; ERP
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Column 3: Web & Cloud Systems (2.5 cols) */}
+          {/* Column 3: Quick Links & Ecosystem (2.5 cols) */}
           <div className="lg:col-span-2 space-y-3.5">
             <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-600" />
-              Web &amp; Cloud
+              Quick Links
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-600">
               <li>
-                <Link href="/website-development-services" className="hover:text-cyan-700 transition-colors">
-                  Next.js 15 Web Applications
+                <Link href="/about" className="hover:text-cyan-700 transition-colors">
+                  About LIMRA Digitech
                 </Link>
               </li>
               <li>
-                <Link href="/website-development-services" className="hover:text-cyan-700 transition-colors">
-                  Full-Stack TypeScript
+                <Link href="/industries" className="hover:text-cyan-700 transition-colors">
+                  Industries We Serve
                 </Link>
               </li>
               <li>
-                <Link href="/software-developers-india" className="hover:text-cyan-700 transition-colors">
-                  Supabase Cloud Databases
+                <Link href="/technologies" className="hover:text-cyan-700 transition-colors">
+                  Technology Stack
                 </Link>
               </li>
               <li>
-                <Link href="/software-developers-india" className="hover:text-cyan-700 transition-colors">
-                  Serverless Edge Architectures
+                <Link href="/portfolio" className="hover:text-cyan-700 transition-colors">
+                  Portfolio &amp; Case Studies
                 </Link>
               </li>
               <li>
-                <Link href="/mobile-app-developer-india" className="hover:text-cyan-700 transition-colors">
-                  iOS &amp; Android Apps
+                <Link href="/clients" className="hover:text-cyan-700 transition-colors">
+                  Clients &amp; Testimonials
                 </Link>
               </li>
               <li>
-                <Link href="/creative-design-solutions-india" className="hover:text-cyan-700 transition-colors">
-                  Figma &amp; UI/UX Systems
+                <Link href="/blogs" className="hover:text-cyan-700 transition-colors">
+                  Blogs &amp; Insights
                 </Link>
               </li>
             </ul>
@@ -408,11 +408,13 @@ export default function Footer() {
 
           <div className="flex flex-wrap items-center gap-5 text-[11px]">
             <Link href="/about" className="hover:text-purple-700 transition-colors">About Agency</Link>
-            <Link href="/portfolio" className="hover:text-purple-700 transition-colors">Case Studies</Link>
-            <Link href="/blogs" className="hover:text-purple-700 transition-colors">SEO Guides</Link>
+            <Link href="/industries" className="hover:text-purple-700 transition-colors">Industries</Link>
+            <Link href="/technologies" className="hover:text-purple-700 transition-colors">Technologies</Link>
             <Link href="/careers" className="hover:text-purple-700 transition-colors">Careers</Link>
             <Link href="/privacy-policy" className="hover:text-purple-700 transition-colors">Privacy Policy</Link>
-            <Link href="/terms-and-conditions" className="hover:text-purple-700 transition-colors">Terms</Link>
+            <Link href="/terms-and-conditions" className="hover:text-purple-700 transition-colors">Terms of Use</Link>
+            <Link href="/sitemap-page" className="hover:text-purple-700 transition-colors">Sitemap</Link>
+            <a href="/sitemap.xml" className="hover:text-purple-700 transition-colors font-mono">XML Sitemap</a>
           </div>
 
           <div className="text-[11px] font-mono text-slate-500 flex items-center gap-1.5">

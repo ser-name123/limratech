@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -169,22 +170,117 @@ export default function ServiceDetailView({
               </div>
             </div>
 
-            {/* Benefits Cards */}
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {benefits.map((b, bi) => (
-                <div key={bi} className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-xs hover:border-purple-300 hover:shadow-md transition-all space-y-2">
-                  <div className="w-10 h-10 rounded-xl bg-purple-100/70 border border-purple-200 text-purple-700 flex items-center justify-center mb-3">
-                    <Zap className="w-5 h-5" />
+            {/* Visual Showcase Card with SEO Image & Telemetry */}
+            <div className="lg:col-span-6 space-y-6">
+              {service.image && (
+                <div className="relative rounded-3xl overflow-hidden border border-slate-200/90 shadow-xl group bg-slate-950">
+                  <div className="relative h-64 sm:h-72 w-full overflow-hidden">
+                    <Image
+                      src={service.image}
+                      alt={service.imageAlt || `${service.title} - LIMRA Digitech India`}
+                      fill
+                      priority
+                      sizes="(max-width: 768px) 100vw, 650px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-black/20" />
+                    
+                    {/* Floating Top Pill */}
+                    <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none">
+                      <span className="bg-white/95 backdrop-blur-md border border-slate-200/90 px-3.5 py-1 rounded-full text-[11px] font-mono font-bold text-purple-700 uppercase tracking-wider shadow-md">
+                        {service.title} • Live System
+                      </span>
+                      <span className="bg-emerald-500/95 text-white font-mono text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 backdrop-blur-md">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                        100/100 Core Web Vitals
+                      </span>
+                    </div>
+
+                    {/* Bottom Metadata Floating Bar */}
+                    <div className="absolute bottom-3 inset-x-3 bg-slate-900/90 backdrop-blur-md border border-slate-700/60 rounded-xl p-3 text-white flex items-center justify-between text-xs">
+                      <div>
+                        <div className="text-slate-400 text-[10px] font-mono uppercase">Production Architecture</div>
+                        <div className="font-semibold text-slate-100 truncate max-w-[220px]">
+                          {service.tech_stack.slice(0, 3).join(' • ')}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-slate-400 text-[10px] font-mono uppercase">Speed SLA</div>
+                        <div className="font-bold text-emerald-400">&lt; 0.3s Serverless</div>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900">{b.title}</h3>
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">{b.desc}</p>
                 </div>
-              ))}
+              )}
+
+              {/* Benefits Cards below image */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {benefits.map((b, bi) => (
+                  <div key={bi} className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-purple-300 hover:shadow-md transition-all space-y-1.5">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100/80 border border-purple-200 text-purple-700 flex items-center justify-center mb-1">
+                      <Zap className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900">{b.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal">{b.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
           </div>
         </div>
       </section>
+
+      {/* 3.5 Complete Sub-Service Specializations Grid */}
+      {service.sub_services && service.sub_services.length > 0 && (
+        <section className="py-20 bg-slate-50 border-b border-slate-200">
+          <div className="max-w-[1520px] mx-auto px-4 sm:px-8 lg:px-12">
+            <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+              <span className="text-xs uppercase font-mono font-bold text-purple-700 bg-purple-100/80 border border-purple-200 px-3.5 py-1 rounded-full">
+                SPECIALIZED CAPABILITIES
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                Complete {service.title} Spectrum
+              </h2>
+              <p className="text-sm text-slate-600">
+                Every core discipline, platform, and channel covered under our {service.title} practice.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {service.sub_services.map((sub, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-purple-300 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
+                        {sub.tag}
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">0{idx + 1}</span>
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-700 transition-colors mb-2">
+                      {sub.name}
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                      {sub.desc}
+                    </p>
+                  </div>
+                  <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Production Ready
+                    </span>
+                    <Link href="/contact-us" className="text-[11px] font-bold text-purple-700 hover:text-purple-900 flex items-center gap-1">
+                      Enquire <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 4. Service Performance Telemetry & Benchmark Matrix */}
       <section className="py-20 bg-slate-50 relative border-b border-slate-200">

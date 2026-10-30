@@ -9,8 +9,9 @@ export default function ContactCta() {
     full_name: '',
     email: '',
     phone: '',
-    service_needed: 'Technical SEO Dominance',
+    service_needed: 'Website Development (Next.js / WordPress / Shopify)',
     message: '',
+    website_honeypot: '',
   });
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -34,13 +35,14 @@ export default function ContactCta() {
       const data = await res.json();
       if (res.ok) {
         setStatus('success');
-        setResponseMsg('Your project blueprint request is locked! A senior SEO & Next.js architect will contact you within 4 business hours.');
+        setResponseMsg('Your enquiry & quote request has been received! A senior LIMRA Digitech specialist will contact you within 4 business hours.');
         setFormData({
           full_name: '',
           email: '',
           phone: '',
-          service_needed: 'Technical SEO Dominance',
+          service_needed: 'Website Development (Next.js / WordPress / Shopify)',
           message: '',
+          website_honeypot: '',
         });
       } else {
         setStatus('error');
@@ -56,7 +58,7 @@ export default function ContactCta() {
     <section id="contact-section" className="py-24 bg-slate-50 relative overflow-hidden border-b border-slate-200">
       <div className="max-w-[1520px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          
+
           {/* Left Column: Direct Inquiries & Value (5 cols) */}
           <div className="lg:col-span-5 space-y-5">
             <span className="text-xs uppercase font-medium tracking-widest text-purple-700 bg-purple-50 border border-purple-200 px-3.5 py-1 rounded-full inline-block">
@@ -94,9 +96,9 @@ export default function ContactCta() {
                 <div>
                   <h3 className="font-semibold text-slate-900 text-sm">WhatsApp Engineering Hotline</h3>
                   <p className="text-xs text-slate-500 mb-1 font-normal">Instant direct response from technical leads</p>
-                  <a 
-                    href={`https://wa.me/${companyInfo.phoneClean.replace('+', '')}`} 
-                    target="_blank" 
+                  <a
+                    href={`https://wa.me/${companyInfo.phoneClean.replace('+', '')}`}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs font-semibold text-emerald-700 hover:text-emerald-800"
                   >
@@ -115,7 +117,7 @@ export default function ContactCta() {
           {/* Right Column: Lead Form (7 cols) */}
           <div className="lg:col-span-7">
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xl shadow-slate-200/60 relative overflow-hidden">
-              
+
               <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
                 <div>
                   <h3 className="text-lg sm:text-xl font-bold text-slate-900">
@@ -182,21 +184,33 @@ export default function ContactCta() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Target Capability Needed</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Service Needed *</label>
                     <select
                       value={formData.service_needed}
                       onChange={(e) => setFormData({ ...formData, service_needed: e.target.value })}
                       className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-300 text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-purple-600 focus:bg-white transition-colors"
                     >
-                      <option value="Technical SEO Dominance">Technical SEO &amp; Google #1 Rank</option>
-                      <option value="Next.js Web Development">Next.js &amp; Full-Stack React Web Development</option>
-                      <option value="High-ROI Lead Generation">High-ROI Lead Generation &amp; Meta Ads</option>
-                      <option value="Cloud Software & Supabase">Cloud Software &amp; Supabase SaaS Backend</option>
-                      <option value="Mobile App Development">Mobile App Development (Flutter/React Native)</option>
-                      <option value="UI/UX & Brand Identity">Creative UI/UX &amp; Brand Systems (Figma)</option>
+                      <option value="Website Development (Next.js / WordPress / Shopify)">Website Development (WordPress, Shopify, Next.js, PHP, Laravel)</option>
+                      <option value="Digital Marketing (SEO, Google Ads, SMM, ORM)">Digital Marketing (SEO, Google Ads/PPC, SMM, YouTube, GMB)</option>
+                      <option value="Lead Generation (Meta Ads, Google Leads, Funnels)">Lead Generation (Meta Ads, Google Leads &amp; Sales Funnels)</option>
+                      <option value="Creative Design (Branding, UI/UX, Print, Motion)">Creative Design (Branding, UI/UX, Packaging &amp; Motion Video)</option>
+                      <option value="App Development (Android & iOS)">Mobile App Development (Android &amp; iOS)</option>
+                      <option value="Software Development (Custom Software & Business Apps)">Software Development (Custom Software &amp; Business Apps)</option>
                     </select>
                   </div>
                 </div>
+
+                {/* Anti-spam honeypot field */}
+                <input
+                  type="text"
+                  name="website_honeypot"
+                  value={formData.website_honeypot}
+                  onChange={(e) => setFormData({ ...formData, website_honeypot: e.target.value })}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  className="hidden"
+                  aria-hidden="true"
+                />
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Current Bottlenecks &amp; Goals</label>

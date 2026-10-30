@@ -4,11 +4,23 @@ import { saveContact } from '@/lib/supabase';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone, subject, message } = body;
+    const { name, email, phone, subject, message, website_honeypot } = body;
 
-    if (!name || !email || !message) {
+    // Anti-spam honeypot protection
+    if (website_honeypot) {
+      return NextResponse.json({
+        success: true,
+        message: 'Thank you! We will get in touch with you shortly.',
+      });
+    }
+
+    const cleanName = String(name || '').trim();
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    const cleanMsg = String(message || '').trim();
+
+    if (!cleanName || !cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || !cleanMsg) {
       return NextResponse.json(
-        { error: 'Name, email, and message are required.' },
+        { error: 'Please provide a valid name, email address, and project message.' },
         { status: 400 }
       );
     }

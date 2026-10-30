@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   ShieldCheck, 
   Target, 
@@ -19,7 +20,8 @@ import {
   HeartHandshake, 
   Code2, 
   Clock, 
-  ChevronDown 
+  ChevronDown,
+  Activity
 } from 'lucide-react';
 import { companyInfo } from '@/data/mockData';
 import Testimonials from '@/components/Testimonials';
@@ -70,10 +72,10 @@ export default function AboutPage() {
   ];
 
   const team = [
-    { name: 'Arif Khan', role: 'Founder & Principal Cloud Architect', exp: '10+ Yrs In Full-Stack & Serverless' },
-    { name: 'Farhan Siddiqui', role: 'Head of Technical SEO & Algorithms', exp: '8+ Yrs In Search Architecture' },
-    { name: 'Ayesha Patel', role: 'Lead UI/UX & Design Systems Architect', exp: 'Figma & Design Systems Specialist' },
-    { name: 'Sameer Sheikh', role: 'Senior Database & Supabase Engineer', exp: 'PostgreSQL & Realtime Cluster Lead' },
+    { name: 'Arif Khan', role: 'Founder & Principal Cloud Architect', exp: '10+ Yrs In Full-Stack & Serverless', avatar: '/images/client-rahul-sharma.jpg' },
+    { name: 'Farhan Siddiqui', role: 'Head of Technical SEO & Algorithms', exp: '8+ Yrs In Search Architecture', avatar: '/images/client-priya-mehta.jpg' },
+    { name: 'Ayesha Patel', role: 'Lead UI/UX & Design Systems Architect', exp: 'Figma & Design Systems Specialist', avatar: '/images/client-neha-kapoor.jpg' },
+    { name: 'Sameer Sheikh', role: 'Senior Database & Supabase Engineer', exp: 'PostgreSQL & Realtime Cluster Lead', avatar: '/images/client-rahul-sharma.jpg' },
   ];
 
   const aboutFaqs = [
@@ -185,6 +187,69 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* 3.5 Dedicated Innovation & Technical SEO Lab Showcase */}
+      <section className="py-20 bg-white border-b border-slate-200 overflow-hidden">
+        <div className="max-w-[1520px] mx-auto px-4 sm:px-8 lg:px-12">
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+            <span className="text-xs uppercase font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-3.5 py-1 rounded-full">
+              OUR COLLABORATIVE LAB
+            </span>
+            <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-bold text-slate-900 tracking-tight">
+              Inside The LIMRA Tech &amp; Search Engine Hub
+            </h2>
+            <p className="text-sm text-slate-600">
+              Where cloud engineers, UI/UX researchers, and algorithmic SEO specialists analyze real-time telemetry to engineer organic market leadership.
+            </p>
+          </div>
+
+          <div className="relative rounded-3xl overflow-hidden border border-slate-200 shadow-2xl bg-slate-950 group">
+            <div className="relative h-80 sm:h-[450px] w-full overflow-hidden">
+              <Image
+                src="/images/limra-tech-engineering-lab.jpg"
+                alt="LIMRA Digitech Software Engineering and Technical SEO Laboratory Gurgaon India"
+                fill
+                sizes="(max-width: 1200px) 100vw, 1520px"
+                className="object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-black/20" />
+
+              {/* Floating Header Tag */}
+              <div className="absolute top-4 inset-x-4 sm:inset-x-6 flex items-center justify-between pointer-events-none">
+                <span className="bg-purple-900/90 text-purple-200 border border-purple-400/40 px-3.5 py-1 rounded-full text-xs font-mono font-semibold backdrop-blur-md shadow-md flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+                  HEADQUARTERS &amp; PRODUCTION ENVIRONMENT
+                </span>
+                <span className="bg-emerald-500/90 text-white font-mono text-[11px] font-bold px-3 py-1 rounded-full shadow-md backdrop-blur-md hidden sm:inline-flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Live Code Review &amp; SERP Telemetry
+                </span>
+              </div>
+
+              {/* Bottom Feature Badges */}
+              <div className="absolute bottom-4 sm:bottom-6 inset-x-4 sm:inset-x-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 rounded-xl p-3.5 text-white">
+                  <div className="text-slate-400 font-mono text-[10px] uppercase">Engineered Stack</div>
+                  <div className="font-semibold text-slate-100 text-sm mt-0.5">Next.js 15 &amp; Supabase DB</div>
+                  <div className="text-emerald-400 text-xs font-mono mt-1">100/100 Core Web Vitals Guaranteed</div>
+                </div>
+
+                <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 rounded-xl p-3.5 text-white">
+                  <div className="text-slate-400 font-mono text-[10px] uppercase">Client Footprint</div>
+                  <div className="font-semibold text-slate-100 text-sm mt-0.5">350+ Enterprise Brands</div>
+                  <div className="text-purple-300 text-xs font-mono mt-1">Pan-India &amp; Global Deployments</div>
+                </div>
+
+                <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 rounded-xl p-3.5 text-white">
+                  <div className="text-slate-400 font-mono text-[10px] uppercase">Search Dominance</div>
+                  <div className="font-semibold text-slate-100 text-sm mt-0.5">Top-3 Commercial SERP Ranks</div>
+                  <div className="text-cyan-300 text-xs font-mono mt-1">High-Intent Buyer Traffic</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 4. Core Values & Cultural Manifesto */}
       <section className="py-20 lg:py-24 bg-white border-b border-slate-200">
         <div className="max-w-[1520px] mx-auto px-4 sm:px-8 lg:px-12">
@@ -234,13 +299,27 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {team.map((member, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs text-center space-y-2">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold text-xl flex items-center justify-center mx-auto shadow-sm">
-                  {member.name.split(' ').map(n => n[0]).join('')}
+              <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-purple-300 transition-all text-center space-y-3 group">
+                <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-purple-200 mx-auto shadow-sm bg-purple-50">
+                  {member.avatar ? (
+                    <Image
+                      src={member.avatar}
+                      alt={`${member.name} - ${member.role} at LIMRA Digitech India`}
+                      fill
+                      sizes="80px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold text-xl flex items-center justify-center">
+                      {member.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                  )}
                 </div>
-                <h4 className="text-base font-bold text-slate-900 pt-2">{member.name}</h4>
-                <div className="text-xs font-semibold text-purple-700">{member.role}</div>
-                <p className="text-[11px] text-slate-500 font-mono">{member.exp}</p>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 group-hover:text-purple-700 transition-colors">{member.name}</h4>
+                  <div className="text-xs font-semibold text-purple-700 mt-0.5">{member.role}</div>
+                  <p className="text-[11px] text-slate-500 font-mono mt-1">{member.exp}</p>
+                </div>
               </div>
             ))}
           </div>

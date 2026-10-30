@@ -4,11 +4,22 @@ import { saveLead } from '@/lib/supabase';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { full_name, email, phone, service_needed, budget, message, source_page } = body;
+    const { full_name, email, phone, service_needed, budget, message, source_page, website_honeypot } = body;
 
-    if (!full_name || !email) {
+    // Anti-spam honeypot protection
+    if (website_honeypot) {
+      return NextResponse.json({
+        success: true,
+        message: 'Thank you! Your inquiry has been submitted successfully.',
+      });
+    }
+
+    const cleanName = String(full_name || '').trim();
+    const cleanEmail = String(email || '').trim().toLowerCase();
+
+    if (!cleanName || !cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       return NextResponse.json(
-        { error: 'Name and email are required fields.' },
+        { error: 'Please provide a valid full name and email address.' },
         { status: 400 }
       );
     }

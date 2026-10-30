@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Star, Quote } from 'lucide-react';
 import { testimonialsData } from '@/data/mockData';
 
@@ -50,8 +51,20 @@ export default function Testimonials() {
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-medium flex items-center justify-center text-xs shadow-sm flex-shrink-0">
-                  {t.client_name.split(' ').map(n => n[0]).join('')}
+                <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-purple-200 shadow-sm flex-shrink-0 bg-slate-100">
+                  {t.avatar ? (
+                    <Image
+                      src={t.avatar}
+                      alt={`${t.client_name} - ${t.company_or_role} client review for LIMRA Digitech`}
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-medium flex items-center justify-center text-xs">
+                      {t.client_name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <h4 className="font-semibold text-slate-900 text-xs sm:text-sm">

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -101,12 +102,39 @@ export default function ServicesPage() {
               return (
                 <div 
                   key={svc.id}
-                  className="bg-white rounded-3xl p-8 border border-slate-200 hover:border-purple-300 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5"
+                  className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 hover:border-purple-300 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5"
                 >
                   <div>
-                    <div className="w-14 h-14 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center transition-colors duration-300 mb-6 shadow-xs">
-                      <Icon className="w-7 h-7" />
-                    </div>
+                    {/* Service Feature Image */}
+                    {svc.image && (
+                      <div className="relative h-48 sm:h-52 w-full rounded-2xl overflow-hidden mb-6 bg-slate-900 border border-slate-100 shadow-sm">
+                        <Image
+                          src={svc.image}
+                          alt={svc.imageAlt || `${svc.title} - LIMRA Digitech India`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 420px"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                        <div className="absolute top-3 left-3 w-10 h-10 rounded-xl bg-white/95 backdrop-blur-md border border-slate-200 text-purple-700 flex items-center justify-center shadow-md">
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-mono text-white">
+                          <span className="bg-purple-900/90 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-purple-400/40 font-semibold">
+                            {svc.tech_stack[0]}
+                          </span>
+                          <span className="text-emerald-400 font-bold bg-slate-900/80 px-2 py-0.5 rounded backdrop-blur-md">
+                            100% SLA
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {!svc.image && (
+                      <div className="w-14 h-14 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center transition-colors duration-300 mb-6 shadow-xs">
+                        <Icon className="w-7 h-7" />
+                      </div>
+                    )}
 
                     <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-purple-700 transition-colors">
                       {svc.title}

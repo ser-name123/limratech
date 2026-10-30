@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, ExternalLink, TrendingUp } from 'lucide-react';
 import { caseStudiesData } from '@/data/mockData';
 
@@ -31,7 +32,7 @@ export default function CaseStudies() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {['all', 'marketing', 'analysis'].map((f) => (
+            {['all', 'marketing', 'web', 'analysis'].map((f) => (
               <button
                 key={f}
                 type="button"
@@ -56,12 +57,14 @@ export default function CaseStudies() {
               href="/portfolio"
               className="bg-white rounded-3xl overflow-hidden border border-slate-200 hover:border-purple-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group hover:-translate-y-1.5"
             >
-              {/* Graphic Banner - Clean, Crisp Image without text stamped over it */}
-              <div className="relative h-56 sm:h-60 w-full overflow-hidden bg-slate-100">
-                <img 
+              {/* Graphic Banner - High-Resolution Optimized SEO Image */}
+              <div className="relative h-56 sm:h-60 w-full overflow-hidden bg-slate-900">
+                <Image 
                   src={study.image_url} 
-                  alt={study.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  alt={`${study.title} - ${study.client} case study by LIMRA Digitech India`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 480px"
+                  className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
                 
                 {/* Floating Top Tag & Icon */}

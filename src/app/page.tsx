@@ -1,16 +1,21 @@
 import React from 'react';
 import Hero from '@/components/Hero';
 import TechStackTicker from '@/components/TechStackTicker';
+import TrustIndicatorsBar from '@/components/TrustIndicatorsBar';
+import ServicesGrid from '@/components/ServicesGrid';
 import CorePillarsSection from '@/components/CorePillarsSection';
 import InteractiveSeoAuditor from '@/components/InteractiveSeoAuditor';
 import AdvancedSeoSimulator from '@/components/AdvancedSeoSimulator';
 import SeoPillarsGrid from '@/components/SeoPillarsGrid';
 import WebDevPillarsGrid from '@/components/WebDevPillarsGrid';
+import IndustriesSection from '@/components/IndustriesSection';
 import TechStackEcosystem from '@/components/TechStackEcosystem';
 import ComparisonMatrix from '@/components/ComparisonMatrix';
+import RoiCalculator from '@/components/RoiCalculator';
 import AgileProcessFlow from '@/components/AgileProcessFlow';
 import CaseStudies from '@/components/CaseStudies';
 import Testimonials from '@/components/Testimonials';
+import HomeBlogsSection from '@/components/HomeBlogsSection';
 import FaqSection from '@/components/FaqSection';
 import ContactCta from '@/components/ContactCta';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
@@ -24,63 +29,87 @@ export default function HomePage() {
         <TechStackTicker />
       </section>
 
-      {/* 3. Core philosophy & pillars */}
+      {/* 2. Verified Trust Indicators, Proof Points & Client Logos */}
+      <AnimateOnScroll direction="up" delayMs={50}>
+        <TrustIndicatorsBar />
+      </AnimateOnScroll>
+
+      {/* 3. Complete Services Overview Grid */}
+      <AnimateOnScroll direction="up" delayMs={50}>
+        <ServicesGrid />
+      </AnimateOnScroll>
+
+      {/* 4. About / Why LIMRA Digitech Core Pillars */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <CorePillarsSection />
       </AnimateOnScroll>
 
-      {/* 4. Advanced Algorithmic SEO & SERP Simulation Engine */}
+      {/* 5. Advanced Algorithmic SEO & SERP Simulation Engine */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <AdvancedSeoSimulator />
       </AnimateOnScroll>
 
-      {/* 5. Live interactive SEO & speed auditor simulator */}
+      {/* 6. Live Interactive SEO & Speed Auditor Simulator */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <InteractiveSeoAuditor />
       </AnimateOnScroll>
 
-      {/* 5. Deep 6-pillar Technical SEO suite */}
+      {/* 7. Deep 6-Pillar Technical SEO & Digital Marketing Suite */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <SeoPillarsGrid />
       </AnimateOnScroll>
 
-      {/* 6. Deep 6-pillar Web Development & Cloud suite */}
+      {/* 8. Deep 6-Pillar Web Development, E-Commerce & Cloud Suite */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <WebDevPillarsGrid />
       </AnimateOnScroll>
 
-      {/* 7. Interactive technology ecosystem with category filters */}
+      {/* 9. Industries Served Grid */}
+      <AnimateOnScroll direction="up" delayMs={50}>
+        <IndustriesSection />
+      </AnimateOnScroll>
+
+      {/* 10. Interactive Technology Ecosystem with Category Filters */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <TechStackEcosystem />
       </AnimateOnScroll>
 
-      {/* 8. The Performance Divide: Legacy Agency vs LIMRA Digitech */}
+      {/* 11. The Performance Divide: Legacy Agency vs LIMRA Digitech */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <ComparisonMatrix />
       </AnimateOnScroll>
 
-      {/* 9. 4-step agile sprint delivery methodology */}
+      {/* 12. Interactive ROI & Pipeline Calculator */}
+      <AnimateOnScroll direction="up" delayMs={50}>
+        <RoiCalculator />
+      </AnimateOnScroll>
+
+      {/* 13. Process / How It Works: 4-Step Agile Delivery Methodology */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <AgileProcessFlow />
       </AnimateOnScroll>
 
-
-      {/* 11. Proven client case studies with metric badges */}
+      {/* 14. Proven Client Portfolio & Case Studies with Category Filters */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <CaseStudies />
       </AnimateOnScroll>
 
-      {/* 12. Verified 5.0 Google client testimonials */}
+      {/* 15. Verified 5.0 Client Testimonials */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <Testimonials />
       </AnimateOnScroll>
 
-      {/* 13. Interactive FAQ accordion */}
+      {/* 16. Blog / Insights Preview */}
+      <AnimateOnScroll direction="up" delayMs={50}>
+        <HomeBlogsSection />
+      </AnimateOnScroll>
+
+      {/* 17. Interactive FAQ Accordion */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <FaqSection />
       </AnimateOnScroll>
 
-      {/* 14. High-conversion consultation blueprint lead form */}
+      {/* 18. High-Conversion Consultation Blueprint Lead Form */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <ContactCta />
       </AnimateOnScroll>

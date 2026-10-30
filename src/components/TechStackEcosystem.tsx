@@ -7,30 +7,31 @@ export default function TechStackEcosystem() {
   const [filter, setFilter] = useState('all');
 
   const tools = [
-    { name: 'Next.js 15', category: 'frontend', role: 'Serverless SSR & SSG Framework', badge: 'Core' },
-    { name: 'React 19', category: 'frontend', role: 'Concurrent UI Library', badge: 'Core' },
-    { name: 'TypeScript', category: 'frontend', role: 'Type-Safe Architecture', badge: 'Standard' },
-    { name: 'Tailwind CSS', category: 'frontend', role: 'Zero-Runtime CSS Utility', badge: 'Styling' },
-    { name: 'Supabase', category: 'backend', role: 'Real-time PostgreSQL Cloud Database', badge: 'Core' },
-    { name: 'Node.js', category: 'backend', role: 'Microservices & API Edge Workers', badge: 'Runtime' },
-    { name: 'Python', category: 'backend', role: 'Data Mining & Programmatic Scripts', badge: 'Automation' },
-    { name: 'PostgreSQL', category: 'backend', role: 'ACID Relational Data Engine', badge: 'Database' },
-    { name: 'Google Search Console', category: 'seo', role: 'Indexing & Performance Verification', badge: 'SEO' },
-    { name: 'Ahrefs & Semrush', category: 'seo', role: 'Competitive Gap & Backlink Analysis', badge: 'SEO' },
-    { name: 'Google Analytics 4', category: 'seo', role: 'Full-Funnel Conversion Tracking', badge: 'Analytics' },
-    { name: 'Meta Business Manager', category: 'seo', role: 'Performance Ad Retargeting', badge: 'Ads' },
-    { name: 'Vercel Edge Cloud', category: 'cloud', role: 'Global CDN & Serverless Compute', badge: 'DevOps' },
-    { name: 'Docker', category: 'cloud', role: 'Containerized Enterprise Workflows', badge: 'Cloud' },
-    { name: 'AWS Lambda / S3', category: 'cloud', role: 'Asset Storage & Cloud Computing', badge: 'Cloud' },
-    { name: 'Figma', category: 'frontend', role: 'Interactive UI/UX & Design Systems', badge: 'Design' },
+    { name: 'Next.js & React', category: 'web', role: 'Serverless SSR, SSG & Web Applications', badge: 'Core Web' },
+    { name: 'WordPress & WooCommerce', category: 'cms', role: 'Custom CMS Themes & E-Commerce Stores', badge: 'CMS' },
+    { name: 'Shopify & Shopify Plus', category: 'cms', role: 'High-Converting Retail & D2C Storefronts', badge: 'E-Commerce' },
+    { name: 'PHP & Laravel', category: 'web', role: 'Enterprise Web Portals & Custom MVC Backend', badge: 'Backend' },
+    { name: 'Magento Commerce', category: 'cms', role: 'Multi-Vendor & Large Catalog E-Commerce', badge: 'Enterprise' },
+    { name: 'TypeScript & Tailwind CSS', category: 'web', role: 'Type-Safe Code & Modern Responsive UI', badge: 'Frontend' },
+    { name: 'Supabase & PostgreSQL', category: 'web', role: 'Real-Time Cloud Database & Authentication', badge: 'Database' },
+    { name: 'Android (Kotlin / Java)', category: 'mobile', role: 'Native Android Mobile Applications', badge: 'Android' },
+    { name: 'iOS (Swift) & Flutter', category: 'mobile', role: 'iPhone/iPad & Cross-Platform Mobile Apps', badge: 'iOS & Cross' },
+    { name: 'React Native', category: 'mobile', role: 'Unified Cross-Platform Mobile Engineering', badge: 'Mobile' },
+    { name: 'Google Ads & PPC / SEM', category: 'marketing', role: 'High-Intent Search, Display & PMax Funnels', badge: 'Paid Ads' },
+    { name: 'Meta Ads & Lead Funnels', category: 'marketing', role: 'Facebook & Instagram Lead Generation', badge: 'Lead Gen' },
+    { name: 'SEO, GMB & ORM Suite', category: 'marketing', role: 'Organic Rank #1, Local Maps & Reputation', badge: 'Organic SEO' },
+    { name: 'YouTube & Content Engine', category: 'marketing', role: 'Video Marketing, Shorts & Editorial Growth', badge: 'Content' },
+    { name: 'Figma & Adobe Creative Cloud', category: 'design', role: 'UI/UX, Branding, Print & Packaging Design', badge: 'Creative' },
+    { name: 'After Effects & Motion 3D', category: 'design', role: 'Motion Graphics, Explainer Videos & Reels', badge: 'Video Design' },
   ];
 
   const categories = [
     { id: 'all', label: 'All Technologies' },
-    { id: 'frontend', label: 'Frontend & UI' },
-    { id: 'backend', label: 'Backend & Supabase' },
-    { id: 'seo', label: 'SEO & Analytics' },
-    { id: 'cloud', label: 'Cloud & Infrastructure' },
+    { id: 'web', label: 'Web, PHP & Cloud' },
+    { id: 'cms', label: 'WordPress, Shopify & E-Com' },
+    { id: 'mobile', label: 'Android & iOS Apps' },
+    { id: 'marketing', label: 'SEO, Ads & Lead Gen' },
+    { id: 'design', label: 'UI/UX, Print & Motion' },
   ];
 
   const filtered = filter === 'all' ? tools : tools.filter(t => t.category === filter);

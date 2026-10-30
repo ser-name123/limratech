@@ -30,6 +30,7 @@ export default function ContactPage() {
     phone: '',
     subject: '',
     message: '',
+    website_honeypot: '',
   });
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -52,7 +53,7 @@ export default function ContactPage() {
       if (res.ok) {
         setStatus('success');
         setResponseMsg('Thank you! Your message has been routed to our technical consultants. We will reach out within 4 business hours.');
-        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '', website_honeypot: '' });
       } else {
         setStatus('error');
         setResponseMsg(data.error || 'Failed to send inquiry.');
@@ -222,14 +223,27 @@ export default function ContactPage() {
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-purple-600 transition-colors"
                       >
                         <option value="">Select Service Needed</option>
-                        <option value="Technical SEO & Page 1 Rank">Technical SEO &amp; Page 1 Google Rank</option>
-                        <option value="Next.js Web Development">Next.js Web Development</option>
-                        <option value="Full-Stack SaaS / Software">Full-Stack Cloud Software / Supabase</option>
-                        <option value="Mobile App Development">Mobile App Development</option>
-                        <option value="Performance Marketing (PPC)">Performance Marketing (PPC &amp; Leads)</option>
+                        <option value="Website Development (WordPress, Shopify, Next.js, PHP)">Website Development (WordPress, Shopify, Next.js, PHP, Laravel)</option>
+                        <option value="Digital Marketing (SEO, Google Ads, SMM, ORM)">Digital Marketing (SEO, Google Ads/PPC, SMM, YouTube, GMB)</option>
+                        <option value="Lead Generation (Meta Ads, Google Leads, Funnels)">Lead Generation (Meta Ads, Google Leads &amp; Sales Funnels)</option>
+                        <option value="Creative Design (Branding, UI/UX, Print, Motion)">Creative Design (Branding, UI/UX, Packaging &amp; Motion Video)</option>
+                        <option value="Mobile App Development (Android & iOS)">Mobile App Development (Android &amp; iOS)</option>
+                        <option value="Software Development (Custom Software & Business Apps)">Software Development (Custom Software &amp; Business Apps)</option>
                       </select>
                     </div>
                   </div>
+
+                  {/* Anti-spam honeypot */}
+                  <input
+                    type="text"
+                    name="website_honeypot"
+                    value={formData.website_honeypot}
+                    onChange={(e) => setFormData({ ...formData, website_honeypot: e.target.value })}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    className="hidden"
+                    aria-hidden="true"
+                  />
 
                   <div>
                     <label className="block text-xs font-mono font-bold text-slate-700 mb-1">Your Website URL &amp; Project Overview</label>
