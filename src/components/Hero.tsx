@@ -127,9 +127,21 @@ export default function Hero() {
 
           {/* Right Column: Interactive Benchmark Terminal (5 cols) */}
           <div className="lg:col-span-5">
-            <div className="relative mx-auto max-w-lg lg:max-w-none">
+            <div className="relative mx-auto max-w-lg lg:max-w-none animate-float-slow">
 
-              <div className="relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xl shadow-slate-200/60">
+              {/* Floating Top-Right Telemetry Chip */}
+              <div className="hidden sm:flex items-center gap-2 absolute -top-4 -right-3 z-20 bg-white/95 backdrop-blur-md border border-purple-200 px-3 py-1.5 rounded-full shadow-lg animate-float-reverse">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-[11px] font-mono font-bold text-slate-800">99.98% Edge SLA</span>
+              </div>
+
+              {/* Floating Bottom-Left ROI Chip */}
+              <div className="hidden sm:flex items-center gap-2 absolute -bottom-4 -left-3 z-20 bg-white/95 backdrop-blur-md border border-emerald-200 px-3 py-1.5 rounded-full shadow-lg animate-float-slow">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-[11px] font-mono font-bold text-emerald-800">3.8x Verified ROI</span>
+              </div>
+
+              <div className="relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xl shadow-slate-200/60 hover:border-purple-300 transition-colors">
 
                 {/* Window Top Bar */}
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">

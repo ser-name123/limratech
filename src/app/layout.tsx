@@ -7,6 +7,7 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import ScrollProgressBar from '@/components/ScrollProgressBar';
 import AdvancedPreloader from '@/components/AdvancedPreloader';
 import PageTransition from '@/components/PageTransition';
+import GlobalMotionEngine from '@/components/GlobalMotionEngine';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -114,6 +115,7 @@ export default function RootLayout({
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
+        <GlobalMotionEngine />
         <WhatsAppButton />
       </body>
     </html>
