@@ -54,7 +54,7 @@ export default function CaseStudies() {
           {filteredItems.map((study) => (
             <Link
               key={study.id}
-              href="/portfolio"
+              href={`/portfolio/${study.slug}`}
               className="bg-white rounded-3xl overflow-hidden border border-slate-200 hover:border-purple-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group hover:-translate-y-1.5"
             >
               {/* Graphic Banner - High-Resolution Optimized SEO Image */}

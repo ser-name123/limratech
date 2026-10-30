@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { blogPostsData } from '@/data/mockData';
+import { blogPostsData, caseStudiesData } from '@/data/mockData';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://limradigitech.com';
@@ -33,6 +33,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' ? 1.0 : route.includes('services') || route.includes('india') ? 0.9 : 0.8,
   }));
 
+  const caseStudyEntries: MetadataRoute.Sitemap = caseStudiesData.map((cs) => ({
+    url: `${baseUrl}/portfolio/${cs.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }));
+
   const blogEntries: MetadataRoute.Sitemap = blogPostsData.map((post) => ({
     url: `${baseUrl}/blogs/${post.slug}`,
     lastModified: new Date(),
@@ -40,6 +47,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticEntries, ...blogEntries];
+  return [...staticEntries, ...caseStudyEntries, ...blogEntries];
 }
 

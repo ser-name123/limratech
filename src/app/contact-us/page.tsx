@@ -20,6 +20,7 @@ import {
   Star
 } from 'lucide-react';
 import { companyInfo } from '@/data/mockData';
+import { trackLeadConversion } from '@/components/AnalyticsTracker';
 import TechStackTicker from '@/components/TechStackTicker';
 import Testimonials from '@/components/Testimonials';
 
@@ -52,6 +53,10 @@ export default function ContactPage() {
       const data = await res.json();
       if (res.ok) {
         setStatus('success');
+        trackLeadConversion('contact_form_submit', {
+          subject: formData.subject || 'General Contact',
+          form_location: 'ContactUsPage',
+        });
         setResponseMsg('Thank you! Your message has been routed to our technical consultants. We will reach out within 4 business hours.');
         setFormData({ name: '', email: '', phone: '', subject: '', message: '', website_honeypot: '' });
       } else {

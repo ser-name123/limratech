@@ -181,12 +181,13 @@ export default function HtmlSitemapPage() {
             {caseStudiesData.map((cs) => (
               <Link
                 key={cs.id}
-                href="/portfolio"
+                href={`/portfolio/${cs.slug}`}
                 className="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-purple-300 transition-all"
               >
                 <div className="text-[10px] font-mono font-bold text-purple-700">{cs.client}</div>
                 <div className="text-xs font-bold text-slate-900 mt-0.5">{cs.title}</div>
                 <div className="text-[11px] text-emerald-700 font-semibold mt-1">{cs.results}</div>
+                <div className="text-[10px] font-mono text-slate-400 mt-1">/portfolio/{cs.slug}</div>
               </Link>
             ))}
           </div>

@@ -8,6 +8,7 @@ import ScrollProgressBar from '@/components/ScrollProgressBar';
 import AdvancedPreloader from '@/components/AdvancedPreloader';
 import PageTransition from '@/components/PageTransition';
 import GlobalMotionEngine from '@/components/GlobalMotionEngine';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -43,6 +44,9 @@ export const metadata: Metadata = {
   ],
   alternates: {
     canonical: '/',
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
   openGraph: {
     title: 'LIMRA Digitech | Smart Digital Solutions & Business Growth',
@@ -108,6 +112,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning className="font-sans antialiased min-h-screen flex flex-col bg-[#f8fafc] text-slate-600 selection:bg-purple-600 selection:text-white font-normal text-sm sm:text-base leading-relaxed">
+        <AnalyticsTracker />
         <AdvancedPreloader />
         <ScrollProgressBar />
         <Header />

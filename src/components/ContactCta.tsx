@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Phone, MessageSquare, CheckCircle2, AlertCircle, Loader2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { companyInfo } from '@/data/mockData';
+import { trackLeadConversion } from '@/components/AnalyticsTracker';
 
 export default function ContactCta() {
   const [formData, setFormData] = useState({
@@ -35,6 +36,10 @@ export default function ContactCta() {
       const data = await res.json();
       if (res.ok) {
         setStatus('success');
+        trackLeadConversion('generate_lead', {
+          service_needed: formData.service_needed,
+          form_location: 'ContactCta',
+        });
         setResponseMsg('Your enquiry & quote request has been received! A senior LIMRA Digitech specialist will contact you within 4 business hours.');
         setFormData({
           full_name: '',

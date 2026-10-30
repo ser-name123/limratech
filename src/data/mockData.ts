@@ -326,10 +326,10 @@ export const blogPostsData: BlogPost[] = [
 
       <p>At LIMRA Digitech, we integrate advanced technical SEO into every web development and marketing engagement to deliver compounded ROI.</p>
     `,
-    cover_image: 'https://limradigitech.com/wp-content/uploads/2026/06/AI-Automation-in-Digital-Marketing-_-Smarter-Ads-Chatbots.jpeg',
+    cover_image: '/images/seo-analytics-performance-dashboard.jpg',
     author: 'LIMRA Editorial Team',
     date: 'June 12, 2025',
-    category: 'SEO & Strategy',
+    category: 'SEO & Core Vitals',
     read_time: '4 min read',
     comments_count: 0
   },
@@ -350,16 +350,16 @@ export const blogPostsData: BlogPost[] = [
 
       <p>Investing in trust signals creates enduring search engine immunity and builds immediate consumer confidence.</p>
     `,
-    cover_image: 'https://limradigitech.com/wp-content/uploads/2026/06/Behind-the-Code_-Developers-Securing-the-Web-with-Cyber-Interfaces.jpeg',
+    cover_image: '/images/limra-tech-engineering-lab.jpg',
     author: 'Tech Research Group',
     date: 'June 12, 2025',
-    category: 'Search Algorithms',
+    category: 'SEO & Core Vitals',
     read_time: '5 min read',
     comments_count: 0
   },
   {
     id: '3',
-    title: 'Content Marketing Tools You Should Be Using in 2026',
+    title: 'Content Marketing Tools & Conversion Funnels You Should Be Using in 2026',
     slug: 'content-marketing-tools-you-should-be-using-in-2026',
     excerpt: 'A comprehensive roundup of cutting-edge AI content assistants, workflow automation platforms, and analytics suites driving exponential growth.',
     content: `
@@ -374,11 +374,35 @@ export const blogPostsData: BlogPost[] = [
 
       <p>Pairing these modern tools with human strategic ingenuity yields campaigns that resonate deeply with audiences.</p>
     `,
-    cover_image: 'https://limradigitech.com/wp-content/uploads/2026/06/Data-Analytics-Dashboard-with-AI-Driven-Automation.jpeg',
+    cover_image: '/images/service-digital-marketing-agency.jpg',
     author: 'Growth Team',
     date: 'June 12, 2025',
-    category: 'Content Marketing',
+    category: 'Conversion Rate & PPC',
     read_time: '6 min read',
+    comments_count: 0
+  },
+  {
+    id: '4',
+    title: 'Why Next.js, Shopify & Headless Architecture Win E-Commerce Conversions',
+    slug: 'why-nextjs-shopify-headless-architecture-win-ecommerce',
+    excerpt: 'Explore how sub-second page speeds, clean Core Web Vitals, and frictionless checkout flows boost retail e-commerce conversion rates by over 60%.',
+    content: `
+      <p>Every 100-millisecond delay in e-commerce load time costs brands up to 7% in lost checkout conversions. Modern shoppers expect instant product filtering, zero layout shifts on mobile, and one-click UPI/card payments.</p>
+      
+      <h3>Choosing the Right Web Stack:</h3>
+      <ul>
+        <li><strong>Next.js & React Applications:</strong> Ideal for custom web portals, SaaS products, and sub-second edge rendering.</li>
+        <li><strong>Shopify & WooCommerce:</strong> Proven retail catalog management paired with optimized Liquid/headless storefronts.</li>
+        <li><strong>PHP, Laravel & Magento:</strong> Enterprise-grade backend flexibility for complex multi-vendor and ERP-integrated platforms.</li>
+      </ul>
+
+      <p>LIMRA Digitech engineers every storefront with built-in JSON-LD product schema, CDN caching, and conversion-focused UI/UX.</p>
+    `,
+    cover_image: '/images/service-nextjs-web-development.jpg',
+    author: 'LIMRA Web Engineering',
+    date: 'July 04, 2025',
+    category: 'Next.js & Performance',
+    read_time: '5 min read',
     comments_count: 0
   }
 ];
