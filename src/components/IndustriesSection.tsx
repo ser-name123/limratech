@@ -12,55 +12,62 @@ import {
   Plane, 
   Cpu, 
   ArrowRight, 
-  Sparkles, 
-  CheckCircle2 
+  Sparkles
 } from 'lucide-react';
 
 export default function IndustriesSection() {
   const industries = [
     {
+      slug: 'ecommerce-d2c-retail',
       icon: ShoppingBag,
       title: 'E-Commerce & D2C Retail',
       desc: 'Shopify, WooCommerce, Magento, and headless Next.js stores with omnichannel performance marketing.',
       tags: ['Shopify Plus', 'WooCommerce', 'ROAS Ads']
     },
     {
+      slug: 'fintech-banking-insurance',
       icon: Landmark,
       title: 'FinTech, Banking & Advisory',
       desc: 'High-trust web portals, secure API architectures, and compliant lead generation funnels.',
       tags: ['Secure Portals', 'High-Intent SEO', 'Lead Gen']
     },
     {
+      slug: 'healthcare-hospitals-clinics',
       icon: Stethoscope,
       title: 'Healthcare, Clinics & MedTech',
       desc: 'Patient appointment apps, clinic local SEO (GMB 3-Pack), and HIPAA-ready web platforms.',
       tags: ['Local SEO', 'Patient Apps', 'ORM']
     },
     {
+      slug: 'real-estate-construction',
       icon: Building2,
       title: 'Real Estate & Construction',
       desc: 'Property showcase portals, Meta & Google buyer lead campaigns, and interactive virtual tour UX.',
       tags: ['Meta Lead Ads', 'Property CRM', 'Google PPC']
     },
     {
+      slug: 'edtech-education-coaching',
       icon: GraduationCap,
       title: 'EdTech, Coaching & Universities',
       desc: 'LMS web applications, student enrollment funnels, YouTube content marketing, and mobile apps.',
       tags: ['LMS Software', 'Android/iOS', 'YouTube Ads']
     },
     {
+      slug: 'manufacturing-b2b-logistics',
       icon: Truck,
       title: 'Manufacturing, Logistics & B2B',
       desc: 'Custom ERP/inventory software, pan-India industrial SEO, and B2B RFQ generation engines.',
       tags: ['Custom ERP', 'B2B Funnels', 'Laravel/Node']
     },
     {
+      slug: 'hospitality-travel-restaurants',
       icon: Plane,
       title: 'Travel, Hospitality & Restaurants',
       desc: 'Direct booking engines, Google Business Profile dominance, social media reels, and branding.',
       tags: ['Booking Engine', 'Social Media', 'GMB Rank']
     },
     {
+      slug: 'saas-it-startups',
       icon: Cpu,
       title: 'SaaS, IT & Startups',
       desc: 'Full-stack Next.js & Supabase product engineering, UI/UX design systems, and growth marketing.',
@@ -99,8 +106,9 @@ export default function IndustriesSection() {
           {industries.map((ind, idx) => {
             const Icon = ind.icon;
             return (
-              <div
+              <Link
                 key={idx}
+                href={`/industries/${ind.slug}`}
                 className="bg-slate-50/80 hover:bg-white rounded-2xl p-6 border border-slate-200 hover:border-purple-300 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 hover:shadow-lg shadow-xs"
               >
                 <div>
@@ -115,17 +123,23 @@ export default function IndustriesSection() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-200/70">
-                  {ind.tags.map((t, ti) => (
-                    <span
-                      key={ti}
-                      className="text-[10px] font-mono font-medium text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.5 rounded"
-                    >
-                      {t}
-                    </span>
-                  ))}
+                <div className="space-y-3 pt-3 border-t border-slate-200/70">
+                  <div className="flex flex-wrap gap-1.5">
+                    {ind.tags.map((t, ti) => (
+                      <span
+                        key={ti}
+                        className="text-[10px] font-mono font-medium text-purple-700 bg-purple-50 border border-purple-200/80 px-2 py-0.5 rounded"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between text-xs font-bold text-purple-700">
+                    <span>View Sector Blueprint</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -134,4 +148,3 @@ export default function IndustriesSection() {
     </section>
   );
 }
-

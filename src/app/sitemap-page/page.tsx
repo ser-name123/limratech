@@ -15,6 +15,7 @@ import {
   ExternalLink 
 } from 'lucide-react';
 import { servicesData, blogPostsData, caseStudiesData } from '@/data/mockData';
+import { industriesPagesData, technologiesPagesData } from '@/data/megaMenuData';
 import TechStackTicker from '@/components/TechStackTicker';
 import ContactCta from '@/components/ContactCta';
 
@@ -142,6 +143,41 @@ export default function HtmlSitemapPage() {
                 </ul>
               </div>
             ))}
+          </div>
+
+          {/* Industries & Technologies Dedicated Pages */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3">
+              <div className="text-sm font-bold text-slate-900">8 Industry Vertical Pages (/industries/[slug])</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {industriesPagesData.map((ind) => (
+                  <Link
+                    key={ind.slug}
+                    href={`/industries/${ind.slug}`}
+                    className="text-xs font-semibold text-purple-700 hover:text-purple-900 flex items-center gap-1.5 bg-white p-2.5 rounded-xl border border-slate-200"
+                  >
+                    <ArrowRight className="w-3 h-3 flex-shrink-0" />
+                    <span>{ind.shortTitle}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3">
+              <div className="text-sm font-bold text-slate-900">8 Technology Stack Pages (/technologies/[slug])</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {technologiesPagesData.map((tech) => (
+                  <Link
+                    key={tech.slug}
+                    href={`/technologies/${tech.slug}`}
+                    className="text-xs font-semibold text-purple-700 hover:text-purple-900 flex items-center gap-1.5 bg-white p-2.5 rounded-xl border border-slate-200"
+                  >
+                    <ArrowRight className="w-3 h-3 flex-shrink-0" />
+                    <span>{tech.shortTitle}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

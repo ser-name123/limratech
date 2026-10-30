@@ -219,26 +219,26 @@ export default function TechnologiesPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-2 shadow-xs">
+            <Link href="/technologies/nextjs-react-development" className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-purple-300 space-y-2 shadow-xs transition-all group">
               <span className="text-xs font-mono font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded border border-purple-200">Next.js + Supabase</span>
-              <h3 className="text-base font-bold text-slate-900 pt-1">High-Speed Web Apps &amp; SEO</h3>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-700 pt-1">High-Speed Web Apps &amp; SEO</h3>
               <p className="text-xs text-slate-600 leading-relaxed">Best for brands wanting 0.3s load speeds, custom portals, SaaS apps, and #1 Google Core Web Vitals.</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-2 shadow-xs">
+            </Link>
+            <Link href="/technologies/shopify-ecommerce" className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-purple-300 space-y-2 shadow-xs transition-all group">
               <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">Shopify / WooCommerce</span>
-              <h3 className="text-base font-bold text-slate-900 pt-1">D2C &amp; Retail E-Commerce</h3>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-700 pt-1">D2C &amp; Retail E-Commerce</h3>
               <p className="text-xs text-slate-600 leading-relaxed">Best for fast-moving consumer catalogs, payment/shipping integrations, and Meta/Google Shopping ads.</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-2 shadow-xs">
+            </Link>
+            <Link href="/technologies/php-laravel-magento" className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-purple-300 space-y-2 shadow-xs transition-all group">
               <span className="text-xs font-mono font-bold text-cyan-700 bg-cyan-50 px-2.5 py-0.5 rounded border border-cyan-200">PHP / Laravel / Magento</span>
-              <h3 className="text-base font-bold text-slate-900 pt-1">Custom Enterprise &amp; B2B</h3>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-700 pt-1">Custom Enterprise &amp; B2B</h3>
               <p className="text-xs text-slate-600 leading-relaxed">Best for complex business logic, custom ERP/CRM modules, and large multi-vendor e-commerce.</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-2 shadow-xs">
+            </Link>
+            <Link href="/technologies/android-ios-flutter" className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-purple-300 space-y-2 shadow-xs transition-all group">
               <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded border border-amber-200">Flutter / React Native</span>
-              <h3 className="text-base font-bold text-slate-900 pt-1">Android &amp; iOS Mobile Apps</h3>
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-700 pt-1">Android &amp; iOS Mobile Apps</h3>
               <p className="text-xs text-slate-600 leading-relaxed">Best for launching sleek iOS &amp; Android mobile apps simultaneously with real-time cloud sync.</p>
-            </div>
+            </Link>
           </div>
         </div>
       </section>

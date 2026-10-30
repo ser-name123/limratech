@@ -17,14 +17,50 @@ import {
   Layers,
   Smartphone,
   Palette,
-  Sparkles
+  Sparkles,
+  ShoppingBag,
+  Landmark,
+  Stethoscope,
+  Building2,
+  GraduationCap,
+  Truck,
+  Plane,
+  Cpu,
+  Store,
+  Server,
+  Database,
+  ShieldCheck,
 } from 'lucide-react';
 import { companyInfo } from '@/data/mockData';
+import { industriesPagesData, technologiesPagesData } from '@/data/megaMenuData';
+
+const industryIcons = {
+  ShoppingBag,
+  Landmark,
+  Stethoscope,
+  Building2,
+  GraduationCap,
+  Truck,
+  Plane,
+  Cpu,
+};
+
+const techIcons = {
+  Code2,
+  ShoppingBag,
+  Store,
+  Server,
+  Smartphone,
+  Database,
+  TrendingUp,
+  Palette,
+};
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<'services' | 'industries' | 'technologies' | null>(null);
+  const [mobileSubmenu, setMobileSubmenu] = useState<'services' | 'industries' | 'technologies' | null>('services');
   const pathname = usePathname();
 
   useEffect(() => {
@@ -37,7 +73,7 @@ export default function Header() {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setIsServicesOpen(false);
+    setActiveMegaMenu(null);
   }, [pathname]);
 
   const serviceItems = [
@@ -46,44 +82,51 @@ export default function Header() {
       href: '/website-development-services',
       icon: Code2,
       tag: 'Next.js • WordPress • Shopify',
-      desc: 'WordPress, Shopify, e-commerce, PHP, Next.js, Laravel, Magento, web apps & WooCommerce.'
+      desc: 'WordPress, Shopify, e-commerce, PHP, Next.js, Laravel, Magento, web apps & WooCommerce.',
     },
     {
       title: 'Digital Marketing & SEO',
       href: '/digital-marketing-agency-india',
       icon: Search,
       tag: 'SEO • Google Ads • SMM',
-      desc: 'SEO, Google Ads/PPC, SEM, Social Media, YouTube/Content, ORM & Google Business Profile.'
+      desc: 'SEO, Google Ads/PPC, SEM, Social Media, YouTube/Content, ORM & Google Business Profile.',
     },
     {
       title: 'Lead Generation Funnels',
       href: '/lead-generation-company-india',
       icon: TrendingUp,
       tag: 'Meta • Google • Funnels',
-      desc: 'High-converting Meta Ads, Google lead generation campaigns, and sales funnel creation.'
+      desc: 'High-converting Meta Ads, Google lead generation campaigns, and sales funnel creation.',
     },
     {
       title: 'Creative Design Studio',
       href: '/creative-design-solutions-india',
       icon: Palette,
       tag: 'Branding • UI/UX • Motion',
-      desc: 'Branding & identity, social creatives, print, website/UI design, packaging & motion video.'
+      desc: 'Branding & identity, social creatives, print, website/UI design, packaging & motion video.',
     },
     {
       title: 'Mobile App Development',
       href: '/mobile-app-developer-india',
       icon: Smartphone,
       tag: 'Android & iOS Apps',
-      desc: 'Native and cross-platform Android & iOS mobile applications built for scale and retention.'
+      desc: 'Native and cross-platform Android & iOS mobile applications built for scale and retention.',
     },
     {
       title: 'Software Development',
       href: '/software-developers-india',
       icon: Layers,
       tag: 'Custom Software & ERP',
-      desc: 'Custom enterprise software, cloud SaaS platforms, and bespoke business applications.'
+      desc: 'Custom enterprise software, cloud SaaS platforms, and bespoke business applications.',
     },
   ];
+
+  const isServicesActive =
+    pathname.includes('service') ||
+    pathname.includes('marketing') ||
+    pathname.includes('developer') ||
+    pathname.includes('lead-generation') ||
+    pathname.includes('creative-design');
 
   return (
     <>
@@ -175,18 +218,16 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Main Navigation Bar - Aligned to max-w-[1520px] with Full Height */}
+      {/* Main Navigation Bar */}
       <header
         style={{ backgroundColor: '#ffffff' }}
-        className={`sticky top-0 z-[90] transition-all duration-200 w-full bg-white border-b border-slate-200 ${isScrolled
-            ? 'h-16 shadow-md shadow-slate-200/90'
-            : 'h-20 shadow-xs'
-          } flex items-center`}
+        className={`sticky top-0 z-[90] transition-all duration-200 w-full bg-white border-b border-slate-200 ${
+          isScrolled ? 'h-16 shadow-md shadow-slate-200/90' : 'h-20 shadow-xs'
+        } flex items-center`}
       >
         <div className="max-w-[1520px] mx-auto px-4 sm:px-8 lg:px-12 w-full">
           <div className="flex items-center justify-between">
-
-            {/* Brand Logo - Completely Background-Free & Full Height */}
+            {/* Brand Logo */}
             <Link href="/" className="flex items-center group py-1">
               <Image
                 src="/limra-logo.png"
@@ -202,117 +243,379 @@ export default function Header() {
             <nav className="hidden lg:flex items-center space-x-1">
               <Link
                 href="/"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/' ? 'text-purple-700 bg-purple-50 font-semibold' : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === '/'
+                    ? 'text-purple-700 bg-purple-50 font-semibold'
+                    : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
+                }`}
               >
                 Home
               </Link>
 
               <Link
                 href="/about"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/about' ? 'text-purple-700 bg-purple-50 font-semibold' : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith('/about')
+                    ? 'text-purple-700 bg-purple-50 font-semibold'
+                    : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
+                }`}
               >
                 About
               </Link>
 
-              {/* Mega Dropdown for Services */}
+              {/* 1. SERVICES MEGA MENU */}
               <div
                 className="relative"
-                onMouseEnter={() => setIsServicesOpen(true)}
-                onMouseLeave={() => setIsServicesOpen(false)}
+                onMouseEnter={() => setActiveMegaMenu('services')}
+                onMouseLeave={() => setActiveMegaMenu(null)}
               >
                 <Link
                   href="/services"
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors ${pathname.includes('service') || pathname.includes('marketing') || pathname.includes('developer') || pathname.includes('lead-generation') || pathname.includes('creative-design') ? 'text-purple-700 bg-purple-50 font-semibold' : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
-                    }`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors ${
+                    isServicesActive
+                      ? 'text-purple-700 bg-purple-50 font-semibold'
+                      : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
+                  }`}
                 >
                   <span>Services</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isServicesOpen ? 'rotate-180 text-purple-600' : ''}`} />
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      activeMegaMenu === 'services' ? 'rotate-180 text-purple-600' : ''
+                    }`}
+                  />
                 </Link>
 
-                {/* Dropdown panel */}
-                {isServicesOpen && (
-                  <div
-                    style={{ backgroundColor: '#ffffff' }}
-                    className="absolute top-full -left-20 w-[640px] bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl shadow-slate-300/40 grid grid-cols-2 gap-2.5 z-[100] animate-in fade-in slide-in-from-top-1 duration-150"
-                  >
-                    <div className="col-span-2 pb-2 mb-1 border-b border-slate-100 flex items-center justify-between">
-                      <span className="text-xs uppercase font-medium tracking-wider text-purple-700 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-purple-600" /> Full-Spectrum Digital &amp; Technology Services
-                      </span>
-                      <Link href="/services" className="text-xs font-medium text-slate-500 hover:text-purple-700 flex items-center gap-1">
-                        View All Services <ArrowRight className="w-3 h-3" />
-                      </Link>
-                    </div>
+                {activeMegaMenu === 'services' && (
+                  <div className="absolute top-full -left-36 pt-2 z-[100]">
+                    <div
+                      style={{ backgroundColor: '#ffffff' }}
+                      className="w-[820px] bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl shadow-slate-300/50 grid grid-cols-12 gap-5 animate-in fade-in slide-in-from-top-1 duration-150"
+                    >
+                      <div className="col-span-8 space-y-3">
+                        <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
+                          <span className="text-xs uppercase font-bold tracking-wider text-purple-700 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-600" /> 6 Core Digital &amp; Software Services
+                          </span>
+                          <Link
+                            href="/services"
+                            className="text-xs font-semibold text-purple-700 hover:text-purple-900 flex items-center gap-1"
+                          >
+                            All Services Directory <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        </div>
 
-                    {serviceItems.map((svc) => {
-                      const Icon = svc.icon;
-                      return (
-                        <Link
-                          key={svc.href}
-                          href={svc.href}
-                          className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-50/80 hover:bg-purple-50/70 border border-slate-200/60 hover:border-purple-200 transition-all group"
-                        >
-                          <div className="p-2 rounded-lg bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-colors flex-shrink-0 mt-0.5">
-                            <Icon className="w-4 h-4" />
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {serviceItems.map((svc) => {
+                            const Icon = svc.icon;
+                            return (
+                              <Link
+                                key={svc.href}
+                                href={svc.href}
+                                className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50/80 hover:bg-purple-50/70 border border-slate-200/70 hover:border-purple-300 transition-all group"
+                              >
+                                <div className="p-2 rounded-xl bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-colors flex-shrink-0 mt-0.5">
+                                  <Icon className="w-4 h-4" />
+                                </div>
+                                <div>
+                                  <span className="text-sm font-bold text-slate-900 group-hover:text-purple-700 block">
+                                    {svc.title}
+                                  </span>
+                                  <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-snug">
+                                    {svc.desc}
+                                  </p>
+                                  <span className="inline-block mt-1.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                    {svc.tag}
+                                  </span>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Right Featured Highlight Panel */}
+                      <div className="col-span-4 bg-gradient-to-br from-purple-50 via-indigo-50/70 to-white border border-purple-200/80 rounded-2xl p-5 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase font-bold text-purple-700 bg-white border border-purple-200 px-2.5 py-1 rounded-full">
+                            <ShieldCheck className="w-3 h-3 text-purple-600" /> Full-Service Agency
+                          </span>
+                          <h4 className="text-base font-bold text-slate-900 leading-snug">
+                            Need A Custom Web, App &amp; Growth Package?
+                          </h4>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            Every service page features 12+ in-depth sections covering sub-services, tech stacks, deliverables, and transparent workflows.
+                          </p>
+                          <div className="pt-2 space-y-1.5 text-[11px] font-semibold text-slate-700">
+                            <div>✓ 500+ Projects Delivered</div>
+                            <div>✓ 350+ Happy Clients</div>
+                            <div>✓ 98.4% Client Retention</div>
                           </div>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-semibold text-slate-900 group-hover:text-purple-700">
-                                {svc.title}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 line-clamp-1 mt-0.5 font-normal">
-                              {svc.desc}
-                            </p>
-                            <span className="inline-block mt-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                              {svc.tag}
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t border-purple-200/60 space-y-2">
+                          <Link
+                            href="/contact-us"
+                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm hover:opacity-95"
+                          >
+                            <span>Get Custom Quote</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                          <Link
+                            href="/portfolio"
+                            className="w-full bg-white border border-slate-200 hover:border-purple-300 text-slate-700 py-2 px-4 rounded-xl text-xs font-semibold flex items-center justify-center"
+                          >
+                            Explore Case Studies
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. INDUSTRIES MEGA MENU */}
+              <div
+                className="relative"
+                onMouseEnter={() => setActiveMegaMenu('industries')}
+                onMouseLeave={() => setActiveMegaMenu(null)}
+              >
+                <Link
+                  href="/industries"
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors ${
+                    pathname.startsWith('/industries')
+                      ? 'text-purple-700 bg-purple-50 font-semibold'
+                      : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>Industries</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      activeMegaMenu === 'industries' ? 'rotate-180 text-purple-600' : ''
+                    }`}
+                  />
+                </Link>
+
+                {activeMegaMenu === 'industries' && (
+                  <div className="absolute top-full -left-56 pt-2 z-[100]">
+                    <div
+                      style={{ backgroundColor: '#ffffff' }}
+                      className="w-[880px] bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl shadow-slate-300/50 grid grid-cols-12 gap-5 animate-in fade-in slide-in-from-top-1 duration-150"
+                    >
+                      <div className="col-span-9 space-y-3">
+                        <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
+                          <span className="text-xs uppercase font-bold tracking-wider text-purple-700 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-600" /> 8 Specialized Industry Verticals (Dedicated Pages)
+                          </span>
+                          <Link
+                            href="/industries"
+                            className="text-xs font-semibold text-purple-700 hover:text-purple-900 flex items-center gap-1"
+                          >
+                            View All Industries <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {industriesPagesData.map((ind) => {
+                            const Icon = industryIcons[ind.iconName] || Building2;
+                            return (
+                              <Link
+                                key={ind.slug}
+                                href={`/industries/${ind.slug}`}
+                                className="flex items-start gap-3 p-2.5 rounded-2xl bg-slate-50/80 hover:bg-purple-50/70 border border-slate-200/70 hover:border-purple-300 transition-all group"
+                              >
+                                <div className="p-2 rounded-xl bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-colors flex-shrink-0 mt-0.5">
+                                  <Icon className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-purple-700 truncate">
+                                      {ind.shortTitle}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                                    {ind.subtitle}
+                                  </p>
+                                  <div className="flex items-center gap-1.5 mt-1">
+                                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                      {ind.metricBadge}
+                                    </span>
+                                  </div>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Right Featured Panel */}
+                      <div className="col-span-3 bg-gradient-to-br from-purple-50 via-indigo-50/70 to-white border border-purple-200/80 rounded-2xl p-5 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <span className="inline-block text-[10px] font-mono uppercase font-bold text-purple-700 bg-white border border-purple-200 px-2.5 py-1 rounded-full">
+                            Sector Playbooks
+                          </span>
+                          <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                            Domain-Specific Funnels &amp; Software
+                          </h4>
+                          <p className="text-[11px] text-slate-600 leading-relaxed">
+                            Click any industry to explore our 11-section blueprint with KPI benchmarks, tech stack, and sector FAQs.
+                          </p>
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t border-purple-200/60 space-y-2">
+                          <Link
+                            href="/industries"
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm"
+                          >
+                            <span>All Industries Hub</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                          <Link
+                            href="/contact-us"
+                            className="w-full bg-white border border-slate-200 hover:border-purple-300 text-slate-700 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center"
+                          >
+                            Book Industry Audit
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. TECHNOLOGIES MEGA MENU */}
+              <div
+                className="relative"
+                onMouseEnter={() => setActiveMegaMenu('technologies')}
+                onMouseLeave={() => setActiveMegaMenu(null)}
+              >
+                <Link
+                  href="/technologies"
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors ${
+                    pathname.startsWith('/technologies')
+                      ? 'text-purple-700 bg-purple-50 font-semibold'
+                      : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>Technologies</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      activeMegaMenu === 'technologies' ? 'rotate-180 text-purple-600' : ''
+                    }`}
+                  />
+                </Link>
+
+                {activeMegaMenu === 'technologies' && (
+                  <div className="absolute top-full -left-72 pt-2 z-[100]">
+                    <div
+                      style={{ backgroundColor: '#ffffff' }}
+                      className="w-[880px] bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl shadow-slate-300/50 grid grid-cols-12 gap-5 animate-in fade-in slide-in-from-top-1 duration-150"
+                    >
+                      <div className="col-span-9 space-y-3">
+                        <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
+                          <span className="text-xs uppercase font-bold tracking-wider text-purple-700 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-600" /> 8 Core Technology Stacks &amp; Platforms (Dedicated Pages)
+                          </span>
+                          <Link
+                            href="/technologies"
+                            className="text-xs font-semibold text-purple-700 hover:text-purple-900 flex items-center gap-1"
+                          >
+                            View Full Tech Stack <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {technologiesPagesData.map((tech) => {
+                            const Icon = techIcons[tech.iconName] || Code2;
+                            return (
+                              <Link
+                                key={tech.slug}
+                                href={`/technologies/${tech.slug}`}
+                                className="flex items-start gap-3 p-2.5 rounded-2xl bg-slate-50/80 hover:bg-purple-50/70 border border-slate-200/70 hover:border-purple-300 transition-all group"
+                              >
+                                <div className="p-2 rounded-xl bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-colors flex-shrink-0 mt-0.5">
+                                  <Icon className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-purple-700 block truncate">
+                                    {tech.shortTitle}
+                                  </span>
+                                  <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                                    {tech.subtitle}
+                                  </p>
+                                  <span className="inline-block mt-1 text-[10px] font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
+                                    {tech.tag}
+                                  </span>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Right Featured Panel */}
+                      <div className="col-span-3 bg-gradient-to-br from-purple-50 via-indigo-50/70 to-white border border-purple-200/80 rounded-2xl p-5 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <span className="inline-block text-[10px] font-mono uppercase font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                            Core Vitals 99+
+                          </span>
+                          <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                            Modern Web, Mobile, CMS &amp; MarTech
+                          </h4>
+                          <p className="text-[11px] text-slate-600 leading-relaxed">
+                            Explore dedicated 11-section architecture guides for Next.js, WordPress, Shopify, Laravel, Flutter, Supabase, and SEO/MarTech.
+                          </p>
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t border-purple-200/60 space-y-2">
+                          <Link
+                            href="/technologies"
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm"
+                          >
+                            <span>All Technologies Hub</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                          <Link
+                            href="/contact-us"
+                            className="w-full bg-white border border-slate-200 hover:border-purple-300 text-slate-700 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center"
+                          >
+                            Consult Tech Lead
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
 
               <Link
-                href="/industries"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/industries' ? 'text-purple-700 bg-purple-50 font-semibold' : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
-                  }`}
-              >
-                Industries
-              </Link>
-
-              <Link
-                href="/technologies"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/technologies' ? 'text-purple-700 bg-purple-50 font-semibold' : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
-                  }`}
-              >
-                Technologies
-              </Link>
-
-              <Link
                 href="/portfolio"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/portfolio' ? 'text-purple-700 bg-purple-50 font-semibold' : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith('/portfolio')
+                    ? 'text-purple-700 bg-purple-50 font-semibold'
+                    : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
+                }`}
               >
                 Portfolio
               </Link>
 
               <Link
                 href="/blogs"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname.startsWith('/blogs') ? 'text-purple-700 bg-purple-50 font-semibold' : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname.startsWith('/blogs')
+                    ? 'text-purple-700 bg-purple-50 font-semibold'
+                    : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
+                }`}
               >
                 Blogs
               </Link>
 
               <Link
                 href="/contact-us"
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/contact-us' ? 'text-purple-700 bg-purple-50 font-semibold' : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === '/contact-us'
+                    ? 'text-purple-700 bg-purple-50 font-semibold'
+                    : 'text-slate-800 hover:text-purple-700 hover:bg-slate-100'
+                }`}
               >
                 Contact Us
               </Link>
@@ -348,56 +651,151 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
+        {/* Mobile Dropdown Menu with Mega-Menu Accordions */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-slate-200 px-4 pt-3 pb-6 space-y-1.5 shadow-xl animate-in slide-in-from-top duration-200">
-            <Link href="/" className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg">
+          <div className="lg:hidden absolute top-full left-0 right-0 max-h-[82vh] overflow-y-auto bg-white border-t border-slate-200 px-4 pt-3 pb-6 space-y-1.5 shadow-2xl z-[100]">
+            <Link
+              href="/"
+              className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg"
+            >
               Home
             </Link>
-            <Link href="/about" className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg">
+            <Link
+              href="/about"
+              className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg"
+            >
               About Us
             </Link>
-            <Link href="/services" className="block px-3 py-2 text-sm font-semibold text-purple-700 bg-purple-50/70 rounded-lg">
-              All Services Overview
-            </Link>
-            <div className="pl-3 space-y-1 border-l-2 border-purple-100">
-              <Link href="/website-development-services" className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700">
-                • Website Development
-              </Link>
-              <Link href="/digital-marketing-agency-india" className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700">
-                • Digital Marketing &amp; SEO
-              </Link>
-              <Link href="/lead-generation-company-india" className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700">
-                • Lead Generation Funnels
-              </Link>
-              <Link href="/creative-design-solutions-india" className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700">
-                • Creative Design Studio
-              </Link>
-              <Link href="/mobile-app-developer-india" className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700">
-                • Mobile App Development
-              </Link>
-              <Link href="/software-developers-india" className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700">
-                • Software Development
-              </Link>
+
+            {/* Mobile Services Accordion */}
+            <div className="border border-slate-200/80 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setMobileSubmenu(mobileSubmenu === 'services' ? null : 'services')}
+                className="w-full px-3 py-2.5 text-sm font-semibold text-slate-900 bg-slate-50 flex items-center justify-between"
+              >
+                <span>Services (6 Core Offerings)</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-purple-600 transition-transform ${
+                    mobileSubmenu === 'services' ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+              {mobileSubmenu === 'services' && (
+                <div className="p-2 space-y-1 bg-white">
+                  <Link
+                    href="/services"
+                    className="block px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 rounded-lg"
+                  >
+                    → View All Services Directory
+                  </Link>
+                  {serviceItems.map((svc) => (
+                    <Link
+                      key={svc.href}
+                      href={svc.href}
+                      className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700 hover:bg-purple-50/50 rounded-lg"
+                    >
+                      • {svc.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
-            <Link href="/industries" className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg">
-              Industries
-            </Link>
-            <Link href="/technologies" className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg">
-              Technologies
-            </Link>
-            <Link href="/portfolio" className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg">
+
+            {/* Mobile Industries Accordion */}
+            <div className="border border-slate-200/80 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setMobileSubmenu(mobileSubmenu === 'industries' ? null : 'industries')}
+                className="w-full px-3 py-2.5 text-sm font-semibold text-slate-900 bg-slate-50 flex items-center justify-between"
+              >
+                <span>Industries (8 Sector Pages)</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-purple-600 transition-transform ${
+                    mobileSubmenu === 'industries' ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+              {mobileSubmenu === 'industries' && (
+                <div className="p-2 space-y-1 bg-white">
+                  <Link
+                    href="/industries"
+                    className="block px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 rounded-lg"
+                  >
+                    → View All Industries Hub
+                  </Link>
+                  {industriesPagesData.map((ind) => (
+                    <Link
+                      key={ind.slug}
+                      href={`/industries/${ind.slug}`}
+                      className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700 hover:bg-purple-50/50 rounded-lg"
+                    >
+                      • {ind.shortTitle}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Technologies Accordion */}
+            <div className="border border-slate-200/80 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setMobileSubmenu(mobileSubmenu === 'technologies' ? null : 'technologies')}
+                className="w-full px-3 py-2.5 text-sm font-semibold text-slate-900 bg-slate-50 flex items-center justify-between"
+              >
+                <span>Technologies (8 Stack Pages)</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-purple-600 transition-transform ${
+                    mobileSubmenu === 'technologies' ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+              {mobileSubmenu === 'technologies' && (
+                <div className="p-2 space-y-1 bg-white">
+                  <Link
+                    href="/technologies"
+                    className="block px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 rounded-lg"
+                  >
+                    → View All Technologies Hub
+                  </Link>
+                  {technologiesPagesData.map((tech) => (
+                    <Link
+                      key={tech.slug}
+                      href={`/technologies/${tech.slug}`}
+                      className="block px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-purple-700 hover:bg-purple-50/50 rounded-lg"
+                    >
+                      • {tech.shortTitle}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link
+              href="/portfolio"
+              className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg"
+            >
               Portfolio &amp; Case Studies
             </Link>
-            <Link href="/blogs" className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg">
+            <Link
+              href="/blogs"
+              className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg"
+            >
               Blogs &amp; Insights
             </Link>
-            <Link href="/contact-us" className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg">
+            <Link
+              href="/contact-us"
+              className="block px-3 py-2 text-sm font-medium text-slate-800 hover:bg-purple-50 hover:text-purple-700 rounded-lg"
+            >
               Contact Us
             </Link>
 
             <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-              <a href={`tel:${companyInfo.phoneClean}`} className="flex items-center gap-2 text-xs text-purple-700 font-semibold px-3 py-1">
+              <a
+                href={`tel:${companyInfo.phoneClean}`}
+                className="flex items-center gap-2 text-xs text-purple-700 font-semibold px-3 py-1"
+              >
                 <Phone className="w-3.5 h-3.5 text-purple-600" />
                 <span>{companyInfo.phone}</span>
               </a>

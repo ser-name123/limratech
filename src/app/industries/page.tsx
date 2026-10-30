@@ -30,6 +30,7 @@ export default function IndustriesPage() {
 
   const industryDeepDives = [
     {
+      slug: 'ecommerce-d2c-retail',
       icon: ShoppingBag,
       title: 'E-Commerce, D2C & Retail Brands',
       subtitle: 'Shopify, WooCommerce, Magento & Headless Next.js Storefronts',
@@ -43,6 +44,7 @@ export default function IndustriesPage() {
       metric: '+64% Avg Checkout Conversion'
     },
     {
+      slug: 'fintech-banking-insurance',
       icon: Landmark,
       title: 'FinTech, Banking, Insurance & Wealth',
       subtitle: 'High-Trust Web Portals, Secure APIs & Qualified Financial Leads',
@@ -56,6 +58,7 @@ export default function IndustriesPage() {
       metric: '4.2x Verified Lead ROI'
     },
     {
+      slug: 'healthcare-hospitals-clinics',
       icon: Stethoscope,
       title: 'Healthcare, Hospitals, Clinics & MedTech',
       subtitle: 'Patient Booking Apps, Local GMB 3-Pack SEO & Telemedicine',
@@ -69,6 +72,7 @@ export default function IndustriesPage() {
       metric: '+310% Patient Inquiries'
     },
     {
+      slug: 'real-estate-construction',
       icon: Building2,
       title: 'Real Estate, Developers & Commercial Property',
       subtitle: 'High-Intent Buyer Funnels, Property Portals & Virtual Showcases',
@@ -82,6 +86,7 @@ export default function IndustriesPage() {
       metric: '-45% Cost Per Site Visit'
     },
     {
+      slug: 'edtech-education-coaching',
       icon: GraduationCap,
       title: 'EdTech, Universities, Coaching & Training',
       subtitle: 'LMS Platforms, Student Enrollment Funnels & YouTube Growth',
@@ -95,6 +100,7 @@ export default function IndustriesPage() {
       metric: '3.9x Student Enrollment Lift'
     },
     {
+      slug: 'manufacturing-b2b-logistics',
       icon: Truck,
       title: 'Manufacturing, Industrial B2B & Logistics',
       subtitle: 'Custom ERP Software, Export SEO & B2B RFQ Lead Generation',
@@ -108,6 +114,7 @@ export default function IndustriesPage() {
       metric: '85+ Top-3 B2B Keywords'
     },
     {
+      slug: 'hospitality-travel-restaurants',
       icon: Plane,
       title: 'Hospitality, Travel, Hotels & Restaurants',
       subtitle: 'Direct Booking Engines, Social Media Reels & Local Visibility',
@@ -121,6 +128,7 @@ export default function IndustriesPage() {
       metric: '+190% Direct Bookings'
     },
     {
+      slug: 'saas-it-startups',
       icon: Cpu,
       title: 'SaaS, IT Enterprises & Funded Startups',
       subtitle: 'Full-Stack Product Engineering, UI/UX Systems & Growth Marketing',
@@ -275,10 +283,10 @@ export default function IndustriesPage() {
 
                   <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                     <Link
-                      href="/contact-us"
+                      href={`/industries/${item.slug}`}
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 hover:text-purple-900"
                     >
-                      <span>Get {item.title.split(',')[0]} Proposal</span>
+                      <span>Explore {item.title.split(',')[0]} Page</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                     <span className="text-[11px] font-mono text-slate-400">Sector // 0{idx + 1}</span>
