@@ -45,6 +45,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png', sizes: '512x512' },
+      { url: '/favicon.ico', sizes: '64x64' },
+    ],
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
@@ -105,7 +113,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakarta.variable} ${outfit.variable}`} suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/logo.png" sizes="any" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
