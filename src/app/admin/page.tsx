@@ -102,6 +102,10 @@ export default function AdminDashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
+  const [isChangingPwd, setIsChangingPwd] = useState(false);
+  const [currentLoginEmail, setCurrentLoginEmail] = useState('');
+  const [loginEmailInput, setLoginEmailInput] = useState('');
 
   // Full Live CMS & CRM State
   const [leads, setLeads] = useState<any[]>([]);
@@ -225,6 +229,10 @@ export default function AdminDashboardPage() {
         const data = await res.json();
         if (data.authenticated) {
           setIsAuthenticated(true);
+          if (data.username) {
+            setCurrentLoginEmail(data.username);
+            setLoginEmailInput(data.username);
+          }
           await fetchAdminData();
         }
       } catch {
@@ -352,6 +360,51 @@ export default function AdminDashboardPage() {
     setLoginPass('');
     setLeads([]);
     setSubscribers([]);
+  };
+
+  const handleChangePassword = async () => {
+    const emailChanged = loginEmailInput.trim() && loginEmailInput.trim().toLowerCase() !== currentLoginEmail.trim().toLowerCase();
+    const wantsPassword = !!pwdForm.next;
+
+    if (!emailChanged && !wantsPassword) {
+      showToast('Change the login email or enter a new password first.');
+      return;
+    }
+    if (!pwdForm.current) {
+      showToast('Enter your current password to confirm the change.');
+      return;
+    }
+    if (wantsPassword && pwdForm.next.length < 8) {
+      showToast('New password must be at least 8 characters.');
+      return;
+    }
+    if (wantsPassword && pwdForm.next !== pwdForm.confirm) {
+      showToast('New password and confirmation do not match.');
+      return;
+    }
+    setIsChangingPwd(true);
+    try {
+      const payload: any = { currentPassword: pwdForm.current };
+      if (emailChanged) payload.newUsername = loginEmailInput.trim();
+      if (wantsPassword) payload.newPassword = pwdForm.next;
+      const res = await fetch('/api/admin/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPwdForm({ current: '', next: '', confirm: '' });
+        if (emailChanged) setCurrentLoginEmail(loginEmailInput.trim());
+        showToast('Login details updated. Use your new ' + (emailChanged && wantsPassword ? 'email & password' : emailChanged ? 'email' : 'password') + ' next time you sign in.');
+      } else {
+        showToast(data.error || 'Could not update login details.');
+      }
+    } catch {
+      showToast('Could not reach the server. Please try again.');
+    } finally {
+      setIsChangingPwd(false);
+    }
   };
 
   // CRM Handlers
@@ -4924,7 +4977,7 @@ export default function AdminDashboardPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Admin Login Email</label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Admin Contact Email <span className="font-normal text-slate-400">(display only)</span></label>
                       <input
                         type="email"
                         value={adminProfile.email}
@@ -4964,14 +5017,69 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Login Password (managed server-side) */}
+                  {/* Login Credentials (email + password) */}
                   <div className="pt-5 border-t border-slate-100 space-y-3">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-900">
                       <KeyRound className="w-4 h-4 text-purple-600" />
-                      <span>Login Password</span>
+                      <span>Login Credentials (email &amp; password)</span>
                     </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">
-                      For security, the login password is stored server-side as the <span className="font-mono font-semibold">ADMIN_PASSWORD</span> environment variable — never in the browser or database. To change it, edit <span className="font-mono font-semibold">.env.local</span> (or your hosting env vars) and restart the server. The login username is <span className="font-mono font-semibold">ADMIN_USERNAME</span>.
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Login Email (this is what you sign in with)</label>
+                      <input
+                        type="email"
+                        autoComplete="username"
+                        value={loginEmailInput}
+                        onChange={(e) => setLoginEmailInput(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Current password <span className="text-rose-500">*</span></label>
+                        <input
+                          type="password"
+                          autoComplete="current-password"
+                          value={pwdForm.current}
+                          onChange={(e) => setPwdForm({ ...pwdForm, current: e.target.value })}
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">New password</label>
+                        <input
+                          type="password"
+                          autoComplete="new-password"
+                          value={pwdForm.next}
+                          onChange={(e) => setPwdForm({ ...pwdForm, next: e.target.value })}
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Confirm new</label>
+                        <input
+                          type="password"
+                          autoComplete="new-password"
+                          value={pwdForm.confirm}
+                          onChange={(e) => setPwdForm({ ...pwdForm, confirm: e.target.value })}
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleChangePassword}
+                        disabled={isChangingPwd}
+                        className="bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                        <span>{isChangingPwd ? 'Updating…' : 'Update Login Details'}</span>
+                      </button>
+                      <span className="text-[11px] text-slate-500">To change the email only, edit it above and enter your current password. New password: min 8 characters.</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Enter your current password to confirm any change. Your new login email and encrypted password are saved in the database and take effect on your next sign-in. (Until changed here, login uses the email &amp; password set by your developer.)
                     </p>
                   </div>
                 </div>

@@ -344,3 +344,47 @@ export async function dbWriteCms(snapshot: any): Promise<boolean> {
   }
   return true;
 }
+
+/* ------------------------------------------------------------------ *
+ * Admin password (hashed) — stored server-side only in `admin_auth`.
+ * Until set, login falls back to the ADMIN_PASSWORD env variable.
+ * ------------------------------------------------------------------ */
+
+export interface AdminAuthRow {
+  username: string | null;
+  passwordHash: string | null;
+}
+
+/** Read the stored admin login email (username) + password hash, if set. */
+export async function dbGetAdminAuth(): Promise<AdminAuthRow> {
+  if (!supabase) return { username: null, passwordHash: null };
+  const { data, error } = await supabase
+    .from('admin_auth')
+    .select('username, password_hash')
+    .eq('id', 'singleton')
+    .maybeSingle();
+  if (error) {
+    console.warn('dbGetAdminAuth failed:', error.message);
+    return { username: null, passwordHash: null };
+  }
+  return { username: data?.username || null, passwordHash: data?.password_hash || null };
+}
+
+/** Back-compat: just the password hash. */
+export async function dbGetAdminPasswordHash(): Promise<string | null> {
+  return (await dbGetAdminAuth()).passwordHash;
+}
+
+/** Update the stored admin username and/or password hash. */
+export async function dbSetAdminAuth(fields: { username?: string; passwordHash?: string }): Promise<boolean> {
+  if (!supabase) return false;
+  const row: any = { id: 'singleton', updated_at: new Date().toISOString() };
+  if (typeof fields.username === 'string') row.username = fields.username;
+  if (typeof fields.passwordHash === 'string') row.password_hash = fields.passwordHash;
+  const { error } = await supabase.from('admin_auth').upsert(row);
+  if (error) {
+    console.warn('dbSetAdminAuth failed:', error.message);
+    return false;
+  }
+  return true;
+}

@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import {
-  verifyCredentials,
+  verifyUsernameEffective,
+  verifyPasswordEffective,
   createSessionToken,
   ADMIN_SESSION_COOKIE,
   SESSION_COOKIE_OPTIONS,
 } from '@/lib/adminAuth';
+import { dbGetAdminAuth } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +15,9 @@ export async function POST(request: Request) {
     const username = String(body.username || body.email || '').trim();
     const password = String(body.password || '');
 
-    if (!verifyCredentials(username, password)) {
+    const auth = await dbGetAdminAuth();
+    const ok = verifyUsernameEffective(username, auth.username) && verifyPasswordEffective(password, auth.passwordHash);
+    if (!ok) {
       // Generic message — do not reveal which field was wrong.
       return NextResponse.json(
         { success: false, error: 'Invalid admin username or password.' },

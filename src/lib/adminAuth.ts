@@ -48,7 +48,7 @@ function timingSafeEqual(a: string, b: string): boolean {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
-/** Validate a username/password pair against the configured credentials. */
+/** Validate a username/password pair against the ENV credentials (initial default). */
 export function verifyCredentials(username: string, password: string): boolean {
   const expectedUser = process.env.ADMIN_USERNAME || 'admin';
   const expectedPass = process.env.ADMIN_PASSWORD || '';
@@ -59,6 +59,46 @@ export function verifyCredentials(username: string, password: string): boolean {
   const userOk = timingSafeEqual(String(username || ''), expectedUser);
   const passOk = timingSafeEqual(String(password || ''), expectedPass);
   return userOk && passOk;
+}
+
+/** True if the username matches the configured ADMIN_USERNAME. */
+export function verifyUsername(username: string): boolean {
+  return timingSafeEqual(String(username || ''), process.env.ADMIN_USERNAME || 'admin');
+}
+
+/** The effective username check: use the stored (changed) username when present,
+ *  otherwise fall back to the ADMIN_USERNAME env default. Case-insensitive. */
+export function verifyUsernameEffective(username: string, storedUsername: string | null): boolean {
+  const expected = (storedUsername && storedUsername.trim()) || process.env.ADMIN_USERNAME || 'admin';
+  return timingSafeEqual(String(username || '').trim().toLowerCase(), expected.trim().toLowerCase());
+}
+
+/** Hash a password with a random salt (scrypt). Stored as "salt:hash" (hex). */
+export function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derived = crypto.scryptSync(String(password), salt, 32).toString('hex');
+  return `${salt}:${derived}`;
+}
+
+/** Verify a password against a stored "salt:hash" value (timing-safe). */
+export function verifyPassword(password: string, stored: string | null | undefined): boolean {
+  if (!stored || typeof stored !== 'string' || !stored.includes(':')) return false;
+  const [salt, hash] = stored.split(':');
+  try {
+    const derived = crypto.scryptSync(String(password), salt, 32).toString('hex');
+    return timingSafeEqual(derived, hash);
+  } catch {
+    return false;
+  }
+}
+
+/** The effective password check: use the stored (changed) password when present,
+ *  otherwise fall back to the ADMIN_PASSWORD env default. */
+export function verifyPasswordEffective(password: string, storedHash: string | null): boolean {
+  if (storedHash) return verifyPassword(password, storedHash);
+  const envPass = process.env.ADMIN_PASSWORD || '';
+  if (!envPass) return false;
+  return timingSafeEqual(String(password || ''), envPass);
 }
 
 /** Create a signed session token for the given username. */
