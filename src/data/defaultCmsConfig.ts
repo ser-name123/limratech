@@ -467,6 +467,154 @@ export const defaultMediaAssets: MediaAssetItem[] = [
   },
 ];
 
+export interface ClientBrandItem {
+  id: string;
+  name: string;
+  sector: string;
+  tag: string;
+}
+
+export interface LeadershipMemberItem {
+  id: string;
+  name: string;
+  role: string;
+  exp: string;
+  avatar: string;
+}
+
+export interface MilestoneItem {
+  id: string;
+  year: string;
+  title: string;
+  desc: string;
+}
+
+export interface PricingPackageItem {
+  id: string;
+  name: string;
+  badge: string;
+  price: string;
+  billing: string;
+  description: string;
+  features: string[];
+  highlighted: boolean;
+}
+
+export const defaultClientBrands: ClientBrandItem[] = [
+  { id: 'cb-1', name: 'BrightEdge Solutions', sector: 'Enterprise B2B', tag: 'Verified Partner' },
+  { id: 'cb-2', name: 'UrbanStyles Retail', sector: 'D2C E-Commerce', tag: 'Shopify & Ads' },
+  { id: 'cb-3', name: 'Apex Logistics India', sector: 'Supply Chain & ERP', tag: 'Custom Software' },
+  { id: 'cb-4', name: 'MedCare Health Network', sector: 'Healthcare & Apps', tag: 'Mobile & SEO' },
+  { id: 'cb-5', name: 'FinCrest Capital', sector: 'FinTech & Advisory', tag: 'Lead Funnels' },
+  { id: 'cb-6', name: 'Vanguard Estates', sector: 'Real Estate Group', tag: 'Google & Meta' },
+];
+
+export const defaultLeadershipTeam: LeadershipMemberItem[] = [
+  {
+    id: 'lead-tm-1',
+    name: 'Arif Khan',
+    role: 'Founder & Principal Cloud Architect',
+    exp: '10+ Yrs In Full-Stack & Serverless',
+    avatar: '/images/client-rahul-sharma.jpg',
+  },
+  {
+    id: 'lead-tm-2',
+    name: 'Farhan Siddiqui',
+    role: 'Head of Technical SEO & Algorithms',
+    exp: '8+ Yrs In Search Architecture',
+    avatar: '/images/client-priya-mehta.jpg',
+  },
+  {
+    id: 'lead-tm-3',
+    name: 'Ayesha Patel',
+    role: 'Lead UI/UX & Design Systems Architect',
+    exp: 'Figma & Design Systems Specialist',
+    avatar: '/images/client-neha-kapoor.jpg',
+  },
+  {
+    id: 'lead-tm-4',
+    name: 'Sameer Sheikh',
+    role: 'Senior Database & Supabase Engineer',
+    exp: 'PostgreSQL & Realtime Cluster Lead',
+    avatar: '/images/client-rahul-sharma.jpg',
+  },
+];
+
+export const defaultMilestones: MilestoneItem[] = [
+  {
+    id: 'ms-1',
+    year: '2020',
+    title: 'Founding & Vision',
+    desc: 'Started with a mission to bridge the divide between slow web platforms and aggressive SEO rankings.',
+  },
+  {
+    id: 'ms-2',
+    year: '2022',
+    title: 'Full Serverless Pivot',
+    desc: 'Migrated 100% of client architectures to modern Next.js and Supabase cloud infrastructure.',
+  },
+  {
+    id: 'ms-3',
+    year: '2024',
+    title: 'Pan-India Milestone',
+    desc: 'Crossed 350+ enterprise clients and generated over ₹50Cr+ in client organic search pipeline value.',
+  },
+  {
+    id: 'ms-4',
+    year: '2026',
+    title: 'Next-Gen Algorithmic Lab',
+    desc: 'Pioneered AI-Immune entity schema and sub-second React 19 rendering standards.',
+  },
+];
+
+export const defaultPricingPackages: PricingPackageItem[] = [
+  {
+    id: 'pkg-1',
+    name: 'Growth Website & SEO Launchpad',
+    badge: 'STARTER & SMB',
+    price: '₹45,000',
+    billing: 'One-Time / Custom Sprint',
+    description: 'High-speed WordPress, Shopify, or Next.js business website with technical SEO & lead capture.',
+    features: [
+      'Up to 12 Custom Responsive Pages',
+      '99+ Google PageSpeed & Core Web Vitals',
+      'On-Page Technical SEO & Schema.org',
+      'WhatsApp & CRM Lead Capture Integration',
+    ],
+    highlighted: false,
+  },
+  {
+    id: 'pkg-2',
+    name: 'Full-Stack Web + Omnichannel Growth',
+    badge: 'MOST POPULAR',
+    price: '₹95,000',
+    billing: 'Project / Monthly Retainer',
+    description: 'Complete Next.js / E-Commerce platform paired with SEO, Google Ads & Meta Lead Generation.',
+    features: [
+      'Custom Next.js 16 / Shopify Plus / Laravel Platform',
+      'Comprehensive SEO & Local GMB 3-Pack Dominance',
+      'Google Search PPC & Meta Lead Gen Funnels',
+      'Dedicated Account Manager & Looker Studio Dashboard',
+    ],
+    highlighted: true,
+  },
+  {
+    id: 'pkg-3',
+    name: 'Enterprise Software, App & Dedicated Pod',
+    badge: 'CUSTOM ENTERPRISE',
+    price: '₹2,25,000+',
+    billing: 'Custom SLA Architecture',
+    description: 'Bespoke mobile apps (Flutter/iOS/Android), ERP/CRM software, and high-scale growth retainers.',
+    features: [
+      'Native / Cross-Platform Android & iOS Mobile Apps',
+      'Custom Cloud ERP, LMS, HMS or FinTech Portals',
+      'Multi-City Programmatic SEO & High-Budget Ad Scaling',
+      '24/7 Priority DevOps, SLA & Security Auditing',
+    ],
+    highlighted: false,
+  },
+];
+
 export const initialCmsSnapshot = {
   header: defaultHeaderConfig,
   footer: defaultFooterConfig,
@@ -482,4 +630,8 @@ export const initialCmsSnapshot = {
   faqs: defaultFaqsData,
   careers: defaultCareersData,
   mediaAssets: defaultMediaAssets,
+  clientBrands: defaultClientBrands,
+  leadershipTeam: defaultLeadershipTeam,
+  milestones: defaultMilestones,
+  pricingPackages: defaultPricingPackages,
 };

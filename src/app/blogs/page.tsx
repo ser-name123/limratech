@@ -24,12 +24,24 @@ import TechStackTicker from '@/components/TechStackTicker';
 export default function BlogsPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [posts, setPosts] = useState(blogPostsData);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.blogs) && data.cms.blogs.length > 0) {
+          setPosts(data.cms.blogs);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const categories = ['All', 'SEO & Core Vitals', 'Next.js & Performance', 'Conversion Rate & PPC'];
 
   const filteredPosts = activeCategory === 'All'
-    ? blogPostsData
-    : blogPostsData.filter(p => p.category.toLowerCase().includes(activeCategory.toLowerCase()));
+    ? posts
+    : posts.filter(p => p.category.toLowerCase().includes(activeCategory.toLowerCase()));
 
   const blogFaqs = [
     {

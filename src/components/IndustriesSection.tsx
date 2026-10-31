@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function IndustriesSection() {
-  const industries = [
+  const defaultIndustries = [
     {
       slug: 'ecommerce-d2c-retail',
       icon: ShoppingBag,
@@ -74,6 +74,28 @@ export default function IndustriesSection() {
       tags: ['Next.js 16', 'Figma UI/UX', 'SaaS Growth']
     },
   ];
+
+  const [industries, setIndustries] = React.useState(defaultIndustries);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.industries) && data.cms.industries.length > 0) {
+          const iconPool = [ShoppingBag, Landmark, Stethoscope, Building2, GraduationCap, Truck, Plane, Cpu];
+          setIndustries(
+            data.cms.industries.map((ind: any, idx: number) => ({
+              slug: ind.slug,
+              icon: iconPool[idx % iconPool.length],
+              title: ind.title,
+              desc: ind.shortDesc || ind.heroDescription || '',
+              tags: Array.isArray(ind.techStack) ? ind.techStack.slice(0, 3) : ['Next.js', 'SEO', 'Growth'],
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <section className="py-24 bg-white border-b border-slate-200 relative overflow-hidden">

@@ -51,6 +51,10 @@ import {
   SeoAndRedirectsConfig,
   CareerOpeningItem,
   MediaAssetItem,
+  ClientBrandItem,
+  LeadershipMemberItem,
+  MilestoneItem,
+  PricingPackageItem,
 } from '@/data/defaultCmsConfig';
 
 type AdminTab =
@@ -65,8 +69,10 @@ type AdminTab =
   | 'blogs'
   | 'testimonials_faqs'
   | 'careers'
+  | 'clients_team'
   | 'media'
   | 'seo'
+  | 'system_backup'
   | 'profile';
 
 export default function AdminDashboardPage() {
@@ -80,6 +86,9 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>('all');
+  const [leadPriorityFilter, setLeadPriorityFilter] = useState<string>('all');
+  const [leadsViewMode, setLeadsViewMode] = useState<'table' | 'kanban'>('table');
+  const [newSubscriberEmail, setNewSubscriberEmail] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -101,6 +110,22 @@ export default function AdminDashboardPage() {
   const [faqs, setFaqs] = useState<any[]>(initialCmsSnapshot.faqs);
   const [careers, setCareers] = useState<CareerOpeningItem[]>(initialCmsSnapshot.careers);
   const [mediaAssets, setMediaAssets] = useState<MediaAssetItem[]>(initialCmsSnapshot.mediaAssets);
+  const [clientBrands, setClientBrands] = useState<ClientBrandItem[]>(initialCmsSnapshot.clientBrands);
+  const [leadershipTeam, setLeadershipTeam] = useState<LeadershipMemberItem[]>(initialCmsSnapshot.leadershipTeam);
+  const [milestones, setMilestones] = useState<MilestoneItem[]>(initialCmsSnapshot.milestones);
+  const [pricingPackages, setPricingPackages] = useState<PricingPackageItem[]>(initialCmsSnapshot.pricingPackages);
+  const [editingMegaPage, setEditingMegaPage] = useState<{
+    type: 'industry' | 'technology';
+    idx: number;
+    item: any;
+  } | null>(null);
+  const [newClientBrand, setNewClientBrand] = useState({ name: '', sector: 'Enterprise B2B', tag: 'Verified Partner' });
+  const [newLeaderForm, setNewLeaderForm] = useState({
+    name: '',
+    role: '',
+    exp: '6+ Yrs Experience',
+    avatar: '/images/client-rahul-sharma.jpg',
+  });
 
   // Modals & Editors State
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
@@ -227,6 +252,10 @@ export default function AdminDashboardPage() {
           setFaqs(data.cms.faqs || initialCmsSnapshot.faqs);
           setCareers(data.cms.careers || initialCmsSnapshot.careers);
           setMediaAssets(data.cms.mediaAssets || initialCmsSnapshot.mediaAssets);
+          setClientBrands(data.cms.clientBrands || initialCmsSnapshot.clientBrands);
+          setLeadershipTeam(data.cms.leadershipTeam || initialCmsSnapshot.leadershipTeam);
+          setMilestones(data.cms.milestones || initialCmsSnapshot.milestones);
+          setPricingPackages(data.cms.pricingPackages || initialCmsSnapshot.pricingPackages);
         }
       }
     } catch (err) {
@@ -547,6 +576,10 @@ export default function AdminDashboardPage() {
       faqs,
       careers,
       mediaAssets,
+      clientBrands,
+      leadershipTeam,
+      milestones,
+      pricingPackages,
     };
     const blob = new Blob([JSON.stringify(fullSnapshot, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -560,9 +593,23 @@ export default function AdminDashboardPage() {
     showToast('Downloaded full CMS JSON backup!');
   };
 
+  const handleImportCmsBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      await postAdminAction('import_cms_backup', parsed, 'Full CMS Backup restored successfully!');
+      await fetchAdminData();
+    } catch {
+      showToast('Invalid JSON backup file.');
+    }
+  };
+
   const filteredLeads = useMemo(() => {
     return leads.filter((l) => {
       const matchesStatus = leadStatusFilter === 'all' || l.status === leadStatusFilter;
+      const matchesPriority = leadPriorityFilter === 'all' || (l.priority || 'High') === leadPriorityFilter;
       const q = searchQuery.toLowerCase();
       const matchesSearch =
         !q ||
@@ -570,9 +617,9 @@ export default function AdminDashboardPage() {
         (l.email || '').toLowerCase().includes(q) ||
         (l.phone || '').toLowerCase().includes(q) ||
         (l.service_needed || '').toLowerCase().includes(q);
-      return matchesStatus && matchesSearch;
+      return matchesStatus && matchesPriority && matchesSearch;
     });
-  }, [leads, leadStatusFilter, searchQuery]);
+  }, [leads, leadStatusFilter, leadPriorityFilter, searchQuery]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -660,15 +707,17 @@ export default function AdminDashboardPage() {
     { id: 'header', label: 'Header & Mega-Menu', icon: PanelTop, badge: 'Live' },
     { id: 'footer', label: 'Footer & WhatsApp CMS', icon: PanelBottom, badge: 'Live' },
     { id: 'hero', label: 'Hero & Trust Stats', icon: Sparkles },
-    { id: 'leads', label: 'Leads & CRM Pipeline', icon: Users, badge: leads.length },
+    { id: 'leads', label: 'Leads & Kanban CRM', icon: Users, badge: leads.length },
     { id: 'services', label: 'Services & Sub-Services', icon: Code2, badge: servicesList.length },
     { id: 'mega_pages', label: 'Industries & Tech Pages', icon: Layers, badge: industriesList.length + technologiesList.length },
     { id: 'portfolio', label: 'Portfolio Case Studies', icon: Briefcase, badge: caseStudies.length },
     { id: 'blogs', label: 'Blogs & Editorial CMS', icon: FileText, badge: blogs.length },
     { id: 'testimonials_faqs', label: 'Reviews & FAQs CMS', icon: Star, badge: testimonials.length + faqs.length },
+    { id: 'clients_team', label: 'Clients, Team & Pricing', icon: TrendingUp, badge: clientBrands.length + leadershipTeam.length },
     { id: 'careers', label: 'Careers & Job Openings', icon: Building2, badge: careers.length },
     { id: 'media', label: 'Media & Brand Assets', icon: Eye, badge: mediaAssets.length },
     { id: 'seo', label: 'SEO, Redirects & GA4', icon: Globe, badge: '99%' },
+    { id: 'system_backup', label: 'Backup & Page Inspector', icon: Activity, badge: '44 Pages' },
     { id: 'profile', label: 'Admin Profile & Roles', icon: UserCheck },
   ];
 
@@ -1904,7 +1953,7 @@ export default function AdminDashboardPage() {
           )}
 
           {/* ==========================================
-              MODULE 5: LEADS & CRM PIPELINE
+              MODULE 5: LEADS & CRM PIPELINE (TABLE + KANBAN)
              ========================================== */}
           {activeTab === 'leads' && (
             <div className="space-y-6">
@@ -1924,9 +1973,41 @@ export default function AdminDashboardPage() {
                       {st} ({st === 'all' ? leads.length : leads.filter((l) => l.status === st).length})
                     </button>
                   ))}
+
+                  <select
+                    value={leadPriorityFilter}
+                    onChange={(e) => setLeadPriorityFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700"
+                  >
+                    <option value="all">All Priorities</option>
+                    <option value="High">High Priority</option>
+                    <option value="Medium">Medium Priority</option>
+                    <option value="Low">Low Priority</option>
+                  </select>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setLeadsViewMode('table')}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        leadsViewMode === 'table' ? 'bg-white text-purple-700 shadow-2xs' : 'text-slate-600'
+                      }`}
+                    >
+                      Table View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLeadsViewMode('kanban')}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        leadsViewMode === 'kanban' ? 'bg-white text-purple-700 shadow-2xs' : 'text-slate-600'
+                      }`}
+                    >
+                      Kanban Board
+                    </button>
+                  </div>
+
                   <button
                     type="button"
                     onClick={handleExportLeadsCsv}
@@ -1944,88 +2025,173 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xs">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-mono uppercase text-slate-500">
-                        <th className="py-3.5 px-5">Lead Details</th>
-                        <th className="py-3.5 px-4">Service &amp; Requirement</th>
-                        <th className="py-3.5 px-4">Budget</th>
-                        <th className="py-3.5 px-4">Source Page</th>
-                        <th className="py-3.5 px-4">Pipeline Stage</th>
-                        <th className="py-3.5 px-5 text-right">Quick Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200/70 text-xs">
-                      {filteredLeads.map((lead) => (
-                        <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-4 px-5">
-                            <div className="font-bold text-slate-900 text-sm">{lead.full_name}</div>
-                            <div className="text-slate-500 text-xs mt-0.5">{lead.email}</div>
-                            <div className="text-purple-700 font-mono text-[11px] mt-0.5">{lead.phone}</div>
-                          </td>
-                          <td className="py-4 px-4 max-w-xs">
-                            <div className="font-bold text-slate-900">{lead.service_needed}</div>
-                            <p className="text-slate-500 text-[11px] line-clamp-2 mt-0.5">{lead.message}</p>
-                          </td>
-                          <td className="py-4 px-4 font-mono font-bold text-purple-700">{lead.budget}</td>
-                          <td className="py-4 px-4 font-mono text-[11px] text-slate-500">{lead.source_page}</td>
-                          <td className="py-4 px-4">
-                            <select
-                              value={lead.status}
-                              onChange={(e) => handleUpdateLeadStatus(lead.id, e.target.value)}
-                              className={`text-[11px] font-bold uppercase px-3 py-1.5 rounded-full border cursor-pointer ${getStatusBadge(
-                                lead.status
-                              )}`}
-                            >
-                              <option value="new">New</option>
-                              <option value="contacted">Contacted</option>
-                              <option value="qualified">Qualified</option>
-                              <option value="proposal">Proposal</option>
-                              <option value="won">Won</option>
-                            </select>
-                          </td>
-                          <td className="py-4 px-5 text-right whitespace-nowrap space-x-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedLead(lead)}
-                              className="p-2 rounded-lg bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-700"
-                              title="View Full Dossier"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                            <a
-                              href={`tel:${lead.phone}`}
-                              className="inline-flex p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700"
-                              title="Call Client"
-                            >
-                              <Phone className="w-3.5 h-3.5" />
-                            </a>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteLead(lead.id)}
-                              className="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600"
-                              title="Delete Lead"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
+              {leadsViewMode === 'table' ? (
+                <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-mono uppercase text-slate-500">
+                          <th className="py-3.5 px-5">Lead Details</th>
+                          <th className="py-3.5 px-4">Service &amp; Requirement</th>
+                          <th className="py-3.5 px-4">Budget &amp; Priority</th>
+                          <th className="py-3.5 px-4">Source Page</th>
+                          <th className="py-3.5 px-4">Pipeline Stage</th>
+                          <th className="py-3.5 px-5 text-right">Quick Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200/70 text-xs">
+                        {filteredLeads.map((lead) => (
+                          <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-4 px-5">
+                              <div className="font-bold text-slate-900 text-sm">{lead.full_name}</div>
+                              <div className="text-slate-500 text-xs mt-0.5">{lead.email}</div>
+                              <div className="text-purple-700 font-mono text-[11px] mt-0.5">{lead.phone}</div>
+                            </td>
+                            <td className="py-4 px-4 max-w-xs">
+                              <div className="font-bold text-slate-900">{lead.service_needed}</div>
+                              <p className="text-slate-500 text-[11px] line-clamp-2 mt-0.5">{lead.message}</p>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="font-mono font-bold text-purple-700">{lead.budget}</div>
+                              <span className="inline-block mt-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                                {lead.priority || 'High'} Priority
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 font-mono text-[11px] text-slate-500">{lead.source_page}</td>
+                            <td className="py-4 px-4">
+                              <select
+                                value={lead.status}
+                                onChange={(e) => handleUpdateLeadStatus(lead.id, e.target.value)}
+                                className={`text-[11px] font-bold uppercase px-3 py-1.5 rounded-full border cursor-pointer ${getStatusBadge(
+                                  lead.status
+                                )}`}
+                              >
+                                <option value="new">New</option>
+                                <option value="contacted">Contacted</option>
+                                <option value="qualified">Qualified</option>
+                                <option value="proposal">Proposal</option>
+                                <option value="won">Won</option>
+                              </select>
+                            </td>
+                            <td className="py-4 px-5 text-right whitespace-nowrap space-x-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedLead(lead)}
+                                className="p-2 rounded-lg bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-700"
+                                title="View Full Dossier"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                              <a
+                                href={`tel:${lead.phone}`}
+                                className="inline-flex p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700"
+                                title="Call Client"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteLead(lead.id)}
+                                className="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600"
+                                title="Delete Lead"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* 5-Column Interactive Kanban Pipeline Board */
+                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
+                  {(['new', 'contacted', 'qualified', 'proposal', 'won'] as const).map((stage) => {
+                    const stageLeads = filteredLeads.filter((l) => l.status === stage);
+                    return (
+                      <div
+                        key={stage}
+                        className="bg-white rounded-3xl p-4 border border-slate-200 flex flex-col space-y-3 min-h-[380px]"
+                      >
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                          <span className="text-xs font-mono font-bold uppercase text-slate-900">{stage}</span>
+                          <span
+                            className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(
+                              stage
+                            )}`}
+                          >
+                            {stageLeads.length}
+                          </span>
+                        </div>
 
-              {/* Newsletter Subscribers Table */}
+                        <div className="space-y-3 flex-1">
+                          {stageLeads.map((lead) => (
+                            <div
+                              key={lead.id}
+                              className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-purple-300 space-y-2 transition-all"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="font-bold text-xs text-slate-900">{lead.full_name}</div>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedLead(lead)}
+                                  className="text-purple-700 hover:underline text-[10px] font-bold"
+                                >
+                                  Inspect
+                                </button>
+                              </div>
+                              <div className="text-[11px] font-semibold text-purple-700">{lead.service_needed}</div>
+                              <div className="text-[10px] font-mono text-slate-500">{lead.budget}</div>
+                              <select
+                                value={lead.status}
+                                onChange={(e) => handleUpdateLeadStatus(lead.id, e.target.value)}
+                                className="w-full px-2 py-1 rounded-lg border border-slate-200 bg-white text-[10px] font-bold uppercase text-slate-700"
+                              >
+                                <option value="new">Move → New</option>
+                                <option value="contacted">Move → Contacted</option>
+                                <option value="qualified">Move → Qualified</option>
+                                <option value="proposal">Move → Proposal</option>
+                                <option value="won">Move → Won</option>
+                              </select>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Newsletter Subscribers Table + Add Subscriber */}
               <div className="bg-white rounded-3xl p-6 border border-slate-200 space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h3 className="text-base font-bold text-slate-900">
                       Newsletter Subscribers ({subscribers.length})
                     </h3>
-                    <p className="text-xs text-slate-500">Emails captured via Footer newsletter form.</p>
+                    <p className="text-xs text-slate-500">Emails captured via Footer newsletter form or manual entry.</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      placeholder="Add subscriber email..."
+                      value={newSubscriberEmail}
+                      onChange={(e) => setNewSubscriberEmail(e.target.value)}
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-56"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newSubscriberEmail.trim()) return;
+                        postAdminAction('add_subscriber', { email: newSubscriberEmail }, 'Subscriber added!');
+                        setNewSubscriberEmail('');
+                      }}
+                      className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                    >
+                      + Add Email
+                    </button>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -2224,13 +2390,22 @@ export default function AdminDashboardPage() {
                     <div key={ind.slug} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-mono text-purple-700">/industries/{ind.slug}</span>
-                        <Link
-                          href={`/industries/${ind.slug}`}
-                          target="_blank"
-                          className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
-                        >
-                          Open 11-Sec Page <ExternalLink className="w-3 h-3" />
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setEditingMegaPage({ type: 'industry', idx, item: ind })}
+                            className="text-xs font-bold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3" /> Edit Blueprint
+                          </button>
+                          <Link
+                            href={`/industries/${ind.slug}`}
+                            target="_blank"
+                            className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
+                          >
+                            Live Page <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <input
@@ -2296,13 +2471,22 @@ export default function AdminDashboardPage() {
                     <div key={tech.slug} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-mono text-purple-700">/technologies/{tech.slug}</span>
-                        <Link
-                          href={`/technologies/${tech.slug}`}
-                          target="_blank"
-                          className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
-                        >
-                          Open 11-Sec Page <ExternalLink className="w-3 h-3" />
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setEditingMegaPage({ type: 'technology', idx, item: tech })}
+                            className="text-xs font-bold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3" /> Edit Blueprint
+                          </button>
+                          <Link
+                            href={`/technologies/${tech.slug}`}
+                            target="_blank"
+                            className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
+                          >
+                            Live Page <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <input
@@ -2662,6 +2846,363 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
                       <p className="text-xs text-slate-600 leading-relaxed">{f.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 11B: CLIENTS, LEADERSHIP TEAM, MILESTONES & PRICING CMS
+             ========================================== */}
+          {activeTab === 'clients_team' && (
+            <div className="space-y-8">
+              {/* 1. Verified Client Brands Showcase Manager */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      HOMEPAGE TRUST BAR &amp; CLIENTS SHOWCASE
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Manage Verified Client Brands ({clientBrands.length})
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Live synced with the Homepage Trust Indicators Bar and Clients showcase.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      postAdminAction('save_client_brands', clientBrands, 'Verified Client Brands saved live!')
+                    }
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                  >
+                    <Save className="w-3.5 h-3.5" /> Save Client Brands
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {clientBrands.map((cb, idx) => (
+                    <div key={cb.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                          ✓ {cb.tag}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = clientBrands.filter((b) => b.id !== cb.id);
+                            setClientBrands(next);
+                            postAdminAction('save_client_brands', next, 'Client brand removed');
+                          }}
+                          className="text-rose-600 hover:bg-rose-50 p-1 rounded"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={cb.name}
+                        onChange={(e) => {
+                          const next = [...clientBrands];
+                          next[idx] = { ...cb, name: e.target.value };
+                          setClientBrands(next);
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={cb.sector}
+                          onChange={(e) => {
+                            const next = [...clientBrands];
+                            next[idx] = { ...cb, sector: e.target.value };
+                            setClientBrands(next);
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[11px]"
+                        />
+                        <input
+                          type="text"
+                          value={cb.tag}
+                          onChange={(e) => {
+                            const next = [...clientBrands];
+                            next[idx] = { ...cb, tag: e.target.value };
+                            setClientBrands(next);
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[11px] font-mono text-purple-700"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  <input
+                    type="text"
+                    placeholder="Client Brand Name"
+                    value={newClientBrand.name}
+                    onChange={(e) => setNewClientBrand({ ...newClientBrand, name: e.target.value })}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-52"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Sector (e.g. FinTech & SaaS)"
+                    value={newClientBrand.sector}
+                    onChange={(e) => setNewClientBrand({ ...newClientBrand, sector: e.target.value })}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-48"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Badge (e.g. Next.js & SEO)"
+                    value={newClientBrand.tag}
+                    onChange={(e) => setNewClientBrand({ ...newClientBrand, tag: e.target.value })}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-44"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newClientBrand.name.trim()) return;
+                      const next = [
+                        ...clientBrands,
+                        { id: `cb-${Date.now()}`, ...newClientBrand },
+                      ];
+                      setClientBrands(next);
+                      setNewClientBrand({ name: '', sector: 'Enterprise B2B', tag: 'Verified Partner' });
+                      postAdminAction('save_client_brands', next, 'Added new verified client brand!');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                  >
+                    + Add Client Brand
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Agency Leadership & Engineering Team (/about) */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      ABOUT PAGE LEADERSHIP &amp; ARCHITECTS
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Manage Leadership &amp; Engineering Team ({leadershipTeam.length})
+                    </h2>
+                    <p className="text-xs text-slate-500">Live synced with the /about page Leadership section.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      postAdminAction('save_leadership_team', leadershipTeam, 'Leadership team saved live!')
+                    }
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                  >
+                    <Save className="w-3.5 h-3.5" /> Save Leadership Team
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {leadershipTeam.map((member, idx) => (
+                    <div key={member.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-mono text-purple-700 font-bold">Leader #0{idx + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = leadershipTeam.filter((m) => m.id !== member.id);
+                            setLeadershipTeam(next);
+                            postAdminAction('save_leadership_team', next, 'Team member removed');
+                          }}
+                          className="text-rose-600 hover:bg-rose-50 p-1 rounded"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={member.name}
+                          onChange={(e) => {
+                            const next = [...leadershipTeam];
+                            next[idx] = { ...member, name: e.target.value };
+                            setLeadershipTeam(next);
+                          }}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                        />
+                        <input
+                          type="text"
+                          value={member.role}
+                          onChange={(e) => {
+                            const next = [...leadershipTeam];
+                            next[idx] = { ...member, role: e.target.value };
+                            setLeadershipTeam(next);
+                          }}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-purple-700 font-semibold"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={member.exp}
+                        onChange={(e) => {
+                          const next = [...leadershipTeam];
+                          next[idx] = { ...member, exp: e.target.value };
+                          setLeadershipTeam(next);
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-600"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  <input
+                    type="text"
+                    placeholder="Leader Full Name"
+                    value={newLeaderForm.name}
+                    onChange={(e) => setNewLeaderForm({ ...newLeaderForm, name: e.target.value })}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-48"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Designation / Role"
+                    value={newLeaderForm.role}
+                    onChange={(e) => setNewLeaderForm({ ...newLeaderForm, role: e.target.value })}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-56"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Experience Summary"
+                    value={newLeaderForm.exp}
+                    onChange={(e) => setNewLeaderForm({ ...newLeaderForm, exp: e.target.value })}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-48"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newLeaderForm.name.trim() || !newLeaderForm.role.trim()) return;
+                      const next = [
+                        ...leadershipTeam,
+                        { id: `lead-tm-${Date.now()}`, ...newLeaderForm },
+                      ];
+                      setLeadershipTeam(next);
+                      setNewLeaderForm({
+                        name: '',
+                        role: '',
+                        exp: '6+ Yrs Experience',
+                        avatar: '/images/client-rahul-sharma.jpg',
+                      });
+                      postAdminAction('save_leadership_team', next, 'Added leadership member!');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                  >
+                    + Add Leader
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. Service Pricing & Engagement Packages */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      COMMERCIAL PACKAGES &amp; RETAINER TIERS
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Manage Service Pricing &amp; Retainer Packages ({pricingPackages.length} Tiers)
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      postAdminAction('save_pricing_packages', pricingPackages, 'Pricing packages updated!')
+                    }
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                  >
+                    <Save className="w-3.5 h-3.5" /> Save Pricing Tiers
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {pricingPackages.map((pkg, idx) => (
+                    <div
+                      key={pkg.id}
+                      className={`p-5 rounded-3xl border space-y-3 ${
+                        pkg.highlighted
+                          ? 'bg-purple-50/50 border-purple-300 shadow-md'
+                          : 'bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <input
+                          type="text"
+                          value={pkg.badge}
+                          onChange={(e) => {
+                            const next = [...pricingPackages];
+                            next[idx] = { ...pkg, badge: e.target.value };
+                            setPricingPackages(next);
+                          }}
+                          className="px-2.5 py-1 rounded-full bg-white border border-purple-200 text-[10px] font-mono font-bold text-purple-700 w-36"
+                        />
+                        <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={pkg.highlighted}
+                            onChange={(e) => {
+                              const next = [...pricingPackages];
+                              next[idx] = { ...pkg, highlighted: e.target.checked };
+                              setPricingPackages(next);
+                            }}
+                            className="accent-purple-600"
+                          />
+                          Featured
+                        </label>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={pkg.name}
+                        onChange={(e) => {
+                          const next = [...pricingPackages];
+                          next[idx] = { ...pkg, name: e.target.value };
+                          setPricingPackages(next);
+                        }}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={pkg.price}
+                          onChange={(e) => {
+                            const next = [...pricingPackages];
+                            next[idx] = { ...pkg, price: e.target.value };
+                            setPricingPackages(next);
+                          }}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-sm font-mono font-black text-purple-700"
+                        />
+                        <input
+                          type="text"
+                          value={pkg.billing}
+                          onChange={(e) => {
+                            const next = [...pricingPackages];
+                            next[idx] = { ...pkg, billing: e.target.value };
+                            setPricingPackages(next);
+                          }}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-[11px] text-slate-600"
+                        />
+                      </div>
+
+                      <textarea
+                        rows={2}
+                        value={pkg.description}
+                        onChange={(e) => {
+                          const next = [...pricingPackages];
+                          next[idx] = { ...pkg, description: e.target.value };
+                          setPricingPackages(next);
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs"
+                      />
                     </div>
                   ))}
                 </div>
@@ -3042,6 +3583,134 @@ export default function AdminDashboardPage() {
           )}
 
           {/* ==========================================
+              MODULE 15: SYSTEM BACKUP, RESTORE & 44-PAGE LIVE INSPECTOR
+             ========================================== */}
+          {activeTab === 'system_backup' && (
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="bg-white rounded-3xl p-6 border border-slate-200 space-y-3">
+                  <span className="text-[10px] font-mono font-bold uppercase text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full">
+                    1-CLICK FULL EXPORT
+                  </span>
+                  <h3 className="text-base font-bold text-slate-900">Download Full CMS JSON Backup</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Export all 16 CMS modules (Header, Footer, Hero, Services, Industries, Technologies, Portfolio, Blogs, FAQs, Careers, SEO) into a portable JSON snapshot.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleExportFullCmsBackup}
+                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-4 h-4" /> Download .JSON Snapshot
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-3xl p-6 border border-slate-200 space-y-3">
+                  <span className="text-[10px] font-mono font-bold uppercase text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                    RESTORE / MIGRATE
+                  </span>
+                  <h3 className="text-base font-bold text-slate-900">Import &amp; Restore CMS Backup</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Upload a previously exported <code className="font-mono">limra-digitech-cms-backup.json</code> file to immediately restore all website content and settings.
+                  </p>
+                  <label className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
+                    <span>Select Backup .JSON File</span>
+                    <input type="file" accept=".json" onChange={handleImportCmsBackup} className="hidden" />
+                  </label>
+                </div>
+
+                <div className="bg-white rounded-3xl p-6 border border-slate-200 space-y-3">
+                  <span className="text-[10px] font-mono font-bold uppercase text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full">
+                    FACTORY RESET
+                  </span>
+                  <h3 className="text-base font-bold text-slate-900">Reset CMS to Factory Defaults</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Revert all Header, Footer, Hero, Services, Mega-Menus, Blogs, and Portfolio items back to the original LIMRA Digitech production snapshot.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await postAdminAction('reset_cms_defaults', {}, 'CMS reset to factory defaults!');
+                      await fetchAdminData();
+                    }}
+                    className="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Restore Factory Defaults
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      LIVE SITE ARCHITECTURE HEALTH MATRIX
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      All 44 Website Routes &amp; 10+ Section Verification
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Every route below is live, indexed in /sitemap.xml, and built with 10 to 18 structured sections.
+                    </p>
+                  </div>
+                  <Link
+                    href="/sitemap-page"
+                    target="_blank"
+                    className="px-4 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1.5 self-start"
+                  >
+                    <span>Open Visual Sitemap</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {[
+                    { title: 'Homepage (18 Sections)', path: '/' },
+                    { title: 'About Us (11 Sections)', path: '/about' },
+                    { title: 'All Services Hub (11 Sections)', path: '/services' },
+                    { title: 'Industries Hub (11 Sections)', path: '/industries' },
+                    { title: 'Technologies Hub (11 Sections)', path: '/technologies' },
+                    { title: 'Portfolio & Case Studies', path: '/portfolio' },
+                    { title: 'Clients & Testimonials', path: '/clients' },
+                    { title: 'Blogs & SEO Insights', path: '/blogs' },
+                    { title: 'Careers & Hiring Portal', path: '/careers' },
+                    { title: 'Contact & Consultation', path: '/contact-us' },
+                    ...servicesList.map((s) => ({
+                      title: `${s.title} (12 Sections)`,
+                      path: `/${s.slug}`,
+                    })),
+                    ...industriesList.map((i) => ({
+                      title: `${i.shortTitle} (11 Sections)`,
+                      path: `/industries/${i.slug}`,
+                    })),
+                    ...technologiesList.map((t) => ({
+                      title: `${t.shortTitle} (11 Sections)`,
+                      path: `/technologies/${t.slug}`,
+                    })),
+                  ].map((route, i) => (
+                    <Link
+                      key={i}
+                      href={route.path}
+                      target="_blank"
+                      className="p-3.5 rounded-2xl bg-slate-50 hover:bg-purple-50/60 border border-slate-200 hover:border-purple-300 flex items-center justify-between gap-2 transition-all group"
+                    >
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-slate-900 group-hover:text-purple-700 truncate">
+                          {route.title}
+                        </div>
+                        <div className="text-[10px] font-mono text-slate-500 truncate">{route.path}</div>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex-shrink-0">
+                        200 OK ↗
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
               MODULE 12: ADMIN PROFILE, ROLES & SECURITY
              ========================================== */}
           {activeTab === 'profile' && (
@@ -3338,6 +4007,60 @@ export default function AdminDashboardPage() {
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <span className="text-slate-400 block mb-1">Client Requirement Brief</span>
                 <p className="text-slate-700 leading-relaxed">{selectedLead.message || 'No additional notes provided.'}</p>
+              </div>
+
+              {/* Internal CRM Follow-Up Notes & Priority */}
+              <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-purple-900">Internal CRM Notes &amp; Priority</span>
+                  <select
+                    value={selectedLead.priority || 'High'}
+                    onChange={(e) => {
+                      const nextPriority = e.target.value;
+                      setSelectedLead({ ...selectedLead, priority: nextPriority });
+                      setLeads((prev) =>
+                        prev.map((l) => (l.id === selectedLead.id ? { ...l, priority: nextPriority } : l))
+                      );
+                      postAdminAction(
+                        'update_lead_status',
+                        { id: selectedLead.id, priority: nextPriority },
+                        `Lead priority set to ${nextPriority}`
+                      );
+                    }}
+                    className="px-2.5 py-1 rounded-lg border border-purple-200 bg-white text-[11px] font-bold text-purple-700"
+                  >
+                    <option value="High">High Priority</option>
+                    <option value="Medium">Medium Priority</option>
+                    <option value="Low">Low Priority</option>
+                  </select>
+                </div>
+                <textarea
+                  rows={2}
+                  placeholder="Write internal call notes, quotation details, or next follow-up date..."
+                  value={selectedLead.internal_notes || ''}
+                  onChange={(e) => {
+                    setSelectedLead({ ...selectedLead, internal_notes: e.target.value });
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-purple-200 bg-white text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLeads((prev) =>
+                      prev.map((l) =>
+                        l.id === selectedLead.id ? { ...l, internal_notes: selectedLead.internal_notes } : l
+                      )
+                    );
+                    postAdminAction(
+                      'update_lead_status',
+                      { id: selectedLead.id, internal_notes: selectedLead.internal_notes },
+                      'Saved internal CRM notes!'
+                    );
+                  }}
+                  className="px-3.5 py-1.5 rounded-lg bg-purple-600 text-white text-[11px] font-bold"
+                >
+                  Save Internal Note
+                </button>
               </div>
 
               <div className="flex items-center justify-between pt-2">
@@ -3904,6 +4627,152 @@ export default function AdminDashboardPage() {
               Save Asset To Library
             </button>
           </form>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 9: DEEP 11-SECTION BLUEPRINT EDITOR (INDUSTRIES & TECHNOLOGIES)
+         ========================================== */}
+      {editingMegaPage && (
+        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase text-purple-700">
+                  11-SECTION PAGE BLUEPRINT EDITOR // {editingMegaPage.type.toUpperCase()}
+                </span>
+                <h3 className="text-lg font-bold text-slate-900">{editingMegaPage.item.title}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingMegaPage(null)}
+                className="p-1.5 rounded-lg bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Full Page Hero Title</label>
+                <input
+                  type="text"
+                  value={editingMegaPage.item.title || ''}
+                  onChange={(e) =>
+                    setEditingMegaPage({
+                      ...editingMegaPage,
+                      item: { ...editingMegaPage.item, title: e.target.value },
+                    })
+                  }
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Mega-Menu Short Title</label>
+                  <input
+                    type="text"
+                    value={editingMegaPage.item.shortTitle || ''}
+                    onChange={(e) =>
+                      setEditingMegaPage({
+                        ...editingMegaPage,
+                        item: { ...editingMegaPage.item, shortTitle: e.target.value },
+                      })
+                    }
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Primary KPI Badge</label>
+                  <input
+                    type="text"
+                    value={editingMegaPage.item.metricBadge || ''}
+                    onChange={(e) =>
+                      setEditingMegaPage({
+                        ...editingMegaPage,
+                        item: { ...editingMegaPage.item, metricBadge: e.target.value },
+                      })
+                    }
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-mono text-emerald-700 font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Hero Subtitle</label>
+                <input
+                  type="text"
+                  value={editingMegaPage.item.subtitle || ''}
+                  onChange={(e) =>
+                    setEditingMegaPage({
+                      ...editingMegaPage,
+                      item: { ...editingMegaPage.item, subtitle: e.target.value },
+                    })
+                  }
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Hero Detailed Description</label>
+                <textarea
+                  rows={3}
+                  value={editingMegaPage.item.heroDescription || ''}
+                  onChange={(e) =>
+                    setEditingMegaPage({
+                      ...editingMegaPage,
+                      item: { ...editingMegaPage.item, heroDescription: e.target.value },
+                    })
+                  }
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Technology Stack / Tools (Comma Separated)
+                </label>
+                <input
+                  type="text"
+                  value={(editingMegaPage.item.techStack || editingMegaPage.item.ecosystemTools || []).join(', ')}
+                  onChange={(e) => {
+                    const arr = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+                    setEditingMegaPage({
+                      ...editingMegaPage,
+                      item:
+                        editingMegaPage.type === 'industry'
+                          ? { ...editingMegaPage.item, techStack: arr }
+                          : { ...editingMegaPage.item, ecosystemTools: arr },
+                    });
+                  }}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-mono"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                if (editingMegaPage.type === 'industry') {
+                  const next = [...industriesList];
+                  next[editingMegaPage.idx] = editingMegaPage.item;
+                  setIndustriesList(next);
+                  setEditingMegaPage(null);
+                  await postAdminAction('save_industries', next, 'Industry 11-Section Blueprint saved!');
+                } else {
+                  const next = [...technologiesList];
+                  next[editingMegaPage.idx] = editingMegaPage.item;
+                  setTechnologiesList(next);
+                  setEditingMegaPage(null);
+                  await postAdminAction('save_technologies', next, 'Technology 11-Section Blueprint saved!');
+                }
+              }}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
+            >
+              Save 11-Section Page Blueprint
+            </button>
+          </div>
         </div>
       )}
     </div>

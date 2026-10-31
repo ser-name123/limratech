@@ -64,19 +64,33 @@ export default function AboutPage() {
     },
   ];
 
-  const milestones = [
+  const [milestones, setMilestones] = useState([
     { year: '2020', title: 'Founding & Vision', desc: 'Started with a mission to bridge the divide between slow web platforms and aggressive SEO rankings.' },
     { year: '2022', title: 'Full Serverless Pivot', desc: 'Migrated 100% of client architectures to modern Next.js and Supabase cloud infrastructure.' },
     { year: '2024', title: 'Pan-India Milestone', desc: 'Crossed 350+ enterprise clients and generated over ₹50Cr+ in client organic search pipeline value.' },
     { year: '2026', title: 'Next-Gen Algorithmic Lab', desc: 'Pioneered AI-Immune entity schema and sub-second React 19 rendering standards.' },
-  ];
+  ]);
 
-  const team = [
+  const [team, setTeam] = useState([
     { name: 'Arif Khan', role: 'Founder & Principal Cloud Architect', exp: '10+ Yrs In Full-Stack & Serverless', avatar: '/images/client-rahul-sharma.jpg' },
     { name: 'Farhan Siddiqui', role: 'Head of Technical SEO & Algorithms', exp: '8+ Yrs In Search Architecture', avatar: '/images/client-priya-mehta.jpg' },
     { name: 'Ayesha Patel', role: 'Lead UI/UX & Design Systems Architect', exp: 'Figma & Design Systems Specialist', avatar: '/images/client-neha-kapoor.jpg' },
     { name: 'Sameer Sheikh', role: 'Senior Database & Supabase Engineer', exp: 'PostgreSQL & Realtime Cluster Lead', avatar: '/images/client-rahul-sharma.jpg' },
-  ];
+  ]);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.milestones) && data.cms.milestones.length > 0) {
+          setMilestones(data.cms.milestones);
+        }
+        if (Array.isArray(data?.cms?.leadershipTeam) && data.cms.leadershipTeam.length > 0) {
+          setTeam(data.cms.leadershipTeam);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const aboutFaqs = [
     {

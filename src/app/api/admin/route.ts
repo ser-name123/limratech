@@ -77,10 +77,14 @@ export async function POST(request: Request) {
     };
 
     if (action === 'update_lead_status') {
-      const { id, status } = payload;
+      const { id, status, priority, internal_notes } = payload;
       const target = inMemoryDb.leads.find((l) => l.id === id);
-      if (target) target.status = status;
-      addAuditLog(`Updated Lead ${id} status to ${String(status).toUpperCase()}`);
+      if (target) {
+        if (status) target.status = status;
+        if (priority) target.priority = priority;
+        if (internal_notes !== undefined) target.internal_notes = internal_notes;
+      }
+      addAuditLog(`Updated Lead ${id} in CRM Pipeline`);
       await writeCmsState(cms);
       return NextResponse.json({ success: true, leads: inMemoryDb.leads, cms });
     }
@@ -118,6 +122,21 @@ export async function POST(request: Request) {
       inMemoryDb.newsletter = inMemoryDb.newsletter.filter((s) => s.id !== id);
       addAuditLog(`Removed newsletter subscriber ${id}`);
       await writeCmsState(cms);
+      return NextResponse.json({ success: true, newsletter: inMemoryDb.newsletter, cms });
+    }
+
+    if (action === 'add_subscriber') {
+      const email = String(payload?.email || '').trim().toLowerCase();
+      if (email) {
+        inMemoryDb.newsletter.unshift({
+          id: `sub-${Date.now()}`,
+          created_at: new Date().toISOString(),
+          email,
+          is_active: true,
+        });
+        addAuditLog(`Added newsletter subscriber: ${email}`);
+        await writeCmsState(cms);
+      }
       return NextResponse.json({ success: true, newsletter: inMemoryDb.newsletter, cms });
     }
 
@@ -215,6 +234,34 @@ export async function POST(request: Request) {
     if (action === 'save_media') {
       cms.mediaAssets = payload;
       addAuditLog(`Updated Media & Brand Assets Library (${payload.length} assets)`);
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
+    if (action === 'save_client_brands') {
+      cms.clientBrands = payload;
+      addAuditLog(`Updated Verified Client Brands (${payload.length} brands)`);
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
+    if (action === 'save_leadership_team') {
+      cms.leadershipTeam = payload;
+      addAuditLog(`Updated Agency Leadership & Engineering Team (${payload.length} members)`);
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
+    if (action === 'save_milestones') {
+      cms.milestones = payload;
+      addAuditLog(`Updated Company Timeline Milestones (${payload.length} milestones)`);
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
+    if (action === 'save_pricing_packages') {
+      cms.pricingPackages = payload;
+      addAuditLog(`Updated Service Pricing & Retainer Packages (${payload.length} tiers)`);
       await writeCmsState(cms);
       return NextResponse.json({ success: true, cms });
     }

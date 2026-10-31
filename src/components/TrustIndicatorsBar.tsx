@@ -4,20 +4,46 @@ import React from 'react';
 import { ShieldCheck, Star, Award, CheckCircle2, TrendingUp, Users, Building2, Globe } from 'lucide-react';
 
 export default function TrustIndicatorsBar() {
-  const clientBrands = [
+  const [clientBrands, setClientBrands] = React.useState([
     { name: 'BrightEdge Solutions', sector: 'Enterprise B2B', tag: 'Verified Partner' },
     { name: 'UrbanStyles Retail', sector: 'D2C E-Commerce', tag: 'Shopify & Ads' },
     { name: 'Apex Logistics India', sector: 'Supply Chain & ERP', tag: 'Custom Software' },
     { name: 'MedCare Health Network', sector: 'Healthcare & Apps', tag: 'Mobile & SEO' },
     { name: 'FinCrest Capital', sector: 'FinTech & Advisory', tag: 'Lead Funnels' },
     { name: 'Vanguard Estates', sector: 'Real Estate Group', tag: 'Google & Meta' },
-  ];
+  ]);
+
+  const [stats, setStats] = React.useState({
+    projectsDelivered: '500+',
+    happyClients: '350+',
+    googleRating: '4.9 / 5.0',
+    roi: '3.8x Avg',
+  });
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.clientBrands) && data.cms.clientBrands.length > 0) {
+          setClientBrands(data.cms.clientBrands);
+        }
+        if (data?.cms?.hero?.stats) {
+          setStats((prev) => ({
+            ...prev,
+            projectsDelivered: data.cms.hero.stats.projectsDelivered || prev.projectsDelivered,
+            happyClients: data.cms.hero.stats.happyClients || prev.happyClients,
+            googleRating: data.cms.hero.stats.googleRating || prev.googleRating,
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const proofPoints = [
-    { icon: Award, value: '500+', label: 'Verified Projects Delivered', sub: 'Web, App & Marketing' },
-    { icon: Users, value: '350+', label: 'Active Business Clients', sub: 'Pan-India & Global' },
-    { icon: Star, value: '4.9 / 5.0', label: 'Verified Client Rating', sub: 'Google & Clutch Reviews' },
-    { icon: TrendingUp, value: '3.8x Avg', label: 'Verified Campaign ROI', sub: 'Performance & Organic' },
+    { icon: Award, value: stats.projectsDelivered, label: 'Verified Projects Delivered', sub: 'Web, App & Marketing' },
+    { icon: Users, value: stats.happyClients, label: 'Active Business Clients', sub: 'Pan-India & Global' },
+    { icon: Star, value: stats.googleRating, label: 'Verified Client Rating', sub: 'Google & Clutch Reviews' },
+    { icon: TrendingUp, value: stats.roi, label: 'Verified Campaign ROI', sub: 'Performance & Organic' },
   ];
 
   return (

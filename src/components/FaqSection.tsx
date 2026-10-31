@@ -18,13 +18,13 @@ export default function FaqSection() {
           setFaqs(data.cms.faqs.map((f: any) => ({ q: f.question || f.q, a: f.answer || f.a })));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   return (
     <section className="py-24 bg-white relative border-b border-slate-200">
       <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-12">
-        
+
         <div className="text-center mb-14 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium">
             <Sparkles className="w-3.5 h-3.5 text-purple-600" />
@@ -55,9 +55,8 @@ export default function FaqSection() {
                     {faq.q}
                   </span>
                   <ChevronDown
-                    className={`w-4 h-4 text-purple-600 transition-transform duration-200 flex-shrink-0 ${
-                      isOpen ? 'rotate-180 text-purple-700' : ''
-                    }`}
+                    className={`w-4 h-4 text-purple-600 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180 text-purple-700' : ''
+                      }`}
                   />
                 </button>
 
