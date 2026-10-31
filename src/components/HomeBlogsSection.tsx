@@ -6,6 +6,19 @@ import { Calendar, Clock, ArrowRight, Sparkles, User } from 'lucide-react';
 import { blogPostsData } from '@/data/mockData';
 
 export default function HomeBlogsSection() {
+  const [posts, setPosts] = React.useState(blogPostsData);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.blogs) && data.cms.blogs.length > 0) {
+          setPosts(data.cms.blogs);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="py-24 bg-white border-b border-slate-200 relative overflow-hidden">
       <div className="max-w-[1520px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
@@ -34,7 +47,7 @@ export default function HomeBlogsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {blogPostsData.slice(0, 3).map((post) => (
+          {posts.slice(0, 3).map((post) => (
             <article
               key={post.id}
               className="bg-slate-50/70 hover:bg-white rounded-3xl overflow-hidden border border-slate-200 hover:border-purple-300 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col group hover:-translate-y-1.5"

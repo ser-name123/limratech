@@ -33,7 +33,7 @@ export default function CareersPage() {
     { icon: Coffee, title: 'Zero Micro-Management', desc: 'Autonomous sprint ownership. We evaluate results, clean code, and impact — not keystrokes.' },
   ];
 
-  const openings = [
+  const [openings, setOpenings] = useState([
     {
       role: 'Senior Next.js & React Developer',
       department: 'Engineering',
@@ -62,7 +62,29 @@ export default function CareersPage() {
       desc: 'Drive programmatic and editorial SEO, technical site audits, and high-authority entity schema graphs.',
       tags: ['Core Web Vitals', 'Schema.org', 'Log Analysis']
     },
-  ];
+  ]);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.careers) && data.cms.careers.length > 0) {
+          const activeJobs = data.cms.careers
+            .filter((j: any) => j.status !== 'Closed')
+            .map((j: any) => ({
+              role: j.role,
+              department: j.department,
+              type: j.location ? `${j.type} (${j.location})` : j.type,
+              desc: j.desc,
+              tags: Array.isArray(j.tags) ? j.tags : [],
+            }));
+          if (activeJobs.length > 0) {
+            setOpenings(activeJobs);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const careerFaqs = [
     {

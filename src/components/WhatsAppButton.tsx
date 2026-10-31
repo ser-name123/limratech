@@ -7,11 +7,35 @@ import { companyInfo } from '@/data/mockData';
 
 export default function WhatsAppButton() {
   const pathname = usePathname();
-  if (pathname?.startsWith('/admin')) {
+  const [cfg, setCfg] = React.useState({
+    show: true,
+    phoneClean: companyInfo.phoneClean,
+    greeting: 'Hello LIMRA Digitech! I would like to inquire about your SEO & Web Development solutions.',
+  });
+
+  React.useEffect(() => {
+    if (pathname?.startsWith('/admin')) return;
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.cms?.footer) {
+          setCfg({
+            show: data.cms.footer.showWhatsAppWidget !== false,
+            phoneClean: data.cms.footer.phoneClean || companyInfo.phoneClean,
+            greeting:
+              data.cms.footer.whatsAppGreeting ||
+              'Hello LIMRA Digitech! I would like to inquire about your SEO & Web Development solutions.',
+          });
+        }
+      })
+      .catch(() => {});
+  }, [pathname]);
+
+  if (pathname?.startsWith('/admin') || !cfg.show) {
     return null;
   }
-  const whatsappUrl = `https://wa.me/${companyInfo.phoneClean.replace('+', '')}?text=${encodeURIComponent(
-    'Hello LIMRA Digitech! I would like to inquire about your SEO & Web Development solutions.'
+  const whatsappUrl = `https://wa.me/${cfg.phoneClean.replace('+', '')}?text=${encodeURIComponent(
+    cfg.greeting
   )}`;
 
   return (

@@ -348,6 +348,125 @@ export const defaultSeoConfig: SeoAndRedirectsConfig = {
   ],
 };
 
+export interface CareerOpeningItem {
+  id: string;
+  role: string;
+  department: string;
+  location: string;
+  type: string;
+  experience: string;
+  status: 'Active' | 'Closed';
+  desc: string;
+  tags: string[];
+}
+
+export interface MediaAssetItem {
+  id: string;
+  title: string;
+  category: 'Brand Logo & Favicon' | 'Portfolio Case Study' | 'Blog Editorial' | 'UI Graphic';
+  url: string;
+  dimensions: string;
+  altText: string;
+}
+
+export const defaultCareersData: CareerOpeningItem[] = [
+  {
+    id: 'job-1',
+    role: 'Senior Next.js & React Developer',
+    department: 'Engineering',
+    location: 'New Delhi / Hybrid',
+    type: 'Full-Time',
+    experience: '3+ Years',
+    status: 'Active',
+    desc: 'Architect high-speed Next.js 16 App Router platforms, custom APIs, and scalable web applications with 99+ Core Web Vitals.',
+    tags: ['Next.js 16', 'TypeScript', 'Tailwind CSS', 'Supabase', 'Node.js'],
+  },
+  {
+    id: 'job-2',
+    role: 'Performance Marketing Strategist (Google & Meta Ads)',
+    department: 'Growth & Paid Media',
+    location: 'New Delhi / Remote',
+    type: 'Full-Time',
+    experience: '2-5 Years',
+    status: 'Active',
+    desc: 'Manage high-ROAS Google Search, Shopping, and Meta lead generation campaigns with server-side GTM conversion tracking.',
+    tags: ['Google Ads', 'Meta Ads', 'GA4', 'GTM', 'CRO Funnels'],
+  },
+  {
+    id: 'job-3',
+    role: 'UI/UX & Brand Identity Designer',
+    department: 'Creative Studio',
+    location: 'New Delhi / Hybrid',
+    type: 'Full-Time',
+    experience: '2+ Years',
+    status: 'Active',
+    desc: 'Create high-converting Figma design systems, interactive prototypes, corporate brand kits, and social ad creatives.',
+    tags: ['Figma', 'Design Systems', 'Brand Identity', 'Prototyping', 'Motion'],
+  },
+  {
+    id: 'job-4',
+    role: 'Technical SEO & Algorithmic Growth Specialist',
+    department: 'Organic Search',
+    location: 'New Delhi / Hybrid',
+    type: 'Full-Time',
+    experience: '2-4 Years',
+    status: 'Active',
+    desc: 'Lead technical SEO audits, JSON-LD schema architecture, local GMB 3-Pack dominance, and topical content clusters.',
+    tags: ['Technical SEO', 'Schema.org', 'GSC', 'Ahrefs', 'Local SEO'],
+  },
+];
+
+export const defaultMediaAssets: MediaAssetItem[] = [
+  {
+    id: 'media-1',
+    title: 'Primary Header & Brand Logo',
+    category: 'Brand Logo & Favicon',
+    url: '/limra-logo.png',
+    dimensions: '633 × 395 PNG',
+    altText: 'LIMRA Digitech Primary Brand Logo',
+  },
+  {
+    id: 'media-2',
+    title: 'Square App Icon & Favicon (512px)',
+    category: 'Brand Logo & Favicon',
+    url: '/favicon.png',
+    dimensions: '512 × 512 PNG',
+    altText: 'LIMRA Digitech Square Favicon',
+  },
+  {
+    id: 'media-3',
+    title: 'Browser Tab Favicon ICO',
+    category: 'Brand Logo & Favicon',
+    url: '/favicon.ico',
+    dimensions: '64 × 64 ICO',
+    altText: 'LIMRA Digitech Browser Tab Icon',
+  },
+  {
+    id: 'media-4',
+    title: 'E-Commerce Revenue Case Study Cover',
+    category: 'Portfolio Case Study',
+    url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1000&q=80',
+    dimensions: '1000 × 667 WebP',
+    altText: 'E-Commerce Growth Analytics Dashboard',
+  },
+  {
+    id: 'media-5',
+    title: 'Next.js Enterprise Portal Preview',
+    category: 'Portfolio Case Study',
+    url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80',
+    dimensions: '1000 × 667 WebP',
+    altText: 'Next.js SaaS & Enterprise Portal',
+  },
+  {
+    id: 'media-6',
+    title: 'Technical SEO & Core Web Vitals Guide Cover',
+    category: 'Blog Editorial',
+    url: 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?auto=format&fit=crop&w=1000&q=80',
+    dimensions: '1000 × 667 WebP',
+    altText: 'SEO & Core Web Vitals Editorial Cover',
+  },
+];
+
 export const initialCmsSnapshot = {
   header: defaultHeaderConfig,
   footer: defaultFooterConfig,
@@ -361,4 +480,6 @@ export const initialCmsSnapshot = {
   blogs: blogPostsData,
   testimonials: testimonialsData,
   faqs: defaultFaqsData,
+  careers: defaultCareersData,
+  mediaAssets: defaultMediaAssets,
 };

@@ -17,6 +17,19 @@ import {
 import { servicesData } from '@/data/mockData';
 
 export default function ServicesGrid() {
+  const [services, setServices] = React.useState(servicesData);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.services) && data.cms.services.length > 0) {
+          setServices(data.cms.services);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const iconList = [
     { icon: Search, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
     { icon: Code2, color: 'text-cyan-600', bg: 'bg-cyan-50', border: 'border-cyan-200' },
@@ -52,7 +65,7 @@ export default function ServicesGrid() {
 
         {/* 6 Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {servicesData.map((svc, i) => {
+          {services.map((svc, i) => {
             const style = iconList[i] || iconList[0];
             const Icon = style.icon;
 

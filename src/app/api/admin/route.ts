@@ -205,6 +205,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, cms });
     }
 
+    if (action === 'save_careers') {
+      cms.careers = payload;
+      addAuditLog(`Updated Careers & Job Openings (${payload.length} positions)`);
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
+    if (action === 'save_media') {
+      cms.mediaAssets = payload;
+      addAuditLog(`Updated Media & Brand Assets Library (${payload.length} assets)`);
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
+    if (action === 'import_cms_backup') {
+      const merged = { ...structuredClone(initialCmsSnapshot), ...payload };
+      addAuditLog('Restored Full CMS Snapshot from JSON Backup');
+      await writeCmsState(merged);
+      return NextResponse.json({ success: true, cms: merged });
+    }
+
     if (action === 'reset_cms_defaults') {
       const fresh = structuredClone(initialCmsSnapshot);
       await writeCmsState(fresh);

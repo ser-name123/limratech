@@ -15,6 +15,7 @@ import {
   Layers
 } from 'lucide-react';
 import AnimatedCounter from '@/components/AnimatedCounter';
+import { defaultHeroAndStatsConfig, HeroAndStatsConfig } from '@/data/defaultCmsConfig';
 
 const liveRankKeywords = [
   { kw: 'Next.js Development Agency', rank: '#1', speed: '0.22s', diff: '+4' },
@@ -26,6 +27,18 @@ const liveRankKeywords = [
 export default function Hero() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'seo' | 'speed' | 'leads'>('dashboard');
   const [kwIndex, setKwIndex] = useState(0);
+  const [heroCfg, setHeroCfg] = useState<HeroAndStatsConfig>(defaultHeroAndStatsConfig);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.cms?.hero) {
+          setHeroCfg(data.cms.hero);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -49,41 +62,40 @@ export default function Hero() {
             {/* Elegant Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium shadow-sm backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-spin-slow" />
-              <span>Transforming Businesses With Smart Digital Solutions</span>
+              <span>{heroCfg.badgeText}</span>
             </div>
 
             {/* Harmonious Headline with sleek, refined font weight and balanced scale */}
             <h1 className="text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-medium text-slate-900 tracking-tight leading-[1.16]">
-              Smart Digital Solutions For{' '}
+              {heroCfg.headlineMain}{' '}
               <span className="gradient-text-glow font-medium">
-                Scalable Business Growth
-              </span>{' '}
-              &amp; Market Dominance.
+                {heroCfg.headlineGradient}
+              </span>
             </h1>
 
             {/* Description */}
             <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              LIMRA Digitech is your full-spectrum digital marketing, web development, and technology solutions partner. From Next.js, WordPress &amp; Shopify platforms to SEO, Google/Meta Ads, lead generation, creative branding, and custom mobile/software apps — we turn traffic into measurable revenue.
+              {heroCfg.subheadline}
             </p>
 
             {/* CTAs & Quick Social Trust */}
             <div className="space-y-3 pt-1">
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
                 <Link
-                  href="/contact-us"
+                  href={heroCfg.primaryCtaHref || '/contact-us'}
                   className="w-full sm:w-auto relative group overflow-hidden rounded-xl font-medium text-xs sm:text-sm shadow-md shadow-purple-200 hover:shadow-lg hover:shadow-purple-300 transition-all"
                 >
                   <span className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 text-white rounded-xl">
-                    <span>Get a Quote / Start Working With Us</span>
+                    <span>{heroCfg.primaryCtaText}</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-purple-200" />
                   </span>
                 </Link>
 
                 <Link
-                  href="/portfolio"
+                  href={heroCfg.secondaryCtaHref || '/portfolio'}
                   className="w-full sm:w-auto px-5 py-3 rounded-xl text-slate-700 hover:text-purple-700 font-medium text-xs sm:text-sm border border-slate-300 hover:border-purple-300 bg-white hover:bg-slate-50 shadow-sm transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Explore Portfolio &amp; Work</span>
+                  <span>{heroCfg.secondaryCtaText}</span>
                 </Link>
               </div>
 

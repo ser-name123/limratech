@@ -49,6 +49,8 @@ import {
   HeroAndStatsConfig,
   AdminProfileConfig,
   SeoAndRedirectsConfig,
+  CareerOpeningItem,
+  MediaAssetItem,
 } from '@/data/defaultCmsConfig';
 
 type AdminTab =
@@ -62,6 +64,8 @@ type AdminTab =
   | 'portfolio'
   | 'blogs'
   | 'testimonials_faqs'
+  | 'careers'
+  | 'media'
   | 'seo'
   | 'profile';
 
@@ -95,6 +99,8 @@ export default function AdminDashboardPage() {
   const [blogs, setBlogs] = useState<any[]>(initialCmsSnapshot.blogs);
   const [testimonials, setTestimonials] = useState<any[]>(initialCmsSnapshot.testimonials);
   const [faqs, setFaqs] = useState<any[]>(initialCmsSnapshot.faqs);
+  const [careers, setCareers] = useState<CareerOpeningItem[]>(initialCmsSnapshot.careers);
+  const [mediaAssets, setMediaAssets] = useState<MediaAssetItem[]>(initialCmsSnapshot.mediaAssets);
 
   // Modals & Editors State
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
@@ -104,7 +110,12 @@ export default function AdminDashboardPage() {
   const [isAddCaseStudyOpen, setIsAddCaseStudyOpen] = useState(false);
   const [editingCaseStudy, setEditingCaseStudy] = useState<any | null>(null);
   const [isAddTestimonialOpen, setIsAddTestimonialOpen] = useState(false);
+  const [editingTestimonial, setEditingTestimonial] = useState<any | null>(null);
   const [isAddFaqOpen, setIsAddFaqOpen] = useState(false);
+  const [editingFaq, setEditingFaq] = useState<any | null>(null);
+  const [isAddCareerOpen, setIsAddCareerOpen] = useState(false);
+  const [editingCareer, setEditingCareer] = useState<CareerOpeningItem | null>(null);
+  const [isAddMediaOpen, setIsAddMediaOpen] = useState(false);
   const [editingServiceIdx, setEditingServiceIdx] = useState<number | null>(null);
   const [newSubServiceName, setNewSubServiceName] = useState('');
 
@@ -169,6 +180,25 @@ export default function AdminDashboardPage() {
     category: 'General & Strategy',
   });
 
+  const [newCareerForm, setNewCareerForm] = useState({
+    role: '',
+    department: 'Engineering',
+    location: 'New Delhi / Hybrid',
+    type: 'Full-Time',
+    experience: '2-4 Years',
+    status: 'Active' as 'Active' | 'Closed',
+    desc: '',
+    tags: 'Next.js 16, TypeScript, Tailwind CSS',
+  });
+
+  const [newMediaForm, setNewMediaForm] = useState({
+    title: '',
+    category: 'Brand Logo & Favicon' as MediaAssetItem['category'],
+    url: '',
+    dimensions: '1200 × 800 PNG',
+    altText: '',
+  });
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3400);
@@ -195,6 +225,8 @@ export default function AdminDashboardPage() {
           setBlogs(data.cms.blogs || initialCmsSnapshot.blogs);
           setTestimonials(data.cms.testimonials || initialCmsSnapshot.testimonials);
           setFaqs(data.cms.faqs || initialCmsSnapshot.faqs);
+          setCareers(data.cms.careers || initialCmsSnapshot.careers);
+          setMediaAssets(data.cms.mediaAssets || initialCmsSnapshot.mediaAssets);
         }
       }
     } catch (err) {
@@ -389,12 +421,22 @@ export default function AdminDashboardPage() {
   // Testimonial & FAQ CRUD
   const handleCreateTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingTestimonial) {
+      const next = testimonials.map((t) => (t.id === editingTestimonial.id ? editingTestimonial : t));
+      setTestimonials(next);
+      setEditingTestimonial(null);
+      await postAdminAction('save_testimonials', next, 'Client review updated');
+      return;
+    }
     if (!newTestimonialForm.name || !newTestimonialForm.content) return;
     const created = {
       id: `test-${Date.now()}`,
+      client_name: newTestimonialForm.name,
       name: newTestimonialForm.name,
       role: newTestimonialForm.role || 'Founder & Director',
       company: newTestimonialForm.company || 'Enterprise Partner',
+      company_or_role: `${newTestimonialForm.role || 'Founder'}, ${newTestimonialForm.company || 'Enterprise Partner'}`,
+      review: newTestimonialForm.content,
       content: newTestimonialForm.content,
       rating: Number(newTestimonialForm.rating) || 5,
     };
@@ -407,6 +449,13 @@ export default function AdminDashboardPage() {
 
   const handleCreateFaq = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingFaq) {
+      const next = faqs.map((f) => (f.id === editingFaq.id ? editingFaq : f));
+      setFaqs(next);
+      setEditingFaq(null);
+      await postAdminAction('save_faqs', next, 'FAQ item updated');
+      return;
+    }
     if (!newFaqForm.question || !newFaqForm.answer) return;
     const created = {
       id: `faq-${Date.now()}`,
@@ -419,6 +468,96 @@ export default function AdminDashboardPage() {
     setIsAddFaqOpen(false);
     setNewFaqForm({ question: '', answer: '', category: 'General & Strategy' });
     await postAdminAction('save_faqs', next, 'New FAQ item added');
+  };
+
+  const handleSaveCareerModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingCareer) {
+      const next = careers.map((c) => (c.id === editingCareer.id ? editingCareer : c));
+      setCareers(next);
+      setEditingCareer(null);
+      await postAdminAction('save_careers', next, 'Job opening updated live on /careers');
+      return;
+    }
+    if (!newCareerForm.role) return;
+    const created: CareerOpeningItem = {
+      id: `job-${Date.now()}`,
+      role: newCareerForm.role,
+      department: newCareerForm.department,
+      location: newCareerForm.location,
+      type: newCareerForm.type,
+      experience: newCareerForm.experience,
+      status: newCareerForm.status,
+      desc: newCareerForm.desc || 'Join LIMRA Digitech to build high-impact web, mobile, and digital growth systems.',
+      tags: newCareerForm.tags.split(',').map((t) => t.trim()).filter(Boolean),
+    };
+    const next = [created, ...careers];
+    setCareers(next);
+    setIsAddCareerOpen(false);
+    setNewCareerForm({
+      role: '',
+      department: 'Engineering',
+      location: 'New Delhi / Hybrid',
+      type: 'Full-Time',
+      experience: '2-4 Years',
+      status: 'Active',
+      desc: '',
+      tags: 'Next.js 16, TypeScript, Tailwind CSS',
+    });
+    await postAdminAction('save_careers', next, 'New job role published to /careers');
+  };
+
+  const handleCreateMediaAsset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMediaForm.title || !newMediaForm.url) return;
+    const created: MediaAssetItem = {
+      id: `media-${Date.now()}`,
+      title: newMediaForm.title,
+      category: newMediaForm.category,
+      url: newMediaForm.url,
+      dimensions: newMediaForm.dimensions,
+      altText: newMediaForm.altText || newMediaForm.title,
+    };
+    const next = [created, ...mediaAssets];
+    setMediaAssets(next);
+    setIsAddMediaOpen(false);
+    setNewMediaForm({
+      title: '',
+      category: 'Brand Logo & Favicon',
+      url: '',
+      dimensions: '1200 × 800 PNG',
+      altText: '',
+    });
+    await postAdminAction('save_media', next, 'Media asset registered in Brand Library');
+  };
+
+  const handleExportFullCmsBackup = () => {
+    const fullSnapshot = {
+      header: headerCfg,
+      footer: footerCfg,
+      hero: heroCfg,
+      adminProfile,
+      seo: seoCfg,
+      services: servicesList,
+      industries: industriesList,
+      technologies: technologiesList,
+      caseStudies,
+      blogs,
+      testimonials,
+      faqs,
+      careers,
+      mediaAssets,
+    };
+    const blob = new Blob([JSON.stringify(fullSnapshot, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `limra-digitech-cms-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded full CMS JSON backup!');
   };
 
   const filteredLeads = useMemo(() => {
@@ -519,7 +658,7 @@ export default function AdminDashboardPage() {
   const navItems: { id: AdminTab; label: string; icon: any; badge?: string | number }[] = [
     { id: 'overview', label: 'Executive Dashboard', icon: LayoutDashboard },
     { id: 'header', label: 'Header & Mega-Menu', icon: PanelTop, badge: 'Live' },
-    { id: 'footer', label: 'Footer & Links CMS', icon: PanelBottom, badge: 'Live' },
+    { id: 'footer', label: 'Footer & WhatsApp CMS', icon: PanelBottom, badge: 'Live' },
     { id: 'hero', label: 'Hero & Trust Stats', icon: Sparkles },
     { id: 'leads', label: 'Leads & CRM Pipeline', icon: Users, badge: leads.length },
     { id: 'services', label: 'Services & Sub-Services', icon: Code2, badge: servicesList.length },
@@ -527,6 +666,8 @@ export default function AdminDashboardPage() {
     { id: 'portfolio', label: 'Portfolio Case Studies', icon: Briefcase, badge: caseStudies.length },
     { id: 'blogs', label: 'Blogs & Editorial CMS', icon: FileText, badge: blogs.length },
     { id: 'testimonials_faqs', label: 'Reviews & FAQs CMS', icon: Star, badge: testimonials.length + faqs.length },
+    { id: 'careers', label: 'Careers & Job Openings', icon: Building2, badge: careers.length },
+    { id: 'media', label: 'Media & Brand Assets', icon: Eye, badge: mediaAssets.length },
     { id: 'seo', label: 'SEO, Redirects & GA4', icon: Globe, badge: '99%' },
     { id: 'profile', label: 'Admin Profile & Roles', icon: UserCheck },
   ];
@@ -671,6 +812,16 @@ export default function AdminDashboardPage() {
               title="Sync Live Data"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-purple-600' : ''}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportFullCmsBackup}
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 hover:border-purple-300 bg-white text-xs font-bold text-slate-700 hover:text-purple-700 transition-all"
+              title="Download Full CMS JSON Backup"
+            >
+              <Download className="w-3.5 h-3.5 text-purple-600" />
+              <span>Backup JSON</span>
             </button>
 
             <button
@@ -2415,26 +2566,47 @@ export default function AdminDashboardPage() {
                             Verified
                           </span>
                         </div>
-                        <p className="text-xs text-slate-600 italic leading-relaxed">&ldquo;{t.content}&rdquo;</p>
+                        <p className="text-xs text-slate-600 italic leading-relaxed">
+                          &ldquo;{t.review || t.content}&rdquo;
+                        </p>
                       </div>
                       <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                         <div>
-                          <div className="text-xs font-bold text-slate-900">{t.name}</div>
+                          <div className="text-xs font-bold text-slate-900">{t.client_name || t.name}</div>
                           <div className="text-[11px] text-purple-700">
-                            {t.role}, {t.company}
+                            {t.company_or_role || `${t.role}, ${t.company}`}
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next = testimonials.filter((item) => item.id !== t.id);
-                            setTestimonials(next);
-                            postAdminAction('save_testimonials', next, 'Testimonial removed');
-                          }}
-                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditingTestimonial({
+                                ...t,
+                                name: t.client_name || t.name || '',
+                                content: t.review || t.content || '',
+                                role: t.role || t.company_or_role || 'Founder',
+                                company: t.company || 'Enterprise Partner',
+                              })
+                            }
+                            className="p-1.5 text-slate-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg"
+                            title="Edit Review"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = testimonials.filter((item) => item.id !== t.id);
+                              setTestimonials(next);
+                              postAdminAction('save_testimonials', next, 'Testimonial removed');
+                            }}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
+                            title="Delete Review"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -2466,22 +2638,246 @@ export default function AdminDashboardPage() {
                     <div key={f.id} className="bg-white rounded-2xl p-5 border border-slate-200 space-y-2">
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-xs sm:text-sm font-bold text-slate-900">{f.question}</h3>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setEditingFaq(f)}
+                            className="text-slate-600 hover:text-purple-700 hover:bg-purple-50 p-1 rounded"
+                            title="Edit FAQ"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = faqs.filter((item) => item.id !== f.id);
+                              setFaqs(next);
+                              postAdminAction('save_faqs', next, 'FAQ item deleted');
+                            }}
+                            className="text-rose-600 hover:bg-rose-50 p-1 rounded"
+                            title="Delete FAQ"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed">{f.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 11: CAREERS & JOB OPENINGS CMS
+             ========================================== */}
+          {activeTab === 'careers' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                    TALENT &amp; HIRING PORTAL CMS
+                  </span>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Manage Careers &amp; Open Roles ({careers.length} Positions)
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Active positions immediately appear on the live /careers page.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5 self-start">
+                  <Link
+                    href="/careers"
+                    target="_blank"
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <span>View /careers</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddCareerOpen(true)}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" /> Post New Job Opening
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {careers.map((job) => (
+                  <div
+                    key={job.id}
+                    className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col justify-between space-y-4 shadow-2xs"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span className="text-[10px] font-mono font-bold uppercase text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full">
+                            {job.department} • {job.type}
+                          </span>
+                          <h3 className="text-base font-bold text-slate-900 mt-2">{job.role}</h3>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            {job.location} • Experience: {job.experience}
+                          </p>
+                        </div>
                         <button
                           type="button"
                           onClick={() => {
-                            const next = faqs.filter((item) => item.id !== f.id);
-                            setFaqs(next);
-                            postAdminAction('save_faqs', next, 'FAQ item deleted');
+                            const nextStatus: 'Active' | 'Closed' = job.status === 'Active' ? 'Closed' : 'Active';
+                            const next = careers.map((c) => (c.id === job.id ? { ...c, status: nextStatus } : c));
+                            setCareers(next);
+                            postAdminAction('save_careers', next, `Job status set to ${nextStatus}`);
+                          }}
+                          className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border ${
+                            job.status === 'Active'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-slate-100 text-slate-500 border-slate-200'
+                          }`}
+                        >
+                          {job.status}
+                        </button>
+                      </div>
+
+                      <p className="text-xs text-slate-600 leading-relaxed">{job.desc}</p>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {(job.tags || []).map((tag, i) => (
+                          <span
+                            key={i}
+                            className="text-[10px] font-mono bg-slate-50 border border-slate-200 text-slate-700 px-2.5 py-1 rounded-lg"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-[11px] font-mono text-slate-400">ID: {job.id}</span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setEditingCareer(job)}
+                          className="text-xs font-semibold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" /> Edit Role
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = careers.filter((c) => c.id !== job.id);
+                            setCareers(next);
+                            postAdminAction('save_careers', next, 'Job opening removed');
+                          }}
+                          className="text-xs font-semibold text-rose-600 hover:underline flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 12: MEDIA & BRAND ASSETS LIBRARY
+             ========================================== */}
+          {activeTab === 'media' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                    BRAND ASSETS &amp; MEDIA REPOSITORY
+                  </span>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Logos, Favicons, Portfolio &amp; Editorial Media ({mediaAssets.length} Assets)
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Manage official brand logos, generated square favicons, and visual assets used across the site.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddMediaOpen(true)}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                >
+                  <Plus className="w-4 h-4" /> Register New Media Asset
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {mediaAssets.map((asset) => (
+                  <div
+                    key={asset.id}
+                    className="bg-white rounded-3xl border border-slate-200 overflow-hidden flex flex-col justify-between shadow-2xs"
+                  >
+                    <div>
+                      <div className="h-44 bg-slate-100 relative flex items-center justify-center p-4 border-b border-slate-200 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={asset.url}
+                          alt={asset.altText}
+                          className="max-h-full max-w-full object-contain rounded-lg"
+                        />
+                        <span className="absolute top-3 left-3 text-[10px] font-mono font-bold bg-white/95 text-purple-700 px-2.5 py-1 rounded-full border border-purple-200">
+                          {asset.category}
+                        </span>
+                      </div>
+                      <div className="p-5 space-y-2">
+                        <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                          <span>{asset.dimensions}</span>
+                          <span className="truncate max-w-[160px] text-purple-700">{asset.url}</span>
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-900">{asset.title}</h3>
+                        <p className="text-xs text-slate-500">Alt: {asset.altText}</p>
+                      </div>
+                    </div>
+
+                    <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(asset.url);
+                          showToast(`Copied URL: ${asset.url}`);
+                        }}
+                        className="text-xs font-bold text-purple-700 hover:text-purple-900"
+                      >
+                        Copy Asset Path
+                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setHeaderCfg({ ...headerCfg, logoUrl: asset.url });
+                            postAdminAction(
+                              'save_header',
+                              { ...headerCfg, logoUrl: asset.url },
+                              'Set as active Header Logo!'
+                            );
+                          }}
+                          className="text-[11px] font-semibold text-slate-600 hover:text-purple-700"
+                        >
+                          Use as Logo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = mediaAssets.filter((m) => m.id !== asset.id);
+                            setMediaAssets(next);
+                            postAdminAction('save_media', next, 'Asset removed from library');
                           }}
                           className="text-rose-600 hover:bg-rose-50 p-1 rounded"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <p className="text-xs text-slate-600 leading-relaxed">{f.answer}</p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -3204,19 +3600,24 @@ export default function AdminDashboardPage() {
       )}
 
       {/* ==========================================
-          MODAL 5: ADD TESTIMONIAL
+          MODAL 5: ADD / EDIT TESTIMONIAL
          ========================================== */}
-      {isAddTestimonialOpen && (
+      {(isAddTestimonialOpen || editingTestimonial) && (
         <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleCreateTestimonial}
             className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">Add Verified Client Review</h3>
+              <h3 className="text-lg font-bold text-slate-900">
+                {editingTestimonial ? 'Edit Client Review' : 'Add Verified Client Review'}
+              </h3>
               <button
                 type="button"
-                onClick={() => setIsAddTestimonialOpen(false)}
+                onClick={() => {
+                  setIsAddTestimonialOpen(false);
+                  setEditingTestimonial(null);
+                }}
                 className="p-1.5 rounded-lg bg-slate-100"
               >
                 <X className="w-4 h-4" />
@@ -3225,30 +3626,62 @@ export default function AdminDashboardPage() {
             <input
               type="text"
               placeholder="Client Name *"
-              value={newTestimonialForm.name}
-              onChange={(e) => setNewTestimonialForm({ ...newTestimonialForm, name: e.target.value })}
+              value={editingTestimonial ? editingTestimonial.name : newTestimonialForm.name}
+              onChange={(e) =>
+                editingTestimonial
+                  ? setEditingTestimonial({
+                      ...editingTestimonial,
+                      name: e.target.value,
+                      client_name: e.target.value,
+                    })
+                  : setNewTestimonialForm({ ...newTestimonialForm, name: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
               required
             />
             <input
               type="text"
               placeholder="Role / Designation"
-              value={newTestimonialForm.role}
-              onChange={(e) => setNewTestimonialForm({ ...newTestimonialForm, role: e.target.value })}
+              value={editingTestimonial ? editingTestimonial.role : newTestimonialForm.role}
+              onChange={(e) =>
+                editingTestimonial
+                  ? setEditingTestimonial({
+                      ...editingTestimonial,
+                      role: e.target.value,
+                      company_or_role: `${e.target.value}, ${editingTestimonial.company || ''}`,
+                    })
+                  : setNewTestimonialForm({ ...newTestimonialForm, role: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
             />
             <input
               type="text"
               placeholder="Company Name"
-              value={newTestimonialForm.company}
-              onChange={(e) => setNewTestimonialForm({ ...newTestimonialForm, company: e.target.value })}
+              value={editingTestimonial ? editingTestimonial.company : newTestimonialForm.company}
+              onChange={(e) =>
+                editingTestimonial
+                  ? setEditingTestimonial({
+                      ...editingTestimonial,
+                      company: e.target.value,
+                      company_or_role: `${editingTestimonial.role || ''}, ${e.target.value}`,
+                    })
+                  : setNewTestimonialForm({ ...newTestimonialForm, company: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
             />
             <textarea
               placeholder="Verified client feedback..."
               rows={3}
-              value={newTestimonialForm.content}
-              onChange={(e) => setNewTestimonialForm({ ...newTestimonialForm, content: e.target.value })}
+              value={editingTestimonial ? editingTestimonial.content : newTestimonialForm.content}
+              onChange={(e) =>
+                editingTestimonial
+                  ? setEditingTestimonial({
+                      ...editingTestimonial,
+                      content: e.target.value,
+                      review: e.target.value,
+                    })
+                  : setNewTestimonialForm({ ...newTestimonialForm, content: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
               required
             />
@@ -3256,40 +3689,57 @@ export default function AdminDashboardPage() {
               type="submit"
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
             >
-              Publish Verified Review
+              {editingTestimonial ? 'Save Review Changes' : 'Publish Verified Review'}
             </button>
           </form>
         </div>
       )}
 
       {/* ==========================================
-          MODAL 6: ADD FAQ ITEM
+          MODAL 6: ADD / EDIT FAQ ITEM
          ========================================== */}
-      {isAddFaqOpen && (
+      {(isAddFaqOpen || editingFaq) && (
         <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleCreateFaq}
             className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">Add Website FAQ</h3>
-              <button type="button" onClick={() => setIsAddFaqOpen(false)} className="p-1.5 rounded-lg bg-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">
+                {editingFaq ? 'Edit Website FAQ' : 'Add Website FAQ'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddFaqOpen(false);
+                  setEditingFaq(null);
+                }}
+                className="p-1.5 rounded-lg bg-slate-100"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <input
               type="text"
               placeholder="Question *"
-              value={newFaqForm.question}
-              onChange={(e) => setNewFaqForm({ ...newFaqForm, question: e.target.value })}
+              value={editingFaq ? editingFaq.question : newFaqForm.question}
+              onChange={(e) =>
+                editingFaq
+                  ? setEditingFaq({ ...editingFaq, question: e.target.value })
+                  : setNewFaqForm({ ...newFaqForm, question: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
               required
             />
             <textarea
               placeholder="Detailed Answer *"
               rows={4}
-              value={newFaqForm.answer}
-              onChange={(e) => setNewFaqForm({ ...newFaqForm, answer: e.target.value })}
+              value={editingFaq ? editingFaq.answer : newFaqForm.answer}
+              onChange={(e) =>
+                editingFaq
+                  ? setEditingFaq({ ...editingFaq, answer: e.target.value })
+                  : setNewFaqForm({ ...newFaqForm, answer: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
               required
             />
@@ -3297,7 +3747,161 @@ export default function AdminDashboardPage() {
               type="submit"
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
             >
-              Save FAQ Item
+              {editingFaq ? 'Save FAQ Changes' : 'Save FAQ Item'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 7: ADD / EDIT CAREER JOB OPENING
+         ========================================== */}
+      {(isAddCareerOpen || editingCareer) && (
+        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <form
+            onSubmit={handleSaveCareerModal}
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-bold text-slate-900">
+                {editingCareer ? 'Edit Job Opening' : 'Post New Job Opening'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddCareerOpen(false);
+                  setEditingCareer(null);
+                }}
+                className="p-1.5 rounded-lg bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Job Role Title * (e.g. Senior Next.js Developer)"
+              value={editingCareer ? editingCareer.role : newCareerForm.role}
+              onChange={(e) =>
+                editingCareer
+                  ? setEditingCareer({ ...editingCareer, role: e.target.value })
+                  : setNewCareerForm({ ...newCareerForm, role: e.target.value })
+              }
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              required
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Department"
+                value={editingCareer ? editingCareer.department : newCareerForm.department}
+                onChange={(e) =>
+                  editingCareer
+                    ? setEditingCareer({ ...editingCareer, department: e.target.value })
+                    : setNewCareerForm({ ...newCareerForm, department: e.target.value })
+                }
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              />
+              <input
+                type="text"
+                placeholder="Location (e.g. New Delhi / Remote)"
+                value={editingCareer ? editingCareer.location : newCareerForm.location}
+                onChange={(e) =>
+                  editingCareer
+                    ? setEditingCareer({ ...editingCareer, location: e.target.value })
+                    : setNewCareerForm({ ...newCareerForm, location: e.target.value })
+                }
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              />
+            </div>
+            <textarea
+              placeholder="Role responsibilities & description..."
+              rows={3}
+              value={editingCareer ? editingCareer.desc : newCareerForm.desc}
+              onChange={(e) =>
+                editingCareer
+                  ? setEditingCareer({ ...editingCareer, desc: e.target.value })
+                  : setNewCareerForm({ ...newCareerForm, desc: e.target.value })
+              }
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Skill Tags (comma separated)"
+              value={editingCareer ? (editingCareer.tags || []).join(', ') : newCareerForm.tags}
+              onChange={(e) =>
+                editingCareer
+                  ? setEditingCareer({
+                      ...editingCareer,
+                      tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
+                    })
+                  : setNewCareerForm({ ...newCareerForm, tags: e.target.value })
+              }
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono"
+            />
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
+            >
+              {editingCareer ? 'Save Job Opening' : 'Publish Job To /careers'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 8: REGISTER NEW MEDIA ASSET
+         ========================================== */}
+      {isAddMediaOpen && (
+        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <form
+            onSubmit={handleCreateMediaAsset}
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-bold text-slate-900">Register Brand / Media Asset</h3>
+              <button type="button" onClick={() => setIsAddMediaOpen(false)} className="p-1.5 rounded-lg bg-slate-100">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Asset Title * (e.g. Official Header Logo)"
+              value={newMediaForm.title}
+              onChange={(e) => setNewMediaForm({ ...newMediaForm, title: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Image Path or URL * (e.g. /limra-logo.png)"
+              value={newMediaForm.url}
+              onChange={(e) => setNewMediaForm({ ...newMediaForm, url: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono"
+              required
+            />
+            <select
+              value={newMediaForm.category}
+              onChange={(e) => setNewMediaForm({ ...newMediaForm, category: e.target.value as any })}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+            >
+              <option>Brand Logo &amp; Favicon</option>
+              <option>Portfolio Case Study</option>
+              <option>Blog Editorial</option>
+              <option>UI Graphic</option>
+            </select>
+            <input
+              type="text"
+              placeholder="SEO Alt Text"
+              value={newMediaForm.altText}
+              onChange={(e) => setNewMediaForm({ ...newMediaForm, altText: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+            />
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
+            >
+              Save Asset To Library
             </button>
           </form>
         </div>

@@ -8,10 +8,22 @@ import { caseStudiesData } from '@/data/mockData';
 
 export default function CaseStudies() {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [items, setItems] = useState(caseStudiesData);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.caseStudies) && data.cms.caseStudies.length > 0) {
+          setItems(data.cms.caseStudies);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const filteredItems = activeFilter === 'all'
-    ? caseStudiesData
-    : caseStudiesData.filter(item => item.category.toLowerCase().includes(activeFilter.toLowerCase()));
+    ? items
+    : items.filter(item => item.category.toLowerCase().includes(activeFilter.toLowerCase()));
 
   return (
     <section className="py-24 bg-white relative overflow-hidden border-b border-slate-200">

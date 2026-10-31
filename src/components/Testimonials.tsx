@@ -6,6 +6,19 @@ import { Star, Quote } from 'lucide-react';
 import { testimonialsData } from '@/data/mockData';
 
 export default function Testimonials() {
+  const [reviews, setReviews] = React.useState(testimonialsData);
+
+  React.useEffect(() => {
+    fetch('/api/admin')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.cms?.testimonials) && data.cms.testimonials.length > 0) {
+          setReviews(data.cms.testimonials);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="py-24 bg-slate-50 relative border-b border-slate-200 overflow-hidden">
       <div className="max-w-[1520px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
@@ -28,7 +41,7 @@ export default function Testimonials() {
 
         {/* 3 Review Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonialsData.map((t) => (
+          {reviews.map((t) => (
             <div
               key={t.id}
               className="bg-white border border-slate-200 hover:border-purple-300 rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between relative group shadow-sm hover:shadow-lg"
@@ -46,7 +59,7 @@ export default function Testimonials() {
                 </div>
 
                 <p className="text-slate-700 text-xs sm:text-sm leading-relaxed italic mb-6 font-normal">
-                  &ldquo;{t.review}&rdquo;
+                  &ldquo;{t.review || (t as any).content}&rdquo;
                 </p>
               </div>
 
@@ -55,23 +68,23 @@ export default function Testimonials() {
                   {t.avatar ? (
                     <Image
                       src={t.avatar}
-                      alt={`${t.client_name} - ${t.company_or_role} client review for LIMRA Digitech`}
+                      alt={`${t.client_name || (t as any).name} - ${t.company_or_role} client review for LIMRA Digitech`}
                       fill
                       sizes="44px"
                       className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-medium flex items-center justify-center text-xs">
-                      {t.client_name.split(' ').map(n => n[0]).join('')}
+                      {(t.client_name || (t as any).name || 'CL').split(' ').map((n: string) => n[0]).join('')}
                     </div>
                   )}
                 </div>
                 <div>
                   <h4 className="font-semibold text-slate-900 text-xs sm:text-sm">
-                    {t.client_name}
+                    {t.client_name || (t as any).name}
                   </h4>
                   <p className="text-[11px] text-slate-500 mt-0.5 font-normal">
-                    {t.company_or_role}
+                    {t.company_or_role || `${(t as any).role || ''}, ${(t as any).company || ''}`}
                   </p>
                 </div>
               </div>
