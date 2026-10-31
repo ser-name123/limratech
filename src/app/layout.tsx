@@ -9,6 +9,7 @@ import AdvancedPreloader from '@/components/AdvancedPreloader';
 import PageTransition from '@/components/PageTransition';
 import GlobalMotionEngine from '@/components/GlobalMotionEngine';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import CustomScriptsInjector from '@/components/CustomScriptsInjector';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -120,6 +121,8 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning className="font-sans antialiased min-h-screen flex flex-col bg-[#f8fafc] text-slate-600 selection:bg-purple-600 selection:text-white font-normal text-sm sm:text-base leading-relaxed">
+        <CustomScriptsInjector position="header" />
+        <CustomScriptsInjector position="body_start" />
         <AnalyticsTracker />
         <AdvancedPreloader />
         <ScrollProgressBar />
@@ -128,6 +131,7 @@ export default function RootLayout({
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
+        <CustomScriptsInjector position="footer" />
         <GlobalMotionEngine />
         <WhatsAppButton />
       </body>

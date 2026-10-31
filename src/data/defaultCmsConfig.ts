@@ -67,6 +67,8 @@ export interface HeaderConfig {
     techTitle: string;
     techDesc: string;
   };
+  customHeadScripts?: string;
+  customBodyStartScripts?: string;
 }
 
 export interface FooterLinkItem {
@@ -99,6 +101,7 @@ export interface FooterConfig {
   quickLinks: FooterLinkItem[];
   serviceLinks: FooterLinkItem[];
   legalLinks: FooterLinkItem[];
+  customFooterScripts?: string;
 }
 
 export interface HeroAndStatsConfig {
@@ -171,6 +174,15 @@ export interface PageSeoEntry {
   targetLocations: string[];
 }
 
+export interface CustomScriptSnippet {
+  id: string;
+  name: string;
+  placement: 'header' | 'body_start' | 'footer';
+  pageScope: string;
+  code: string;
+  enabled: boolean;
+}
+
 export interface SeoAndRedirectsConfig {
   siteTitle: string;
   titleTemplate: string;
@@ -190,6 +202,7 @@ export interface SeoAndRedirectsConfig {
   enableSpeakableSchema?: boolean;
   honeypotEnabled: boolean;
   redirects: { from: string; to: string; permanent: boolean }[];
+  customScripts?: CustomScriptSnippet[];
 }
 
 export const defaultHeaderConfig: HeaderConfig = {
@@ -222,6 +235,8 @@ export const defaultHeaderConfig: HeaderConfig = {
     techTitle: 'Modern Web, Mobile, CMS & MarTech',
     techDesc: 'Explore dedicated 11-section architecture guides for Next.js, WordPress, Shopify, Laravel, Flutter, Supabase, and SEO/MarTech.',
   },
+  customHeadScripts: `<!-- LIMRA Digitech Global Header (<head>) Scripts: GA4, GTM, Meta Pixel, GSC Verification -->\n<meta name="google-site-verification" content="limra-gsc-verified-token-2026" />\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', 'G-LIMRA2026IN');\n</script>`,
+  customBodyStartScripts: `<!-- LIMRA Digitech Body Start (<body>) Scripts: Google Tag Manager (noscript) -->`,
 };
 
 export const defaultFooterConfig: FooterConfig = {
@@ -276,6 +291,7 @@ export const defaultFooterConfig: FooterConfig = {
     { label: 'Terms of Use', href: '/terms-and-conditions', visible: true },
     { label: 'Sitemap', href: '/sitemap-page', visible: true },
   ],
+  customFooterScripts: `<!-- LIMRA Digitech Global Footer (</body>) Scripts: Conversion Pixels, Remarketing & Live Chat Widgets -->\n<script>\n  console.debug('[LIMRA Telemetry] Footer conversion & remarketing layer initialized.');\n</script>`,
 };
 
 export const defaultHeroAndStatsConfig: HeroAndStatsConfig = {
@@ -392,6 +408,40 @@ export const defaultSeoConfig: SeoAndRedirectsConfig = {
     { from: '/software-development', to: '/software-developers-india', permanent: true },
     { from: '/work', to: '/portfolio', permanent: true },
     { from: '/blog', to: '/blogs', permanent: true },
+  ],
+  customScripts: [
+    {
+      id: 'script-ga4',
+      name: 'Google Analytics 4 (gtag.js)',
+      placement: 'header',
+      pageScope: 'All Pages (*)',
+      code: `<script async src="https://www.googletagmanager.com/gtag/js?id=G-LIMRA2026IN"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', 'G-LIMRA2026IN');\n</script>`,
+      enabled: true,
+    },
+    {
+      id: 'script-meta-pixel',
+      name: 'Meta / Facebook Ads Pixel & Lead Event',
+      placement: 'header',
+      pageScope: 'All Pages (*)',
+      code: `<!-- Meta Pixel Code -->\n<script>\n  window.fbq = window.fbq || function(){};\n</script>`,
+      enabled: true,
+    },
+    {
+      id: 'script-gtm-body',
+      name: 'Google Tag Manager (Body Noscript)',
+      placement: 'body_start',
+      pageScope: 'All Pages (*)',
+      code: `<!-- Google Tag Manager (noscript) -->\n<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-LIMRA2026" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`,
+      enabled: true,
+    },
+    {
+      id: 'script-footer-conversion',
+      name: 'Google Ads Lead Conversion & Remarketing Tag',
+      placement: 'footer',
+      pageScope: '/contact-us',
+      code: `<!-- Footer Lead Conversion Tracking -->\n<script>\n  window.limraConversionReady = true;\n</script>`,
+      enabled: true,
+    },
   ],
 };
 

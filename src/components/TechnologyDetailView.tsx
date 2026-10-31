@@ -280,9 +280,8 @@ export default function TechnologyDetailView({ technology }: { technology: Techn
                   >
                     <span>{faq.q}</span>
                     <ChevronDown
-                      className={`w-4 h-4 text-purple-600 flex-shrink-0 transition-transform duration-300 ${
-                        openFaq === index ? 'rotate-180' : ''
-                      }`}
+                      className={`w-4 h-4 text-purple-600 flex-shrink-0 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''
+                        }`}
                     />
                   </button>
                   {openFaq === index && (

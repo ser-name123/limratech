@@ -120,6 +120,12 @@ export default function AdminDashboardPage() {
     initialCmsSnapshot.pageSeoRegistry || defaultPageSeoRegistry
   );
   const [seoCategoryFilter, setSeoCategoryFilter] = useState<string>('All');
+  const [newScriptForm, setNewScriptForm] = useState({
+    name: '',
+    placement: 'header' as 'header' | 'body_start' | 'footer',
+    pageScope: 'All Pages (*)',
+    code: '',
+  });
   const [editingMegaPage, setEditingMegaPage] = useState<{
     type: 'industry' | 'technology';
     idx: number;
@@ -1547,6 +1553,135 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* 3. HEADER (<HEAD>) & BODY-START (<BODY>) CUSTOM SCRIPTS / TRACKING CODE MANAGER */}
+                <div className="pt-6 border-t border-slate-200 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[11px] font-mono font-bold uppercase text-purple-700">
+                        HEADER (&lt;HEAD&gt;) &amp; BODY-TOP (&lt;BODY&gt;) CUSTOM SCRIPTS INJECTION
+                      </span>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Add Custom Header Scripts (GA4, GTM, Meta Pixel, Search Console, Clarity, Custom CSS/JS)
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Any script or meta tag added here is automatically injected into the live website Header across all pages.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isSaving}
+                      onClick={() =>
+                        postAdminAction('save_header', headerCfg, 'Header & Custom Head Scripts Published Live!')
+                      }
+                      className="bg-slate-900 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                    >
+                      <Code2 className="w-4 h-4 text-purple-300" />
+                      <span>Save Header Scripts</span>
+                    </button>
+                  </div>
+
+                  {/* Quick 1-Click Script Preset Buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-mono font-bold text-slate-500 mr-1">
+                      Quick Insert Preset:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setHeaderCfg({
+                          ...headerCfg,
+                          customHeadScripts: `${
+                            headerCfg.customHeadScripts || ''
+                          }\n<!-- Google Analytics 4 (gtag.js) -->\n<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', 'G-XXXXXXXXXX');\n</script>`.trim(),
+                        })
+                      }
+                      className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold"
+                    >
+                      + GA4 (gtag.js)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setHeaderCfg({
+                          ...headerCfg,
+                          customHeadScripts: `${
+                            headerCfg.customHeadScripts || ''
+                          }\n<!-- Meta / Facebook Pixel Code -->\n<script>\n  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');\n  fbq('init', 'YOUR_PIXEL_ID');\n  fbq('track', 'PageView');\n</script>`.trim(),
+                        })
+                      }
+                      className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold"
+                    >
+                      + Meta Pixel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setHeaderCfg({
+                          ...headerCfg,
+                          customHeadScripts: `${
+                            headerCfg.customHeadScripts || ''
+                          }\n<!-- Google Tag Manager (Head) -->\n<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-XXXXXXX');</script>`.trim(),
+                        })
+                      }
+                      className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold"
+                    >
+                      + GTM &lt;head&gt;
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setHeaderCfg({
+                          ...headerCfg,
+                          customHeadScripts: `${
+                            headerCfg.customHeadScripts || ''
+                          }\n<!-- Microsoft Clarity Heatmap -->\n<script type="text/javascript">\n  (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "CLARITY_ID");\n</script>`.trim(),
+                        })
+                      }
+                      className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold"
+                    >
+                      + Microsoft Clarity
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-800">
+                          Header (&lt;head&gt;) Custom Scripts / Meta Tags
+                        </label>
+                        <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                          Injected in Header
+                        </span>
+                      </div>
+                      <textarea
+                        rows={7}
+                        placeholder="Paste <script>, <meta>, or <style> tags for Header (<head>)..."
+                        value={headerCfg.customHeadScripts || ''}
+                        onChange={(e) => setHeaderCfg({ ...headerCfg, customHeadScripts: e.target.value })}
+                        className="w-full p-4 rounded-2xl bg-slate-950 text-emerald-300 border border-slate-800 text-xs font-mono leading-relaxed focus:outline-none focus:border-purple-500"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-800">
+                          Body Open (&lt;body&gt; Start) Scripts (e.g. GTM &lt;noscript&gt;)
+                        </label>
+                        <span className="text-[10px] font-mono text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded">
+                          Injected after &lt;body&gt;
+                        </span>
+                      </div>
+                      <textarea
+                        rows={7}
+                        placeholder="Paste <noscript><iframe>...</iframe></noscript> or body-start scripts..."
+                        value={headerCfg.customBodyStartScripts || ''}
+                        onChange={(e) => setHeaderCfg({ ...headerCfg, customBodyStartScripts: e.target.value })}
+                        className="w-full p-4 rounded-2xl bg-slate-950 text-purple-200 border border-slate-800 text-xs font-mono leading-relaxed focus:outline-none focus:border-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1859,6 +1994,101 @@ export default function AdminDashboardPage() {
                         + Add
                       </button>
                     </div>
+                  </div>
+                </div>
+
+                {/* 3. FOOTER (</BODY>) CUSTOM SCRIPTS, CONVERSION PIXELS & LIVE CHAT WIDGETS */}
+                <div className="pt-6 border-t border-slate-200 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[11px] font-mono font-bold uppercase text-purple-700">
+                        FOOTER (&lt;/BODY&gt;) CUSTOM SCRIPTS, CONVERSION PIXELS &amp; LIVE CHAT
+                      </span>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Add Custom Footer Scripts (Google Ads Conversion, Live Chat Widgets, LinkedIn Insight, CRM Tracking)
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Scripts added here load in the Footer right before &lt;/body&gt; so they never block initial page rendering.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isSaving}
+                      onClick={() =>
+                        postAdminAction('save_footer', footerCfg, 'Footer & Custom Footer Scripts Published Live!')
+                      }
+                      className="bg-slate-900 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                    >
+                      <Code2 className="w-4 h-4 text-purple-300" />
+                      <span>Save Footer Scripts</span>
+                    </button>
+                  </div>
+
+                  {/* Quick 1-Click Footer Script Preset Buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-mono font-bold text-slate-500 mr-1">
+                      Quick Insert Footer Preset:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFooterCfg({
+                          ...footerCfg,
+                          customFooterScripts: `${
+                            footerCfg.customFooterScripts || ''
+                          }\n<!-- Google Ads Lead Conversion Event -->\n<script>\n  window.addEventListener('limra_lead_submitted', function() {\n    if (typeof gtag === 'function') {\n      gtag('event', 'conversion', {'send_to': 'AW-XXXXXXXXX/YYYYYYYYY'});\n    }\n  });\n</script>`.trim(),
+                        })
+                      }
+                      className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold"
+                    >
+                      + Google Ads Conversion
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFooterCfg({
+                          ...footerCfg,
+                          customFooterScripts: `${
+                            footerCfg.customFooterScripts || ''
+                          }\n<!-- Tawk.to / Crisp Live Chat Widget Script -->\n<script type="text/javascript">\n  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();\n</script>`.trim(),
+                        })
+                      }
+                      className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold"
+                    >
+                      + Live Chat Widget
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFooterCfg({
+                          ...footerCfg,
+                          customFooterScripts: `${
+                            footerCfg.customFooterScripts || ''
+                          }\n<!-- LinkedIn B2B Insight Tag -->\n<script type="text/javascript">\n  _linkedin_partner_id = "XXXXXXX";\n  window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];\n  window._linkedin_data_partner_ids.push(_linkedin_partner_id);\n</script>`.trim(),
+                        })
+                      }
+                      className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold"
+                    >
+                      + LinkedIn Insight Tag
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-800">
+                        Footer (&lt;/body&gt;) Custom Scripts / Tracking &amp; Widget Code
+                      </label>
+                      <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                        Injected in Footer before &lt;/body&gt;
+                      </span>
+                    </div>
+                    <textarea
+                      rows={7}
+                      placeholder="Paste custom <script> tags, chat widgets, or conversion pixels for the Footer..."
+                      value={footerCfg.customFooterScripts || ''}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, customFooterScripts: e.target.value })}
+                      className="w-full p-4 rounded-2xl bg-slate-950 text-emerald-300 border border-slate-800 text-xs font-mono leading-relaxed focus:outline-none focus:border-purple-500"
+                    />
                   </div>
                 </div>
               </div>
@@ -4031,6 +4261,184 @@ export default function AdminDashboardPage() {
                       + Add
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* 4. UNIFIED HEADER & FOOTER CUSTOM SCRIPTS VAULT (TAG & PIXEL MANAGER) */}
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      HEADER (&lt;HEAD&gt;) &amp; FOOTER (&lt;/BODY&gt;) CUSTOM SCRIPT VAULT
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Manage Header, Body-Start &amp; Footer Tracking Scripts ({(seoCfg.customScripts || []).length} Snippets)
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Add, toggle, or target custom scripts to Header (&lt;head&gt;), Body Start (&lt;body&gt;), or Footer (&lt;/body&gt;) across all pages or specific routes.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => postAdminAction('save_seo', seoCfg, 'Header & Footer Custom Scripts Saved Live!')}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                  >
+                    <Save className="w-4 h-4" /> Save Script Vault
+                  </button>
+                </div>
+
+                {/* Existing Named Script Snippets */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {(seoCfg.customScripts || []).map((snip, idx) => (
+                    <div
+                      key={snip.id}
+                      className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full border ${
+                              snip.placement === 'header'
+                                ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                : snip.placement === 'body_start'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            {snip.placement === 'header'
+                              ? 'Header <head>'
+                              : snip.placement === 'body_start'
+                              ? 'Body <noscript>'
+                              : 'Footer </body>'}
+                          </span>
+                          <span className="text-[11px] font-mono text-slate-500">
+                            Scope: {snip.pageScope}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={snip.enabled}
+                              onChange={(e) => {
+                                const list = [...(seoCfg.customScripts || [])];
+                                list[idx] = { ...snip, enabled: e.target.checked };
+                                setSeoCfg({ ...seoCfg, customScripts: list });
+                              }}
+                              className="accent-purple-600"
+                            />
+                            <span>{snip.enabled ? 'Active' : 'Paused'}</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const list = (seoCfg.customScripts || []).filter((_, i) => i !== idx);
+                              setSeoCfg({ ...seoCfg, customScripts: list });
+                            }}
+                            className="text-rose-500 hover:text-rose-700 p-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={snip.name}
+                        onChange={(e) => {
+                          const list = [...(seoCfg.customScripts || [])];
+                          list[idx] = { ...snip, name: e.target.value };
+                          setSeoCfg({ ...seoCfg, customScripts: list });
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-900"
+                      />
+
+                      <textarea
+                        rows={4}
+                        value={snip.code}
+                        onChange={(e) => {
+                          const list = [...(seoCfg.customScripts || [])];
+                          list[idx] = { ...snip, code: e.target.value };
+                          setSeoCfg({ ...seoCfg, customScripts: list });
+                        }}
+                        className="w-full p-3 rounded-xl bg-slate-950 text-emerald-300 border border-slate-800 text-[11px] font-mono leading-relaxed"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add New Custom Header or Footer Script Snippet */}
+                <div className="p-5 rounded-2xl bg-purple-50/40 border border-purple-200 space-y-3">
+                  <div className="text-xs font-bold text-purple-900">
+                    + Add New Custom Header or Footer Script Snippet
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Script Name (e.g. Hotjar / Meta Pixel)"
+                      value={newScriptForm.name}
+                      onChange={(e) => setNewScriptForm({ ...newScriptForm, name: e.target.value })}
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                    />
+                    <select
+                      value={newScriptForm.placement}
+                      onChange={(e) =>
+                        setNewScriptForm({
+                          ...newScriptForm,
+                          placement: e.target.value as 'header' | 'body_start' | 'footer',
+                        })
+                      }
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold"
+                    >
+                      <option value="header">Inject in Header (&lt;head&gt;)</option>
+                      <option value="body_start">Inject at Body Start (&lt;body&gt;)</option>
+                      <option value="footer">Inject in Footer (&lt;/body&gt;)</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Target Route (e.g. All Pages (*) or /contact-us)"
+                      value={newScriptForm.pageScope}
+                      onChange={(e) => setNewScriptForm({ ...newScriptForm, pageScope: e.target.value })}
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-mono"
+                    />
+                  </div>
+                  <textarea
+                    rows={4}
+                    placeholder="Paste <script>...</script> or <meta> code here..."
+                    value={newScriptForm.code}
+                    onChange={(e) => setNewScriptForm({ ...newScriptForm, code: e.target.value })}
+                    className="w-full p-3.5 rounded-xl bg-slate-950 text-emerald-300 border border-slate-800 text-xs font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newScriptForm.name.trim() || !newScriptForm.code.trim()) return;
+                      const nextList = [
+                        ...(seoCfg.customScripts || []),
+                        {
+                          id: `script-${Date.now()}`,
+                          name: newScriptForm.name.trim(),
+                          placement: newScriptForm.placement,
+                          pageScope: newScriptForm.pageScope || 'All Pages (*)',
+                          code: newScriptForm.code.trim(),
+                          enabled: true,
+                        },
+                      ];
+                      const nextSeo = { ...seoCfg, customScripts: nextList };
+                      setSeoCfg(nextSeo);
+                      setNewScriptForm({
+                        name: '',
+                        placement: 'header',
+                        pageScope: 'All Pages (*)',
+                        code: '',
+                      });
+                      postAdminAction('save_seo', nextSeo, 'New custom script added & activated!');
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold"
+                  >
+                    + Add &amp; Activate Script
+                  </button>
                 </div>
               </div>
             </div>
