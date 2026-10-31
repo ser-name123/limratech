@@ -9,47 +9,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = (cms.seo?.canonicalDomain || 'https://limradigitech.com').replace(/\/$/, '');
   const registry = cms.pageSeoRegistry || defaultPageSeoRegistry;
 
-  const staticRoutes = [
-    '',
-    '/about',
-    '/services',
-    '/website-development-services',
-    '/digital-marketing-agency-india',
-    '/lead-generation-company-india',
-    '/creative-design-solutions-india',
-    '/mobile-app-developer-india',
-    '/software-developers-india',
-    '/industries',
-    '/technologies',
-    '/portfolio',
-    '/clients',
-    '/blogs',
-    '/careers',
-    '/contact-us',
-    '/privacy-policy',
-    '/terms-and-conditions',
-    '/sitemap-page',
-  ];
+  // Every page in the (admin-editable) SEO registry, excluding anything marked
+  // noindex. This auto-includes new pages (e.g. legal pages) with no code change.
+  const indexable = registry.filter((e) => !String(e.robots || '').includes('noindex'));
+  const registryRoutes = new Set(indexable.map((e) => e.route));
 
-  //Also include any newly created services in cms.services
-  const dynamicServices = (cms.services || [])
+  const staticEntries: MetadataRoute.Sitemap = indexable.map((e) => ({
+    url: `${baseUrl}${e.route === '/' ? '' : e.route}`,
+    lastModified: new Date(),
+    changeFrequency: (e.changeFreq as any) || 'weekly',
+    priority: typeof e.priority === 'number' ? e.priority : 0.7,
+  }));
+
+  // Any service pages created in the CMS that aren't already in the registry.
+  const dynamicServiceEntries: MetadataRoute.Sitemap = (cms.services || [])
     .map((s: any) => `/${s.slug}`)
-    .filter((r: string) => !staticRoutes.includes(r));
-
-  const allCoreRoutes = [...staticRoutes, ...dynamicServices];
-
-  const staticEntries: MetadataRoute.Sitemap = allCoreRoutes.map((route) => {
-    const routeKey = route === '' ? '/' : route;
-    const regEntry = registry.find((e) => e.route === routeKey);
-    return {
-      url: `${baseUrl}${route}`,
-      lastModified: new Date(),
-      changeFrequency: regEntry?.changeFreq || (route === '' ? 'daily' : 'weekly'),
-      priority:
-        regEntry?.priority ||
-        (route === '' ? 1.0 : route.includes('services') || route.includes('india') ? 0.9 : 0.8),
-    };
-  });
+    .filter((r: string) => !registryRoutes.has(r))
+    .map((route: string) => ({ url: `${baseUrl}${route}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8 }));
 
   const industries = cms.industries || industriesPagesData;
   const industryEntries: MetadataRoute.Sitemap = industries.map((ind: any) => ({
@@ -85,6 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticEntries,
+    ...dynamicServiceEntries,
     ...industryEntries,
     ...technologyEntries,
     ...caseStudyEntries,

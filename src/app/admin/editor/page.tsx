@@ -738,6 +738,59 @@ function AdminStudioEditorInner() {
 
   const currentMeta = entityLabels[entityType] || entityLabels.blog;
 
+  // Live, computed On-Page SEO audit derived from the actual formData fields.
+  const seoTitleVal = String(
+    formData.metaTitle ||
+      formData.seo_title ||
+      formData.title ||
+      formData.pageName ||
+      formData.role ||
+      formData.name ||
+      ''
+  ).trim();
+  const seoDescVal = String(
+    formData.metaDescription ||
+      formData.seo_description ||
+      formData.excerpt ||
+      formData.short_description ||
+      formData.heroDescription ||
+      formData.description ||
+      formData.desc ||
+      ''
+  ).trim();
+  const seoSlugVal = String(formData.slug || '').trim();
+  const seoFocusVal = String(formData.focusKeyword || formData.focus_keyword || '').trim();
+
+  const seoChecks: { label: string; passed: boolean }[] = [
+    {
+      label: 'Title present & 30–60 chars',
+      passed: seoTitleVal.length >= 30 && seoTitleVal.length <= 60,
+    },
+    {
+      label: 'Meta description 120–160 chars',
+      passed: seoDescVal.length >= 120 && seoDescVal.length <= 160,
+    },
+    {
+      label: 'Clean slug (lowercase, no spaces)',
+      passed:
+        seoSlugVal.length > 0 &&
+        seoSlugVal === seoSlugVal.toLowerCase() &&
+        !/\s/.test(seoSlugVal),
+    },
+    {
+      label: 'Focus keyword in title',
+      passed:
+        seoFocusVal.length > 0 &&
+        seoTitleVal.toLowerCase().includes(seoFocusVal.toLowerCase()),
+    },
+    {
+      label: 'Body content present',
+      passed: activeBodyText.trim().length > 0,
+    },
+  ];
+  const seoPassed = seoChecks.filter((c) => c.passed).length;
+  const seoScore = Math.round((seoPassed / seoChecks.length) * 100);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f4f6fb] flex items-center justify-center p-8">
@@ -2522,32 +2575,42 @@ function AdminStudioEditorInner() {
                       Algorithmic SEO Readiness Score
                     </h3>
                   </div>
-                  <div className="px-3.5 py-1.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-mono font-black text-base">
-                    98 / 100
+                  <div
+                    className={`px-3.5 py-1.5 rounded-2xl font-mono font-black text-base ${
+                      seoScore >= 80
+                        ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
+                        : seoScore >= 50
+                        ? 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
+                        : 'bg-rose-500/20 border border-rose-400/40 text-rose-300'
+                    }`}
+                  >
+                    {seoScore} / 100
                   </div>
                 </div>
 
                 <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-500 to-emerald-400 w-[98%]" />
+                  <div
+                    className="h-full bg-gradient-to-r from-purple-500 to-emerald-400 transition-all"
+                    style={{ width: seoScore + '%' }}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                  <div className="flex items-center gap-1.5 text-emerald-300">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                    <span>Meta Title &amp; H1 Optimized</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-emerald-300">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                    <span>Schema.org @graph Active</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-emerald-300">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                    <span>Clean Canonical &amp; URL Slug</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-emerald-300">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                    <span>OpenGraph &amp; Twitter Card Ready</span>
-                  </div>
+                  {seoChecks.map((check) => (
+                    <div
+                      key={check.label}
+                      className={`flex items-center gap-1.5 ${
+                        check.passed ? 'text-emerald-300' : 'text-amber-300'
+                      }`}
+                    >
+                      {check.passed ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                      ) : (
+                        <HelpCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                      )}
+                      <span>{check.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -2616,8 +2679,6 @@ function AdminStudioEditorInner() {
                       'Transforming businesses with high-speed Next.js web development, SEO, lead generation, mobile apps, and software solutions.'}
                   </p>
                   <div className="pt-1 flex flex-wrap items-center gap-2 text-[10px] text-amber-600 font-semibold">
-                    <span>★★★★★ Rating: 4.9/5 · 350+ reviews</span>
-                    <span className="text-slate-400">•</span>
                     <span className="text-purple-700 font-mono">
                       Focus: {formData.focusKeyword || formData.focus_keyword || 'Digital Solutions India'}
                     </span>

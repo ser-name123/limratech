@@ -1,10 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
+import { homeWidgetsContent } from '@/data/pages/homeWidgets';
 
 export default function TechStackEcosystem() {
   const [filter, setFilter] = useState('all');
+  const [wc, setWc] = useState(homeWidgetsContent.techEcosystem);
+  useEffect(() => {
+    fetch('/api/admin')
+      .then((r) => r.json())
+      .then((d) => { if (d?.cms?.pageSections?.homeWidgets?.techEcosystem) setWc(d.cms.pageSections.homeWidgets.techEcosystem); })
+      .catch(() => {});
+  }, []);
 
   const tools = [
     { name: 'Next.js & React', category: 'web', role: 'Serverless SSR, SSG & Web Applications', badge: 'Core Web' },
@@ -43,13 +51,13 @@ export default function TechStackEcosystem() {
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium">
             <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-            <span>TECHNOLOGICAL ECOSYSTEM</span>
+            <span>{wc.eyebrow}</span>
           </div>
           <h2 className="text-xl sm:text-3xl lg:text-[34px] font-medium text-slate-900 tracking-tight leading-snug">
-            Tools &amp; Frameworks We Have Mastered
+            {wc.heading}
           </h2>
           <p className="text-sm text-slate-600 font-normal">
-            We avoid outdated tech. Our modern stack gives you unmatched speed, security, and organic search immunity.
+            {wc.description}
           </p>
         </div>
 

@@ -1,57 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Code2, 
-  Layers, 
-  Smartphone, 
-  ShoppingBag, 
-  ShieldCheck, 
-  Zap, 
+import {
+  Code2,
+  Layers,
+  Smartphone,
+  ShoppingBag,
+  ShieldCheck,
+  Zap,
   ArrowRight,
   Database
 } from 'lucide-react';
+import { defaultHomeSections } from '@/data/defaultCmsConfig';
+import RichText from '@/components/RichText';
+
+const devIcons = [Code2, Database, ShoppingBag, Layers, Smartphone, ShieldCheck];
 
 export default function WebDevPillarsGrid() {
-  const devModules = [
-    {
-      icon: Code2,
-      title: 'Next.js 15 Serverless Architecture',
-      desc: 'Deploying sub-second applications on edge networks with automated SSG, dynamic SSR, and zero cold-start bottlenecks.',
-      tech: 'Next.js 15 • React 19'
-    },
-    {
-      icon: Database,
-      title: 'Supabase & PostgreSQL Cloud',
-      desc: 'Normalized relational database schemas with built-in authentication, instant real-time data sync, and Row Level Security.',
-      tech: 'Supabase • PostgreSQL'
-    },
-    {
-      icon: ShoppingBag,
-      title: 'High-Converting E-Commerce Stores',
-      desc: 'Headless Shopify and custom stores built for maximum checkout velocity, frictionless one-click payments, and instant search.',
-      tech: 'Headless • Shopify Plus'
-    },
-    {
-      icon: Layers,
-      title: 'Enterprise SaaS Platforms & Portals',
-      desc: 'Internal team dashboards, CRM tools, and scalable SaaS multi-tenant software engineered to automate business workflows.',
-      tech: 'Node.js • TypeScript'
-    },
-    {
-      icon: Smartphone,
-      title: 'Cross-Platform Mobile Apps',
-      desc: 'Native-feel iOS and Android mobile apps engineered with Flutter and React Native with seamless offline local caching.',
-      tech: 'Flutter • React Native'
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Enterprise Security & Performance',
-      desc: 'End-to-end encryption, strict Content Security Policies, TLS 1.3, and automated CI/CD unit testing for rock-solid uptime.',
-      tech: 'Zero-Downtime CI/CD'
-    },
-  ];
+  const [cfg, setCfg] = useState(defaultHomeSections.webDevPillars);
+  useEffect(() => {
+    fetch('/api/admin')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.cms?.homeSections?.webDevPillars) setCfg(d.cms.homeSections.webDevPillars);
+      })
+      .catch(() => {});
+  }, []);
+
+  const devModules = cfg.items.map((it, i) => ({ icon: devIcons[i % devIcons.length], ...it }));
 
   return (
     <section className="py-24 bg-white relative border-b border-slate-200">
@@ -60,14 +37,12 @@ export default function WebDevPillarsGrid() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
           <div className="max-w-2xl space-y-3">
             <span className="text-xs uppercase font-medium tracking-widest text-cyan-700 bg-cyan-50 border border-cyan-200 px-3.5 py-1 rounded-full inline-block">
-              FULL-STACK ENGINEERING
+              {cfg.eyebrow}
             </span>
             <h2 className="text-xl sm:text-3xl lg:text-[34px] font-medium text-slate-900 tracking-tight leading-snug">
-              Modern Web Development &amp; Cloud Systems
+              {cfg.heading}
             </h2>
-            <p className="text-sm text-slate-600 font-normal leading-relaxed">
-              We build maintainable, lightning-fast digital products that never crash during high-traffic spikes and convert traffic with ease.
-            </p>
+            <RichText className="text-sm text-slate-600 font-normal leading-relaxed" html={cfg.description} />
           </div>
 
           <Link
@@ -101,9 +76,7 @@ export default function WebDevPillarsGrid() {
                     {item.title}
                   </h3>
 
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    {item.desc}
-                  </p>
+                  <RichText className="text-xs text-slate-600 leading-relaxed font-normal" html={item.desc} />
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">

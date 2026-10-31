@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Layers,
 } from 'lucide-react';
+import { useSiteInfo } from '@/lib/useSiteInfo';
 
 export interface SeoAuthorityProps {
   pageTitle: string;
@@ -73,6 +74,7 @@ export default function SeoAuthoritySection({
   faqs = [],
   locations = DEFAULT_PAN_INDIA_CITIES,
 }: SeoAuthorityProps) {
+  const site = useSiteInfo();
   const [activeTab, setActiveTab] = useState<'keywords' | 'locations' | 'schema'>('keywords');
   const [copiedSchema, setCopiedSchema] = useState(false);
 
@@ -141,8 +143,8 @@ export default function SeoAuthoritySection({
         name: 'LIMRA Digitech',
         url: 'https://limradigitech.com',
         logo: 'https://limradigitech.com/limra-logo.png',
-        telephone: '+91-9571302312',
-        email: 'limradigitech@gmail.com',
+        telephone: site.phone,
+        email: site.email,
       },
       areaServed: [
         { '@type': 'Country', name: 'India' },

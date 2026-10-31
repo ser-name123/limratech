@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { homeWidgetsContent } from '@/data/pages/homeWidgets';
 import { 
   Search, 
   TrendingUp, 
@@ -22,6 +23,13 @@ import {
 } from 'lucide-react';
 
 export default function AdvancedSeoSimulator() {
+  const [wc, setWc] = useState(homeWidgetsContent.seoSimulator);
+  useEffect(() => {
+    fetch('/api/admin')
+      .then((r) => r.json())
+      .then((d) => { if (d?.cms?.pageSections?.homeWidgets?.seoSimulator) setWc(d.cms.pageSections.homeWidgets.seoSimulator); })
+      .catch(() => {});
+  }, []);
   const [activeMode, setActiveMode] = useState<'serp' | 'crawler' | 'immunity'>('serp');
   
   // Mode 1: SERP Rank #1 Simulation state
@@ -105,13 +113,13 @@ export default function AdvancedSeoSimulator() {
           <div className="max-w-3xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-semibold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-spin" style={{ animationDuration: '4s' }} />
-              <span>ADVANCED ALGORITHMIC VISUALIZER</span>
+              <span>{wc.eyebrow}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-[38px] font-bold text-slate-900 tracking-tight leading-tight">
-              See How Our Code-First SEO <span className="bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 bg-clip-text text-transparent">Commands Rank #1</span>
+              {wc.heading}
             </h2>
             <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-              Google doesn&apos;t just read keywords anymore. It measures rendering speed, DOM stability, structured entity schema, and sub-second edge response. Watch our live simulation engine in action.
+              {wc.description}
             </p>
           </div>
 

@@ -31,12 +31,13 @@ export default async function SoftwareDevPage() {
     { q: 'Can you migrate legacy software to modern cloud infrastructure?', a: 'Yes! We frequently migrate monolithic and legacy PHP/ASP systems to modern Next.js + TypeScript + Supabase architectures.' },
   ];
 
+  const landing: any = (cms as any).pageSections?.['software-developers-india'] || {};
   return (
     <ServiceDetailView
       service={service}
-      heroTagline="Trusted Software Development Company in India"
-      benefits={benefits}
-      faqs={faqs}
+      heroTagline={landing.hero?.heading || 'Trusted Software Development Company in India'}
+      benefits={landing.benefits?.items?.length ? landing.benefits.items : benefits}
+      faqs={landing.faqs?.items?.length ? landing.faqs.items : faqs}
     />
   );
 }

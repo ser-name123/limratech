@@ -31,12 +31,13 @@ export default async function DigitalMarketingPage() {
     { q: 'How do you measure marketing ROI?', a: 'We track every conversion using GA4, Meta Pixel, server-side Conversion API, and CRM pipeline attribution to show exact revenue generated per ad rupee.' },
   ];
 
+  const landing: any = (cms as any).pageSections?.['digital-marketing-agency-india'] || {};
   return (
     <ServiceDetailView
       service={service}
-      heroTagline="Best Digital Marketing Company in India For Business Growth"
-      benefits={benefits}
-      faqs={faqs}
+      heroTagline={landing.hero?.heading || 'Best Digital Marketing Company in India For Business Growth'}
+      benefits={landing.benefits?.items?.length ? landing.benefits.items : benefits}
+      faqs={landing.faqs?.items?.length ? landing.faqs.items : faqs}
     />
   );
 }

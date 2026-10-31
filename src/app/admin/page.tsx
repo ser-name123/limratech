@@ -57,13 +57,19 @@ import {
   PricingPackageItem,
   PageSeoEntry,
   defaultPageSeoRegistry,
+  HomeSectionsConfig,
+  defaultHomeSections,
 } from '@/data/defaultCmsConfig';
+import { defaultPageSections, pageContentSchema, PageContent } from '@/data/pageContent';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 type AdminTab =
   | 'overview'
   | 'header'
   | 'footer'
   | 'hero'
+  | 'home_sections'
+  | 'page_content'
   | 'leads'
   | 'services'
   | 'mega_pages'
@@ -79,9 +85,11 @@ type AdminTab =
 
 export default function AdminDashboardPage() {
   // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [loginEmail, setLoginEmail] = useState('admin@limradigitech.com');
-  const [loginPass, setLoginPass] = useState('Limra@2026');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPass, setLoginPass] = useState('');
   const [loginError, setLoginError] = useState('');
 
   // Navigation & UI State
@@ -101,6 +109,9 @@ export default function AdminDashboardPage() {
   const [headerCfg, setHeaderCfg] = useState<HeaderConfig>(initialCmsSnapshot.header);
   const [footerCfg, setFooterCfg] = useState<FooterConfig>(initialCmsSnapshot.footer);
   const [heroCfg, setHeroCfg] = useState<HeroAndStatsConfig>(initialCmsSnapshot.hero);
+  const [homeSections, setHomeSections] = useState<HomeSectionsConfig>(defaultHomeSections);
+  const [pageSections, setPageSections] = useState<Record<string, PageContent>>(defaultPageSections);
+  const [activePageTab, setActivePageTab] = useState<string>(pageContentSchema[0]?.page || 'about');
   const [adminProfile, setAdminProfile] = useState<AdminProfileConfig>(initialCmsSnapshot.adminProfile);
   const [seoCfg, setSeoCfg] = useState<SeoAndRedirectsConfig>(initialCmsSnapshot.seo);
   const [servicesList, setServicesList] = useState<any[]>(initialCmsSnapshot.services);
@@ -126,11 +137,6 @@ export default function AdminDashboardPage() {
     pageScope: 'All Pages (*)',
     code: '',
   });
-  const [editingMegaPage, setEditingMegaPage] = useState<{
-    type: 'industry' | 'technology';
-    idx: number;
-    item: any;
-  } | null>(null);
   const [newClientBrand, setNewClientBrand] = useState({ name: '', sector: 'Enterprise B2B', tag: 'Verified Partner' });
   const [newLeaderForm, setNewLeaderForm] = useState({
     name: '',
@@ -141,17 +147,6 @@ export default function AdminDashboardPage() {
 
   // Modals & Editors State
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
-  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
-  const [isAddBlogOpen, setIsAddBlogOpen] = useState(false);
-  const [editingBlog, setEditingBlog] = useState<any | null>(null);
-  const [isAddCaseStudyOpen, setIsAddCaseStudyOpen] = useState(false);
-  const [editingCaseStudy, setEditingCaseStudy] = useState<any | null>(null);
-  const [isAddTestimonialOpen, setIsAddTestimonialOpen] = useState(false);
-  const [editingTestimonial, setEditingTestimonial] = useState<any | null>(null);
-  const [isAddFaqOpen, setIsAddFaqOpen] = useState(false);
-  const [editingFaq, setEditingFaq] = useState<any | null>(null);
-  const [isAddCareerOpen, setIsAddCareerOpen] = useState(false);
-  const [editingCareer, setEditingCareer] = useState<CareerOpeningItem | null>(null);
   const [isAddMediaOpen, setIsAddMediaOpen] = useState(false);
   const [editingServiceIdx, setEditingServiceIdx] = useState<number | null>(null);
   const [newSubServiceName, setNewSubServiceName] = useState('');
@@ -168,66 +163,6 @@ export default function AdminDashboardPage() {
     email: '',
     role: 'SEO Strategist' as AdminProfileConfig['teamMembers'][0]['role'],
   });
-  const [passwordForm, setPasswordForm] = useState({
-    current: '',
-    next: '',
-    confirm: '',
-  });
-
-  const [newLeadForm, setNewLeadForm] = useState({
-    full_name: '',
-    email: '',
-    phone: '',
-    service_needed: 'Website Development',
-    budget: '₹80,000 - ₹1,50,000',
-    message: '',
-    priority: 'High',
-  });
-
-  const [newBlogForm, setNewBlogForm] = useState({
-    title: '',
-    slug: '',
-    category: 'SEO & Core Vitals',
-    read_time: '6 min read',
-    excerpt: '',
-    author: 'LIMRA SEO Desk',
-  });
-
-  const [newCaseStudyForm, setNewCaseStudyForm] = useState({
-    title: '',
-    client: '',
-    category: 'Web & E-Commerce',
-    results: '+210% Conversion Lift',
-    challenge: '',
-    solution: '',
-    technologies: 'Next.js, Shopify, Tailwind CSS',
-  });
-
-  const [newTestimonialForm, setNewTestimonialForm] = useState({
-    name: '',
-    role: '',
-    company: '',
-    content: '',
-    rating: 5,
-  });
-
-  const [newFaqForm, setNewFaqForm] = useState({
-    question: '',
-    answer: '',
-    category: 'General & Strategy',
-  });
-
-  const [newCareerForm, setNewCareerForm] = useState({
-    role: '',
-    department: 'Engineering',
-    location: 'New Delhi / Hybrid',
-    type: 'Full-Time',
-    experience: '2-4 Years',
-    status: 'Active' as 'Active' | 'Closed',
-    desc: '',
-    tags: 'Next.js 16, TypeScript, Tailwind CSS',
-  });
-
   const [newMediaForm, setNewMediaForm] = useState({
     title: '',
     category: 'Brand Logo & Favicon' as MediaAssetItem['category'],
@@ -253,6 +188,8 @@ export default function AdminDashboardPage() {
           setHeaderCfg(data.cms.header || initialCmsSnapshot.header);
           setFooterCfg(data.cms.footer || initialCmsSnapshot.footer);
           setHeroCfg(data.cms.hero || initialCmsSnapshot.hero);
+          setHomeSections(data.cms.homeSections || defaultHomeSections);
+          setPageSections(data.cms.pageSections || defaultPageSections);
           setAdminProfile(data.cms.adminProfile || initialCmsSnapshot.adminProfile);
           setSeoCfg(data.cms.seo || initialCmsSnapshot.seo);
           setServicesList(data.cms.services || initialCmsSnapshot.services);
@@ -281,7 +218,23 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
-    fetchAdminData();
+    // Check for an existing valid admin session before loading any data.
+    const init = async () => {
+      try {
+        const res = await fetch('/api/admin/session');
+        const data = await res.json();
+        if (data.authenticated) {
+          setIsAuthenticated(true);
+          await fetchAdminData();
+        }
+      } catch {
+        // Not authenticated / network error — stay on the login screen.
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+    init();
+
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab') as AdminTab | null;
@@ -299,6 +252,11 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, payload }),
       });
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        showToast('Session expired. Please sign in again.');
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         if (data.leads) setLeads(data.leads);
@@ -314,16 +272,86 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Auth Handler
-  const handleLogin = (e: React.FormEvent) => {
+  // ---- Home Page Sections editing helpers ----
+  const updateHomeHeader = (section: keyof HomeSectionsConfig, field: string, value: string) => {
+    setHomeSections((h) => ({ ...h, [section]: { ...(h[section] as any), [field]: value } }));
+  };
+  const updateHomeItem = (
+    section: keyof HomeSectionsConfig,
+    arrKey: string,
+    idx: number,
+    field: string,
+    value: any
+  ) => {
+    setHomeSections((h) => {
+      const arr = [...(((h[section] as any)[arrKey]) || [])];
+      arr[idx] = { ...arr[idx], [field]: value };
+      return { ...h, [section]: { ...(h[section] as any), [arrKey]: arr } };
+    });
+  };
+  const saveHomeSections = () =>
+    postAdminAction('save_home_sections', homeSections, 'Home page sections published live!');
+
+  // ---- Page Content editing helpers (generic, schema-driven) ----
+  const updatePageField = (page: string, block: string, field: string, value: string) => {
+    setPageSections((ps) => ({
+      ...ps,
+      [page]: { ...ps[page], [block]: { ...(ps[page]?.[block] || {}), [field]: value } },
+    }));
+  };
+  const updatePageItem = (page: string, block: string, idx: number, field: string, value: string) => {
+    setPageSections((ps) => {
+      const arr = [...(((ps[page]?.[block]?.items) as any[]) || [])];
+      arr[idx] = { ...arr[idx], [field]: value };
+      return { ...ps, [page]: { ...ps[page], [block]: { ...(ps[page]?.[block] || {}), items: arr } } };
+    });
+  };
+  const savePageSections = () =>
+    postAdminAction('save_page_sections', pageSections, 'Page content published live!');
+
+  // Auth Handler — verifies credentials server-side and sets an httpOnly session cookie.
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loginEmail.trim() && loginPass.trim()) {
-      setIsAuthenticated(true);
-      setLoginError('');
-      showToast(`Welcome back, ${adminProfile.fullName}`);
-    } else {
-      setLoginError('Please enter valid admin credentials.');
+    if (!loginEmail.trim() || !loginPass.trim()) {
+      setLoginError('Please enter your admin username and password.');
+      return;
     }
+    setIsLoggingIn(true);
+    setLoginError('');
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginEmail.trim(), password: loginPass }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsAuthenticated(true);
+        setLoginError('');
+        setLoginPass('');
+        await fetchAdminData();
+        showToast(`Welcome back, ${adminProfile.fullName}`);
+      } else {
+        setLoginError(data.error || 'Invalid admin username or password.');
+      }
+    } catch {
+      setLoginError('Could not reach the server. Please try again.');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+    } catch {
+      // Ignore network errors — clear the client session regardless.
+    }
+    setIsAuthenticated(false);
+    setLoginEmail('');
+    setLoginPass('');
+    setLeads([]);
+    setSubscribers([]);
   };
 
   // CRM Handlers
@@ -339,22 +367,6 @@ export default function AdminDashboardPage() {
     setLeads((prev) => prev.filter((l) => l.id !== id));
     if (selectedLead?.id === id) setSelectedLead(null);
     await postAdminAction('delete_lead', { id }, 'Lead deleted from CRM pipeline');
-  };
-
-  const handleCreateLead = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newLeadForm.full_name || !newLeadForm.email) return;
-    await postAdminAction('create_lead', newLeadForm, 'New lead added to CRM pipeline');
-    setIsAddLeadOpen(false);
-    setNewLeadForm({
-      full_name: '',
-      email: '',
-      phone: '',
-      service_needed: 'Website Development',
-      budget: '₹80,000 - ₹1,50,000',
-      message: '',
-      priority: 'High',
-    });
   };
 
   const handleExportLeadsCsv = () => {
@@ -379,183 +391,6 @@ export default function AdminDashboardPage() {
     link.click();
     document.body.removeChild(link);
     showToast('Exported CRM Leads to CSV');
-  };
-
-  // Blog CRUD
-  const handleSaveBlogModal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingBlog) {
-      const next = blogs.map((b) => (b.id === editingBlog.id ? editingBlog : b));
-      setBlogs(next);
-      setEditingBlog(null);
-      await postAdminAction('save_blogs', next, 'Blog article updated');
-      return;
-    }
-    if (!newBlogForm.title) return;
-    const slug =
-      newBlogForm.slug ||
-      newBlogForm.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-    const created = {
-      id: `blog-${Date.now()}`,
-      title: newBlogForm.title,
-      slug,
-      category: newBlogForm.category,
-      read_time: newBlogForm.read_time,
-      excerpt: newBlogForm.excerpt || 'Comprehensive technical & digital growth guide by LIMRA Digitech.',
-      author: newBlogForm.author,
-      published_at: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      cover_image: '/images/blog-seo.png',
-    };
-    const next = [created, ...blogs];
-    setBlogs(next);
-    setIsAddBlogOpen(false);
-    setNewBlogForm({
-      title: '',
-      slug: '',
-      category: 'SEO & Core Vitals',
-      read_time: '6 min read',
-      excerpt: '',
-      author: 'LIMRA SEO Desk',
-    });
-    await postAdminAction('save_blogs', next, 'New blog article published');
-  };
-
-  // Case Study CRUD
-  const handleSaveCaseStudyModal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingCaseStudy) {
-      const next = caseStudies.map((cs) => (cs.id === editingCaseStudy.id ? editingCaseStudy : cs));
-      setCaseStudies(next);
-      setEditingCaseStudy(null);
-      await postAdminAction('save_case_studies', next, 'Portfolio case study updated');
-      return;
-    }
-    if (!newCaseStudyForm.title || !newCaseStudyForm.client) return;
-    const slug = newCaseStudyForm.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    const created = {
-      id: `cs-${Date.now()}`,
-      title: newCaseStudyForm.title,
-      slug,
-      client: newCaseStudyForm.client,
-      category: newCaseStudyForm.category,
-      results: newCaseStudyForm.results,
-      challenge: newCaseStudyForm.challenge || 'Legacy platform bottleneck and high customer acquisition cost.',
-      solution: newCaseStudyForm.solution || 'Engineered custom Next.js/Shopify stack with full-funnel performance ads.',
-      technologies: newCaseStudyForm.technologies.split(',').map((t) => t.trim()),
-      image_url: '/images/portfolio-ecommerce.png',
-      metrics: [
-        { label: 'Primary Growth', value: newCaseStudyForm.results },
-        { label: 'Page Speed', value: '0.3s' },
-      ],
-    };
-    const next = [created, ...caseStudies];
-    setCaseStudies(next);
-    setIsAddCaseStudyOpen(false);
-    setNewCaseStudyForm({
-      title: '',
-      client: '',
-      category: 'Web & E-Commerce',
-      results: '+210% Conversion Lift',
-      challenge: '',
-      solution: '',
-      technologies: 'Next.js, Shopify, Tailwind CSS',
-    });
-    await postAdminAction('save_case_studies', next, 'New portfolio case study published');
-  };
-
-  // Testimonial & FAQ CRUD
-  const handleCreateTestimonial = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingTestimonial) {
-      const next = testimonials.map((t) => (t.id === editingTestimonial.id ? editingTestimonial : t));
-      setTestimonials(next);
-      setEditingTestimonial(null);
-      await postAdminAction('save_testimonials', next, 'Client review updated');
-      return;
-    }
-    if (!newTestimonialForm.name || !newTestimonialForm.content) return;
-    const created = {
-      id: `test-${Date.now()}`,
-      client_name: newTestimonialForm.name,
-      name: newTestimonialForm.name,
-      role: newTestimonialForm.role || 'Founder & Director',
-      company: newTestimonialForm.company || 'Enterprise Partner',
-      company_or_role: `${newTestimonialForm.role || 'Founder'}, ${newTestimonialForm.company || 'Enterprise Partner'}`,
-      review: newTestimonialForm.content,
-      content: newTestimonialForm.content,
-      rating: Number(newTestimonialForm.rating) || 5,
-    };
-    const next = [created, ...testimonials];
-    setTestimonials(next);
-    setIsAddTestimonialOpen(false);
-    setNewTestimonialForm({ name: '', role: '', company: '', content: '', rating: 5 });
-    await postAdminAction('save_testimonials', next, 'Verified client review published');
-  };
-
-  const handleCreateFaq = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingFaq) {
-      const next = faqs.map((f) => (f.id === editingFaq.id ? editingFaq : f));
-      setFaqs(next);
-      setEditingFaq(null);
-      await postAdminAction('save_faqs', next, 'FAQ item updated');
-      return;
-    }
-    if (!newFaqForm.question || !newFaqForm.answer) return;
-    const created = {
-      id: `faq-${Date.now()}`,
-      question: newFaqForm.question,
-      answer: newFaqForm.answer,
-      category: newFaqForm.category,
-    };
-    const next = [created, ...faqs];
-    setFaqs(next);
-    setIsAddFaqOpen(false);
-    setNewFaqForm({ question: '', answer: '', category: 'General & Strategy' });
-    await postAdminAction('save_faqs', next, 'New FAQ item added');
-  };
-
-  const handleSaveCareerModal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingCareer) {
-      const next = careers.map((c) => (c.id === editingCareer.id ? editingCareer : c));
-      setCareers(next);
-      setEditingCareer(null);
-      await postAdminAction('save_careers', next, 'Job opening updated live on /careers');
-      return;
-    }
-    if (!newCareerForm.role) return;
-    const created: CareerOpeningItem = {
-      id: `job-${Date.now()}`,
-      role: newCareerForm.role,
-      department: newCareerForm.department,
-      location: newCareerForm.location,
-      type: newCareerForm.type,
-      experience: newCareerForm.experience,
-      status: newCareerForm.status,
-      desc: newCareerForm.desc || 'Join LIMRA Digitech to build high-impact web, mobile, and digital growth systems.',
-      tags: newCareerForm.tags.split(',').map((t) => t.trim()).filter(Boolean),
-    };
-    const next = [created, ...careers];
-    setCareers(next);
-    setIsAddCareerOpen(false);
-    setNewCareerForm({
-      role: '',
-      department: 'Engineering',
-      location: 'New Delhi / Hybrid',
-      type: 'Full-Time',
-      experience: '2-4 Years',
-      status: 'Active',
-      desc: '',
-      tags: 'Next.js 16, TypeScript, Tailwind CSS',
-    });
-    await postAdminAction('save_careers', next, 'New job role published to /careers');
   };
 
   const handleCreateMediaAsset = async (e: React.FormEvent) => {
@@ -661,6 +496,17 @@ export default function AdminDashboardPage() {
   };
 
   // Authentication Screen
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <div className="flex items-center gap-3 text-slate-300 text-sm font-medium">
+          <RefreshCw className="w-5 h-5 animate-spin text-purple-400" />
+          <span>Verifying admin session…</span>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
@@ -685,9 +531,10 @@ export default function AdminDashboardPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Admin Email</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Admin Username</label>
               <input
-                type="email"
+                type="text"
+                autoComplete="username"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-purple-600"
@@ -698,6 +545,7 @@ export default function AdminDashboardPage() {
               <label className="block text-xs font-bold text-slate-700 mb-1">Master Password</label>
               <input
                 type="password"
+                autoComplete="current-password"
                 value={loginPass}
                 onChange={(e) => setLoginPass(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-purple-600"
@@ -707,9 +555,10 @@ export default function AdminDashboardPage() {
             {loginError && <p className="text-xs text-rose-600 font-medium">{loginError}</p>}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-200 hover:opacity-95 transition-all"
+              disabled={isLoggingIn}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-200 hover:opacity-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Unlock Admin Command Center
+              {isLoggingIn ? 'Signing In…' : 'Unlock Admin Command Center'}
             </button>
           </form>
 
@@ -729,6 +578,8 @@ export default function AdminDashboardPage() {
     { id: 'header', label: 'Header & Mega-Menu', icon: PanelTop, badge: 'Live' },
     { id: 'footer', label: 'Footer & WhatsApp CMS', icon: PanelBottom, badge: 'Live' },
     { id: 'hero', label: 'Hero & Trust Stats', icon: Sparkles },
+    { id: 'home_sections', label: 'Home Page Sections', icon: LayoutDashboard },
+    { id: 'page_content', label: 'Page Content (About, etc.)', icon: FileText },
     { id: 'leads', label: 'Leads & Kanban CRM', icon: Users, badge: leads.length },
     { id: 'services', label: 'Services & Sub-Services', icon: Code2, badge: servicesList.length },
     { id: 'mega_pages', label: 'Industries & Tech Pages', icon: Layers, badge: industriesList.length + technologiesList.length },
@@ -738,8 +589,8 @@ export default function AdminDashboardPage() {
     { id: 'clients_team', label: 'Clients, Team & Pricing', icon: TrendingUp, badge: clientBrands.length + leadershipTeam.length },
     { id: 'careers', label: 'Careers & Job Openings', icon: Building2, badge: careers.length },
     { id: 'media', label: 'Media & Brand Assets', icon: Eye, badge: mediaAssets.length },
-    { id: 'seo', label: 'SEO, Redirects & GA4', icon: Globe, badge: '99%' },
-    { id: 'system_backup', label: 'Backup & Page Inspector', icon: Activity, badge: '44 Pages' },
+    { id: 'seo', label: 'SEO, Redirects & GA4', icon: Globe },
+    { id: 'system_backup', label: 'Backup & Page Inspector', icon: Activity },
     { id: 'profile', label: 'Admin Profile & Roles', icon: UserCheck },
   ];
 
@@ -754,8 +605,8 @@ export default function AdminDashboardPage() {
       )}
 
       {/* LEFT SIDEBAR */}
-      <aside className="w-full lg:w-72 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex-shrink-0 flex flex-col justify-between lg:min-h-screen lg:sticky lg:top-0 z-40">
-        <div>
+      <aside className="w-full lg:w-72 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex-shrink-0 flex flex-col lg:h-screen lg:sticky lg:top-0 z-40">
+        <div className="flex flex-col lg:flex-1 lg:min-h-0">
           {/* Brand Logo Header */}
           <div className="h-20 px-6 border-b border-slate-200 flex items-center justify-between">
             <Link href="/admin" className="flex items-center gap-2.5">
@@ -791,7 +642,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* 12-Module Navigation Menu */}
-          <nav className="p-3 space-y-1 flex lg:flex-col overflow-x-auto max-h-[calc(100vh-250px)] lg:overflow-y-auto">
+          <nav className="p-3 space-y-1 flex lg:flex-col overflow-x-auto lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -826,7 +677,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Sidebar Bottom Actions */}
-        <div className="hidden lg:block p-4 border-t border-slate-200 space-y-2">
+        <div className="hidden lg:block p-4 border-t border-slate-200 space-y-2 flex-shrink-0">
           <Link
             href="/"
             target="_blank"
@@ -837,11 +688,11 @@ export default function AdminDashboardPage() {
           </Link>
           <button
             type="button"
-            onClick={() => setIsAuthenticated(false)}
+            onClick={handleLogout}
             className="w-full px-3.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Lock Admin Console</span>
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
@@ -977,7 +828,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-baseline justify-between">
                     <div className="text-3xl font-black text-slate-900 font-mono">{leads.length}</div>
                     <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                      <ArrowUpRight className="w-3 h-3" /> +28.4%
+                      <ArrowUpRight className="w-3 h-3" /> {leads.filter((l) => l.status === 'new').length} new
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
@@ -993,9 +844,9 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <div className="text-3xl font-black text-slate-900 font-mono">44</div>
+                    <div className="text-3xl font-black text-slate-900 font-mono">{pageSeoRegistry.length}</div>
                     <span className="text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
-                      10+ Sec/Page
+                      {blogs.length + caseStudies.length} content
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
@@ -1023,15 +874,15 @@ export default function AdminDashboardPage() {
 
                 <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Core Web Vitals &amp; SEO</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase">SEO &amp; Redirects</span>
                     <div className="p-2.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200">
-                      <Activity className="w-4 h-4" />
+                      <Globe className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <div className="text-3xl font-black text-slate-900 font-mono">99/100</div>
+                    <div className="text-3xl font-black text-slate-900 font-mono">{pageSeoRegistry.length}</div>
                     <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                      Healthy
+                      SEO routes
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
@@ -1059,14 +910,14 @@ export default function AdminDashboardPage() {
                     { id: 'footer', title: 'Footer & Socials', sub: 'Bio, Links, Scripts, HQ', icon: PanelBottom },
                     { id: 'hero', title: 'Hero & Counters', sub: 'Headline, CTAs, 500+ Stats', icon: Sparkles },
                     { id: 'leads', title: 'CRM Leads & Kanban', sub: `${leads.length} Leads & Subscribers`, icon: Users },
-                    { id: 'services', title: 'Services & Sub-Pills', sub: '6 Services & Sub-Services', icon: Code2 },
-                    { id: 'mega_pages', title: 'Industries & Tech', sub: '16 Dedicated 11-Sec Pages', icon: Layers },
+                    { id: 'services', title: 'Services & Sub-Pills', sub: `${servicesList.length} Services & Sub-Services`, icon: Code2 },
+                    { id: 'mega_pages', title: 'Industries & Tech', sub: `${industriesList.length + technologiesList.length} Industry & Tech Pages`, icon: Layers },
                     { id: 'portfolio', title: 'Portfolio Case Studies', sub: `${caseStudies.length} Case Studies`, icon: Briefcase },
                     { id: 'blogs', title: 'Blogs & Editorial', sub: `${blogs.length} Articles & Guides`, icon: FileText },
                     { id: 'testimonials_faqs', title: 'Reviews & FAQs', sub: `${testimonials.length} Reviews • ${faqs.length} FAQs`, icon: Star },
                     { id: 'clients_team', title: 'Clients, Team & Pricing', sub: 'Brands, Leaders, Milestones', icon: TrendingUp },
                     { id: 'seo', title: 'SEO, Schema & Scripts', sub: `${pageSeoRegistry.length} Routes • Script Vault`, icon: Globe },
-                    { id: 'profile', title: 'Admin Profile & RBAC', sub: 'Profile, Password, Roles', icon: UserCheck },
+                    { id: 'profile', title: 'Admin Profile & Team', sub: 'Profile, Login, Team Roster', icon: UserCheck },
                   ].map((card) => {
                     const Icon = card.icon;
                     return (
@@ -1093,71 +944,49 @@ export default function AdminDashboardPage() {
 
               {/* Charts & Audit Logs Row */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Monthly Lead & Conversion Velocity Chart */}
-                <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <span className="text-[11px] font-mono uppercase font-bold text-purple-700">
-                        GROWTH ANALYTICS
-                      </span>
-                      <h2 className="text-lg font-bold text-slate-900">
-                        Lead Acquisition &amp; Channel Attribution
-                      </h2>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="flex items-center gap-1.5 text-slate-600">
-                        <span className="w-2.5 h-2.5 rounded-full bg-purple-600" /> Organic SEO
-                      </span>
-                      <span className="flex items-center gap-1.5 text-slate-600">
-                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-400" /> Paid Ads
-                      </span>
-                    </div>
+                {/* CRM Pipeline Breakdown (live from leads) */}
+                <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs space-y-5">
+                  <div>
+                    <span className="text-[11px] font-mono uppercase font-bold text-purple-700">CRM PIPELINE</span>
+                    <h2 className="text-lg font-bold text-slate-900">Lead Pipeline Breakdown</h2>
                   </div>
 
-                  <div className="grid grid-cols-6 gap-3 sm:gap-5 items-end h-48 pt-6 px-2 border-b border-slate-100">
-                    {[
-                      { month: 'May', seo: 55, ads: 40, total: 42 },
-                      { month: 'Jun', seo: 68, ads: 48, total: 54 },
-                      { month: 'Jul', seo: 74, ads: 58, total: 63 },
-                      { month: 'Aug', seo: 82, ads: 64, total: 76 },
-                      { month: 'Sep', seo: 90, ads: 72, total: 89 },
-                      { month: 'Oct', seo: 100, ads: 85, total: 112 },
-                    ].map((bar, idx) => (
-                      <div key={idx} className="flex flex-col items-center gap-2 h-full justify-end group">
-                        <div className="text-[10px] font-mono font-bold text-purple-700">{bar.total}</div>
-                        <div className="w-full max-w-[44px] flex items-end gap-1 h-32">
-                          <div
-                            style={{ height: `${bar.seo}%` }}
-                            className="flex-1 bg-gradient-to-t from-purple-700 to-purple-500 rounded-t-lg"
-                          />
-                          <div
-                            style={{ height: `${bar.ads}%` }}
-                            className="flex-1 bg-gradient-to-t from-indigo-500 to-indigo-300 rounded-t-lg"
-                          />
+                  {(() => {
+                    const stages = [
+                      { key: 'new', label: 'New' },
+                      { key: 'contacted', label: 'Contacted' },
+                      { key: 'qualified', label: 'Qualified' },
+                      { key: 'proposal', label: 'Proposal' },
+                      { key: 'won', label: 'Won' },
+                    ];
+                    const countFor = (k: string) => leads.filter((l) => String(l.status || '').toLowerCase() === k).length;
+                    const max = Math.max(1, ...stages.map((s) => countFor(s.key)));
+                    return (
+                      <>
+                        <div className="grid grid-cols-6 gap-3 sm:gap-5 items-end h-40 pt-4 px-2 border-b border-slate-100">
+                          {stages.map((s) => {
+                            const c = countFor(s.key);
+                            return (
+                              <div key={s.key} className="flex flex-col items-center gap-2 h-full justify-end">
+                                <div className="text-[11px] font-mono font-bold text-purple-700">{c}</div>
+                                <div
+                                  className="w-full max-w-[44px] bg-gradient-to-t from-purple-700 to-purple-400 rounded-t-lg min-h-[4px]"
+                                  style={{ height: `${(c / max) * 100}%` }}
+                                />
+                                <span className="text-[11px] font-bold text-slate-500 pb-1">{s.label}</span>
+                              </div>
+                            );
+                          })}
+                          <div className="flex flex-col items-center gap-2 h-full justify-end">
+                            <div className="text-[11px] font-mono font-bold text-cyan-700">{subscribers.length}</div>
+                            <div className="w-full max-w-[44px] bg-gradient-to-t from-cyan-600 to-cyan-300 rounded-t-lg min-h-[4px]" style={{ height: `${(subscribers.length / Math.max(max, subscribers.length, 1)) * 100}%` }} />
+                            <span className="text-[11px] font-bold text-slate-500 pb-1">Subs</span>
+                          </div>
                         </div>
-                        <span className="text-xs font-bold text-slate-500 pb-2">{bar.month}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
-                      <div className="text-[10px] text-slate-500">Organic Search</div>
-                      <div className="text-sm font-bold text-slate-900">46.2% Share</div>
-                    </div>
-                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
-                      <div className="text-[10px] text-slate-500">Google Ads PPC</div>
-                      <div className="text-sm font-bold text-slate-900">28.5% Share</div>
-                    </div>
-                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
-                      <div className="text-[10px] text-slate-500">Meta Funnels</div>
-                      <div className="text-sm font-bold text-slate-900">18.1% Share</div>
-                    </div>
-                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
-                      <div className="text-[10px] text-slate-500">Direct / WhatsApp</div>
-                      <div className="text-sm font-bold text-slate-900">7.2% Share</div>
-                    </div>
-                  </div>
+                        <p className="text-[11px] text-slate-500">Total {leads.length} leads in pipeline • {subscribers.length} newsletter subscribers — live from your CRM database.</p>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Live Activity & Audit Feed */}
@@ -2244,6 +2073,191 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE: HOME PAGE SECTIONS
+             ========================================== */}
+          {activeTab === 'home_sections' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-5 border border-slate-200 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-20">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Home Page Sections</h2>
+                  <p className="text-xs text-slate-500">Edit the headings and content cards shown on the homepage. Changes publish live to the website.</p>
+                </div>
+                <button
+                  onClick={saveHomeSections}
+                  disabled={isSaving}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 disabled:opacity-60"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{isSaving ? 'Saving…' : 'Save & Publish'}</span>
+                </button>
+              </div>
+
+              {([
+                { key: 'corePillars', label: 'Core Pillars — “Why LIMRA”', arrKey: 'items', fields: [['title', 'Title'], ['desc', 'Description'], ['tag', 'Tag']] },
+                { key: 'seoPillars', label: '6-Pillar Technical SEO', arrKey: 'items', fields: [['title', 'Title'], ['desc', 'Description'], ['metrics', 'Metric']] },
+                { key: 'webDevPillars', label: '6-Pillar Web, E-Commerce & Cloud', arrKey: 'items', fields: [['title', 'Title'], ['desc', 'Description'], ['tech', 'Tech Stack']] },
+                { key: 'comparison', label: 'Legacy vs LIMRA Comparison', arrKey: 'rows', fields: [['feature', 'Capability'], ['traditional', 'Legacy Agencies'], ['limra', 'LIMRA Standard']] },
+                { key: 'process', label: '4-Step Agile Process', arrKey: 'steps', fields: [['title', 'Step Title'], ['desc', 'Step Description']] },
+              ] as const).map((sec) => {
+                const section: any = (homeSections as any)[sec.key];
+                const list: any[] = section[sec.arrKey] || [];
+                return (
+                  <div key={sec.key} className="bg-white rounded-3xl p-6 border border-slate-200 space-y-4">
+                    <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">{sec.label}</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">Eyebrow / Badge</label>
+                        <input value={section.eyebrow} onChange={(e) => updateHomeHeader(sec.key, 'eyebrow', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs" />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">Heading</label>
+                        <input value={section.heading} onChange={(e) => updateHomeHeader(sec.key, 'heading', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Description</label>
+                      <RichTextEditor value={section.description} onChange={(v) => updateHomeHeader(sec.key, 'description', v)} />
+                    </div>
+
+                    <div className="space-y-3">
+                      {list.map((item, idx) => (
+                        <div key={idx} className="border border-slate-200 rounded-xl p-3 bg-slate-50/60 space-y-2">
+                          <div className="text-[10px] font-mono font-bold text-purple-700">#{idx + 1}</div>
+                          {sec.fields.map(([f, flabel]) => (
+                            <div key={f}>
+                              <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">{flabel}</label>
+                              {f === 'desc' || f === 'traditional' || f === 'limra' ? (
+                                <RichTextEditor value={item[f] || ''} onChange={(v) => updateHomeItem(sec.key, sec.arrKey, idx, f, v)} />
+                              ) : (
+                                <input value={item[f] || ''} onChange={(e) => updateHomeItem(sec.key, sec.arrKey, idx, f, e.target.value)} className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs" />
+                              )}
+                            </div>
+                          ))}
+                          {sec.key === 'process' && (
+                            <div>
+                              <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Bullet Points (one per line)</label>
+                              <textarea
+                                value={(item.points || []).join('\n')}
+                                onChange={(e) => updateHomeItem(sec.key, sec.arrKey, idx, 'points', e.target.value.split('\n').map((p) => p.trim()).filter(Boolean))}
+                                rows={3}
+                                className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div className="flex justify-end">
+                <button
+                  onClick={saveHomeSections}
+                  disabled={isSaving}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-xs flex items-center gap-2 disabled:opacity-60"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{isSaving ? 'Saving…' : 'Save & Publish All Sections'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE: PAGE CONTENT (schema-driven)
+             ========================================== */}
+          {activeTab === 'page_content' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-5 border border-slate-200 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-20">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Page Content</h2>
+                  <p className="text-xs text-slate-500">Edit the text on static pages (About, and more). Changes publish live to the website.</p>
+                </div>
+                <button
+                  onClick={savePageSections}
+                  disabled={isSaving}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 disabled:opacity-60"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{isSaving ? 'Saving…' : 'Save & Publish'}</span>
+                </button>
+              </div>
+
+              {/* Page selector */}
+              <div className="bg-white rounded-2xl p-2 border border-slate-200 flex flex-wrap gap-2">
+                {pageContentSchema.map((p) => (
+                  <button
+                    key={p.page}
+                    onClick={() => setActivePageTab(p.page)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
+                      activePageTab === p.page ? 'bg-purple-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              {(() => {
+                const schema = pageContentSchema.find((p) => p.page === activePageTab);
+                const content = pageSections[activePageTab] || {};
+                if (!schema) return null;
+                const isLong = (f: string) => ['description', 'description2', 'desc', 'a', 'text', 'answer'].includes(f);
+                return (
+                  <div className="space-y-5">
+                    {schema.blocks.map((blk) => {
+                      const block: any = content[blk.key] || {};
+                      return (
+                        <div key={blk.key} className="bg-white rounded-3xl p-6 border border-slate-200 space-y-4">
+                          <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">{blk.label}</h3>
+                          <div className="grid grid-cols-1 gap-3">
+                            {blk.fields.map((f) => (
+                              <div key={f}>
+                                <label className="block text-[11px] font-bold text-slate-600 mb-1 capitalize">{f === 'description2' ? 'Description (2nd paragraph)' : f}</label>
+                                {isLong(f) ? (
+                                  <RichTextEditor value={block[f] || ''} onChange={(v) => updatePageField(activePageTab, blk.key, f, v)} />
+                                ) : (
+                                  <input value={block[f] || ''} onChange={(e) => updatePageField(activePageTab, blk.key, f, e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          {blk.itemFields && (
+                            <div className="space-y-3 pt-1">
+                              {((block.items as any[]) || []).map((item, idx) => (
+                                <div key={idx} className="border border-slate-200 rounded-xl p-3 bg-slate-50/60 space-y-2">
+                                  <div className="text-[10px] font-mono font-bold text-purple-700">{blk.itemLabel || 'Item'} #{idx + 1}</div>
+                                  {blk.itemFields!.map(([f, flabel]) => (
+                                    <div key={f}>
+                                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">{flabel}</label>
+                                      {isLong(f) ? (
+                                        <RichTextEditor value={item[f] || ''} onChange={(v) => updatePageItem(activePageTab, blk.key, idx, f, v)} />
+                                      ) : (
+                                        <input value={item[f] || ''} onChange={(e) => updatePageItem(activePageTab, blk.key, idx, f, e.target.value)} className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs" />
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    <div className="flex justify-end">
+                      <button onClick={savePageSections} disabled={isSaving} className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-xs flex items-center gap-2 disabled:opacity-60">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>{isSaving ? 'Saving…' : 'Save & Publish Page Content'}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -4311,6 +4325,147 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
+                {/* Crawl, robots.txt, sitemap & manifest */}
+                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="text-xs font-mono font-bold text-purple-700 uppercase">CRAWL & INDEXING</span>
+                      <h2 className="text-lg font-bold text-slate-900">robots.txt, Sitemap & Web Manifest</h2>
+                    </div>
+                    <div className="flex gap-2">
+                      <a href="/robots.txt" target="_blank" className="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-700 border border-slate-200 text-xs font-mono font-bold">View robots.txt</a>
+                      <a href="/sitemap.xml" target="_blank" className="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-mono font-bold">View sitemap.xml</a>
+                      <button
+                        type="button"
+                        onClick={() => postAdminAction('save_seo', seoCfg, 'Crawl, robots.txt & manifest settings saved!')}
+                        className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+
+                  <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={seoCfg.crawl?.allowIndexing !== false}
+                      onChange={(e) => setSeoCfg({ ...seoCfg, crawl: { ...(seoCfg.crawl || { disallowPaths: [], blockAiCrawlers: false, additionalSitemaps: [] }), allowIndexing: e.target.checked } as any })}
+                    />
+                    Allow search engines to index this site (uncheck to block ALL crawlers)
+                  </label>
+                  <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={!!seoCfg.crawl?.blockAiCrawlers}
+                      onChange={(e) => setSeoCfg({ ...seoCfg, crawl: { ...(seoCfg.crawl || { allowIndexing: true, disallowPaths: [], additionalSitemaps: [] }), blockAiCrawlers: e.target.checked } as any })}
+                    />
+                    Block AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot…)
+                  </label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Disallowed paths (one per line)</label>
+                      <textarea
+                        rows={3}
+                        value={(seoCfg.crawl?.disallowPaths || []).join('\n')}
+                        onChange={(e) => setSeoCfg({ ...seoCfg, crawl: { ...(seoCfg.crawl || { allowIndexing: true, blockAiCrawlers: false, additionalSitemaps: [] }), disallowPaths: e.target.value.split('\n').map((s) => s.trim()).filter(Boolean) } as any })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                        placeholder="/api/&#10;/admin"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Additional sitemap URLs (one per line)</label>
+                      <textarea
+                        rows={3}
+                        value={(seoCfg.crawl?.additionalSitemaps || []).join('\n')}
+                        onChange={(e) => setSeoCfg({ ...seoCfg, crawl: { ...(seoCfg.crawl || { allowIndexing: true, blockAiCrawlers: false, disallowPaths: [] }), additionalSitemaps: e.target.value.split('\n').map((s) => s.trim()).filter(Boolean) } as any })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                        placeholder="https://example.com/news-sitemap.xml"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-500">sitemap.xml is generated automatically from your page SEO registry (below) — new pages appear once added, and noindex pages are excluded.</p>
+
+                  <div className="pt-4 border-t border-slate-100">
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">WEB APP MANIFEST (PWA)</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">App Name</label>
+                        <input value={seoCfg.manifest?.name || ''} onChange={(e) => setSeoCfg({ ...seoCfg, manifest: { ...(seoCfg.manifest || { shortName: '', themeColor: '#7e22ce', backgroundColor: '#f8fafc' }), name: e.target.value } as any })} className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Short Name</label>
+                        <input value={seoCfg.manifest?.shortName || ''} onChange={(e) => setSeoCfg({ ...seoCfg, manifest: { ...(seoCfg.manifest || { name: '', themeColor: '#7e22ce', backgroundColor: '#f8fafc' }), shortName: e.target.value } as any })} className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Theme Color</label>
+                        <input value={seoCfg.manifest?.themeColor || ''} onChange={(e) => setSeoCfg({ ...seoCfg, manifest: { ...(seoCfg.manifest || { name: '', shortName: '', backgroundColor: '#f8fafc' }), themeColor: e.target.value } as any })} className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono" placeholder="#7e22ce" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Background Color</label>
+                        <input value={seoCfg.manifest?.backgroundColor || ''} onChange={(e) => setSeoCfg({ ...seoCfg, manifest: { ...(seoCfg.manifest || { name: '', shortName: '', themeColor: '#7e22ce' }), backgroundColor: e.target.value } as any })} className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono" placeholder="#f8fafc" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Page URL Overrides */}
+                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="text-xs font-mono font-bold text-purple-700 uppercase">CHANGE PAGE URLs</span>
+                      <h2 className="text-lg font-bold text-slate-900">Page URL Overrides ({(seoCfg.routeOverrides || []).length})</h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => postAdminAction('save_seo', seoCfg, 'Page URL overrides saved live!')}
+                      className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-500">Move a page to a new URL. The page will serve at the new URL and the old URL will <span className="font-semibold">301-redirect</span> to it (old links & Google rankings carry over). Use full paths starting with <span className="font-mono">/</span>.</p>
+
+                  <div className="space-y-2.5">
+                    {(seoCfg.routeOverrides || []).map((ov, idx) => (
+                      <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-2 border border-slate-200 rounded-xl p-2.5 bg-slate-50/60">
+                        <input
+                          value={ov.from}
+                          onChange={(e) => { const list = [...(seoCfg.routeOverrides || [])]; list[idx] = { ...list[idx], from: e.target.value }; setSeoCfg({ ...seoCfg, routeOverrides: list }); }}
+                          placeholder="Old / current path  e.g. /about"
+                          className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono"
+                        />
+                        <span className="text-slate-400 text-xs">→</span>
+                        <input
+                          value={ov.to}
+                          onChange={(e) => { const list = [...(seoCfg.routeOverrides || [])]; list[idx] = { ...list[idx], to: e.target.value }; setSeoCfg({ ...seoCfg, routeOverrides: list }); }}
+                          placeholder="New URL  e.g. /about-us"
+                          className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono text-purple-700"
+                        />
+                        <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+                          <input type="checkbox" checked={ov.enabled !== false} onChange={(e) => { const list = [...(seoCfg.routeOverrides || [])]; list[idx] = { ...list[idx], enabled: e.target.checked }; setSeoCfg({ ...seoCfg, routeOverrides: list }); }} />
+                          On
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setSeoCfg({ ...seoCfg, routeOverrides: (seoCfg.routeOverrides || []).filter((_, i) => i !== idx) })}
+                          className="px-2.5 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSeoCfg({ ...seoCfg, routeOverrides: [...(seoCfg.routeOverrides || []), { from: '', to: '', enabled: true }] })}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-purple-50 text-purple-700 text-xs font-bold border border-slate-200"
+                  >
+                    + Add URL Override
+                  </button>
+                  <p className="text-[11px] text-slate-500">Tip: for blog/portfolio/industry/technology pages you can simply change the item's slug in its own editor — the URL changes there directly.</p>
+                </div>
+
                 {/* 301 Redirects Manager */}
                 <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -4809,40 +4964,15 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Password & Security Update */}
-                  <div className="pt-5 border-t border-slate-100 space-y-4">
+                  {/* Login Password (managed server-side) */}
+                  <div className="pt-5 border-t border-slate-100 space-y-3">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-900">
                       <KeyRound className="w-4 h-4 text-purple-600" />
-                      <span>Update Master Password &amp; Session Security</span>
+                      <span>Login Password</span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <input
-                        type="password"
-                        placeholder="Current Password"
-                        value={passwordForm.current}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                        className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
-                      />
-                      <input
-                        type="password"
-                        placeholder="New Password"
-                        value={passwordForm.next}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, next: e.target.value })}
-                        className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!passwordForm.next) return;
-                          setLoginPass(passwordForm.next);
-                          setPasswordForm({ current: '', next: '', confirm: '' });
-                          showToast('Master password updated successfully');
-                        }}
-                        className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold"
-                      >
-                        Update Password
-                      </button>
-                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      For security, the login password is stored server-side as the <span className="font-mono font-semibold">ADMIN_PASSWORD</span> environment variable — never in the browser or database. To change it, edit <span className="font-mono font-semibold">.env.local</span> (or your hosting env vars) and restart the server. The login username is <span className="font-mono font-semibold">ADMIN_USERNAME</span>.
+                    </p>
                   </div>
                 </div>
 
@@ -4850,10 +4980,10 @@ export default function AdminDashboardPage() {
                 <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-5">
                   <div>
                     <span className="text-[11px] font-mono uppercase font-bold text-purple-700">
-                      ROLE-BASED ACCESS (RBAC)
+                      TEAM DIRECTORY
                     </span>
-                    <h2 className="text-lg font-bold text-slate-900">Admin Team &amp; Permissions</h2>
-                    <p className="text-xs text-slate-500">Manage team accounts with access to the console.</p>
+                    <h2 className="text-lg font-bold text-slate-900">Team Directory</h2>
+                    <p className="text-xs text-slate-500">A reference roster of your team &amp; their roles. Note: login uses a single shared password (ADMIN_PASSWORD) — these entries don't create separate logins.</p>
                   </div>
 
                   <div className="space-y-2.5">
@@ -5109,474 +5239,6 @@ export default function AdminDashboardPage() {
       )}
 
       {/* ==========================================
-          MODAL 2: ADD NEW LEAD
-         ========================================== */}
-      {isAddLeadOpen && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <form
-            onSubmit={handleCreateLead}
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">Add New CRM Lead</h3>
-              <button type="button" onClick={() => setIsAddLeadOpen(false)} className="p-1.5 rounded-lg bg-slate-100">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="Client Full Name *"
-              value={newLeadForm.full_name}
-              onChange={(e) => setNewLeadForm({ ...newLeadForm, full_name: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email Address *"
-              value={newLeadForm.email}
-              onChange={(e) => setNewLeadForm({ ...newLeadForm, email: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Phone / WhatsApp Number"
-              value={newLeadForm.phone}
-              onChange={(e) => setNewLeadForm({ ...newLeadForm, phone: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            />
-            <select
-              value={newLeadForm.service_needed}
-              onChange={(e) => setNewLeadForm({ ...newLeadForm, service_needed: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            >
-              <option>Website Development</option>
-              <option>Digital Marketing &amp; SEO</option>
-              <option>Lead Generation Funnels</option>
-              <option>Creative Design Studio</option>
-              <option>Mobile App Development</option>
-              <option>Software Development</option>
-            </select>
-            <textarea
-              placeholder="Project requirement notes..."
-              rows={3}
-              value={newLeadForm.message}
-              onChange={(e) => setNewLeadForm({ ...newLeadForm, message: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            />
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
-            >
-              Save Lead To Pipeline
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ==========================================
-          MODAL 3: ADD / EDIT BLOG POST
-         ========================================== */}
-      {(isAddBlogOpen || editingBlog) && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <form
-            onSubmit={handleSaveBlogModal}
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingBlog ? 'Edit Blog Article' : 'Publish New Blog Article'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddBlogOpen(false);
-                  setEditingBlog(null);
-                }}
-                className="p-1.5 rounded-lg bg-slate-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="Article Headline *"
-              value={editingBlog ? editingBlog.title : newBlogForm.title}
-              onChange={(e) =>
-                editingBlog
-                  ? setEditingBlog({ ...editingBlog, title: e.target.value })
-                  : setNewBlogForm({ ...newBlogForm, title: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <select
-              value={editingBlog ? editingBlog.category : newBlogForm.category}
-              onChange={(e) =>
-                editingBlog
-                  ? setEditingBlog({ ...editingBlog, category: e.target.value })
-                  : setNewBlogForm({ ...newBlogForm, category: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            >
-              <option>SEO &amp; Core Vitals</option>
-              <option>Next.js &amp; Performance</option>
-              <option>Conversion Rate &amp; PPC</option>
-            </select>
-            <textarea
-              placeholder="Article summary / SEO meta description..."
-              rows={3}
-              value={editingBlog ? editingBlog.excerpt : newBlogForm.excerpt}
-              onChange={(e) =>
-                editingBlog
-                  ? setEditingBlog({ ...editingBlog, excerpt: e.target.value })
-                  : setNewBlogForm({ ...newBlogForm, excerpt: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
-            >
-              {editingBlog ? 'Save Article Changes' : 'Publish Article Live'}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ==========================================
-          MODAL 4: ADD / EDIT CASE STUDY
-         ========================================== */}
-      {(isAddCaseStudyOpen || editingCaseStudy) && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <form
-            onSubmit={handleSaveCaseStudyModal}
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingCaseStudy ? 'Edit Portfolio Case Study' : 'Publish Portfolio Case Study'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddCaseStudyOpen(false);
-                  setEditingCaseStudy(null);
-                }}
-                className="p-1.5 rounded-lg bg-slate-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="Project Title *"
-              value={editingCaseStudy ? editingCaseStudy.title : newCaseStudyForm.title}
-              onChange={(e) =>
-                editingCaseStudy
-                  ? setEditingCaseStudy({ ...editingCaseStudy, title: e.target.value })
-                  : setNewCaseStudyForm({ ...newCaseStudyForm, title: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Client / Brand Name *"
-              value={editingCaseStudy ? editingCaseStudy.client : newCaseStudyForm.client}
-              onChange={(e) =>
-                editingCaseStudy
-                  ? setEditingCaseStudy({ ...editingCaseStudy, client: e.target.value })
-                  : setNewCaseStudyForm({ ...newCaseStudyForm, client: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Verified Result Metric (e.g. +240% Organic Traffic)"
-              value={editingCaseStudy ? editingCaseStudy.results : newCaseStudyForm.results}
-              onChange={(e) =>
-                editingCaseStudy
-                  ? setEditingCaseStudy({ ...editingCaseStudy, results: e.target.value })
-                  : setNewCaseStudyForm({ ...newCaseStudyForm, results: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            />
-            <textarea
-              placeholder="Challenge & Solution Overview..."
-              rows={3}
-              value={editingCaseStudy ? editingCaseStudy.challenge : newCaseStudyForm.challenge}
-              onChange={(e) =>
-                editingCaseStudy
-                  ? setEditingCaseStudy({ ...editingCaseStudy, challenge: e.target.value })
-                  : setNewCaseStudyForm({ ...newCaseStudyForm, challenge: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            />
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
-            >
-              {editingCaseStudy ? 'Save Case Study Changes' : 'Publish Case Study'}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ==========================================
-          MODAL 5: ADD / EDIT TESTIMONIAL
-         ========================================== */}
-      {(isAddTestimonialOpen || editingTestimonial) && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <form
-            onSubmit={handleCreateTestimonial}
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingTestimonial ? 'Edit Client Review' : 'Add Verified Client Review'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddTestimonialOpen(false);
-                  setEditingTestimonial(null);
-                }}
-                className="p-1.5 rounded-lg bg-slate-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="Client Name *"
-              value={editingTestimonial ? editingTestimonial.name : newTestimonialForm.name}
-              onChange={(e) =>
-                editingTestimonial
-                  ? setEditingTestimonial({
-                      ...editingTestimonial,
-                      name: e.target.value,
-                      client_name: e.target.value,
-                    })
-                  : setNewTestimonialForm({ ...newTestimonialForm, name: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Role / Designation"
-              value={editingTestimonial ? editingTestimonial.role : newTestimonialForm.role}
-              onChange={(e) =>
-                editingTestimonial
-                  ? setEditingTestimonial({
-                      ...editingTestimonial,
-                      role: e.target.value,
-                      company_or_role: `${e.target.value}, ${editingTestimonial.company || ''}`,
-                    })
-                  : setNewTestimonialForm({ ...newTestimonialForm, role: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            />
-            <input
-              type="text"
-              placeholder="Company Name"
-              value={editingTestimonial ? editingTestimonial.company : newTestimonialForm.company}
-              onChange={(e) =>
-                editingTestimonial
-                  ? setEditingTestimonial({
-                      ...editingTestimonial,
-                      company: e.target.value,
-                      company_or_role: `${editingTestimonial.role || ''}, ${e.target.value}`,
-                    })
-                  : setNewTestimonialForm({ ...newTestimonialForm, company: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            />
-            <textarea
-              placeholder="Verified client feedback..."
-              rows={3}
-              value={editingTestimonial ? editingTestimonial.content : newTestimonialForm.content}
-              onChange={(e) =>
-                editingTestimonial
-                  ? setEditingTestimonial({
-                      ...editingTestimonial,
-                      content: e.target.value,
-                      review: e.target.value,
-                    })
-                  : setNewTestimonialForm({ ...newTestimonialForm, content: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
-            >
-              {editingTestimonial ? 'Save Review Changes' : 'Publish Verified Review'}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ==========================================
-          MODAL 6: ADD / EDIT FAQ ITEM
-         ========================================== */}
-      {(isAddFaqOpen || editingFaq) && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <form
-            onSubmit={handleCreateFaq}
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingFaq ? 'Edit Website FAQ' : 'Add Website FAQ'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddFaqOpen(false);
-                  setEditingFaq(null);
-                }}
-                className="p-1.5 rounded-lg bg-slate-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="Question *"
-              value={editingFaq ? editingFaq.question : newFaqForm.question}
-              onChange={(e) =>
-                editingFaq
-                  ? setEditingFaq({ ...editingFaq, question: e.target.value })
-                  : setNewFaqForm({ ...newFaqForm, question: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <textarea
-              placeholder="Detailed Answer *"
-              rows={4}
-              value={editingFaq ? editingFaq.answer : newFaqForm.answer}
-              onChange={(e) =>
-                editingFaq
-                  ? setEditingFaq({ ...editingFaq, answer: e.target.value })
-                  : setNewFaqForm({ ...newFaqForm, answer: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
-            >
-              {editingFaq ? 'Save FAQ Changes' : 'Save FAQ Item'}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ==========================================
-          MODAL 7: ADD / EDIT CAREER JOB OPENING
-         ========================================== */}
-      {(isAddCareerOpen || editingCareer) && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <form
-            onSubmit={handleSaveCareerModal}
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingCareer ? 'Edit Job Opening' : 'Post New Job Opening'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddCareerOpen(false);
-                  setEditingCareer(null);
-                }}
-                className="p-1.5 rounded-lg bg-slate-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="Job Role Title * (e.g. Senior Next.js Developer)"
-              value={editingCareer ? editingCareer.role : newCareerForm.role}
-              onChange={(e) =>
-                editingCareer
-                  ? setEditingCareer({ ...editingCareer, role: e.target.value })
-                  : setNewCareerForm({ ...newCareerForm, role: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="text"
-                placeholder="Department"
-                value={editingCareer ? editingCareer.department : newCareerForm.department}
-                onChange={(e) =>
-                  editingCareer
-                    ? setEditingCareer({ ...editingCareer, department: e.target.value })
-                    : setNewCareerForm({ ...newCareerForm, department: e.target.value })
-                }
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              />
-              <input
-                type="text"
-                placeholder="Location (e.g. New Delhi / Remote)"
-                value={editingCareer ? editingCareer.location : newCareerForm.location}
-                onChange={(e) =>
-                  editingCareer
-                    ? setEditingCareer({ ...editingCareer, location: e.target.value })
-                    : setNewCareerForm({ ...newCareerForm, location: e.target.value })
-                }
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              />
-            </div>
-            <textarea
-              placeholder="Role responsibilities & description..."
-              rows={3}
-              value={editingCareer ? editingCareer.desc : newCareerForm.desc}
-              onChange={(e) =>
-                editingCareer
-                  ? setEditingCareer({ ...editingCareer, desc: e.target.value })
-                  : setNewCareerForm({ ...newCareerForm, desc: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Skill Tags (comma separated)"
-              value={editingCareer ? (editingCareer.tags || []).join(', ') : newCareerForm.tags}
-              onChange={(e) =>
-                editingCareer
-                  ? setEditingCareer({
-                      ...editingCareer,
-                      tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
-                    })
-                  : setNewCareerForm({ ...newCareerForm, tags: e.target.value })
-              }
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono"
-            />
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
-            >
-              {editingCareer ? 'Save Job Opening' : 'Publish Job To /careers'}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ==========================================
           MODAL 8: REGISTER NEW MEDIA ASSET
          ========================================== */}
       {isAddMediaOpen && (
@@ -5634,151 +5296,6 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* ==========================================
-          MODAL 9: DEEP 11-SECTION BLUEPRINT EDITOR (INDUSTRIES & TECHNOLOGIES)
-         ========================================== */}
-      {editingMegaPage && (
-        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <span className="text-[10px] font-mono font-bold uppercase text-purple-700">
-                  11-SECTION PAGE BLUEPRINT EDITOR // {editingMegaPage.type.toUpperCase()}
-                </span>
-                <h3 className="text-lg font-bold text-slate-900">{editingMegaPage.item.title}</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingMegaPage(null)}
-                className="p-1.5 rounded-lg bg-slate-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Full Page Hero Title</label>
-                <input
-                  type="text"
-                  value={editingMegaPage.item.title || ''}
-                  onChange={(e) =>
-                    setEditingMegaPage({
-                      ...editingMegaPage,
-                      item: { ...editingMegaPage.item, title: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-bold"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Mega-Menu Short Title</label>
-                  <input
-                    type="text"
-                    value={editingMegaPage.item.shortTitle || ''}
-                    onChange={(e) =>
-                      setEditingMegaPage({
-                        ...editingMegaPage,
-                        item: { ...editingMegaPage.item, shortTitle: e.target.value },
-                      })
-                    }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Primary KPI Badge</label>
-                  <input
-                    type="text"
-                    value={editingMegaPage.item.metricBadge || ''}
-                    onChange={(e) =>
-                      setEditingMegaPage({
-                        ...editingMegaPage,
-                        item: { ...editingMegaPage.item, metricBadge: e.target.value },
-                      })
-                    }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-mono text-emerald-700 font-bold"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Hero Subtitle</label>
-                <input
-                  type="text"
-                  value={editingMegaPage.item.subtitle || ''}
-                  onChange={(e) =>
-                    setEditingMegaPage({
-                      ...editingMegaPage,
-                      item: { ...editingMegaPage.item, subtitle: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Hero Detailed Description</label>
-                <textarea
-                  rows={3}
-                  value={editingMegaPage.item.heroDescription || ''}
-                  onChange={(e) =>
-                    setEditingMegaPage({
-                      ...editingMegaPage,
-                      item: { ...editingMegaPage.item, heroDescription: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Technology Stack / Tools (Comma Separated)
-                </label>
-                <input
-                  type="text"
-                  value={(editingMegaPage.item.techStack || editingMegaPage.item.ecosystemTools || []).join(', ')}
-                  onChange={(e) => {
-                    const arr = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
-                    setEditingMegaPage({
-                      ...editingMegaPage,
-                      item:
-                        editingMegaPage.type === 'industry'
-                          ? { ...editingMegaPage.item, techStack: arr }
-                          : { ...editingMegaPage.item, ecosystemTools: arr },
-                    });
-                  }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 font-mono"
-                />
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={async () => {
-                if (editingMegaPage.type === 'industry') {
-                  const next = [...industriesList];
-                  next[editingMegaPage.idx] = editingMegaPage.item;
-                  setIndustriesList(next);
-                  setEditingMegaPage(null);
-                  await postAdminAction('save_industries', next, 'Industry 11-Section Blueprint saved!');
-                } else {
-                  const next = [...technologiesList];
-                  next[editingMegaPage.idx] = editingMegaPage.item;
-                  setTechnologiesList(next);
-                  setEditingMegaPage(null);
-                  await postAdminAction('save_technologies', next, 'Technology 11-Section Blueprint saved!');
-                }
-              }}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
-            >
-              Save 11-Section Page Blueprint
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

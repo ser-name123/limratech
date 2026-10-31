@@ -31,12 +31,13 @@ export default async function CreativeDesignPage() {
     { q: 'Do you design UI/UX for existing websites and mobile apps?', a: 'Yes! We conduct usability audits on existing products and design high-converting modern redesigns in Figma.' },
   ];
 
+  const landing: any = (cms as any).pageSections?.['creative-design-solutions-india'] || {};
   return (
     <ServiceDetailView
       service={service}
-      heroTagline="Creative Design Agency India For Modern Brands & Business Growth"
-      benefits={benefits}
-      faqs={faqs}
+      heroTagline={landing.hero?.heading || 'Creative Design Agency India For Modern Brands & Business Growth'}
+      benefits={landing.benefits?.items?.length ? landing.benefits.items : benefits}
+      faqs={landing.faqs?.items?.length ? landing.faqs.items : faqs}
     />
   );
 }

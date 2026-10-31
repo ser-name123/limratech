@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { Phone, MessageSquare, CheckCircle2, AlertCircle, Loader2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
-import { companyInfo } from '@/data/mockData';
+import { useSiteInfo } from '@/lib/useSiteInfo';
 import { trackLeadConversion } from '@/components/AnalyticsTracker';
 
 export default function ContactCta() {
+  const companyInfo = useSiteInfo();
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',

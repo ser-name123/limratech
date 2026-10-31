@@ -31,12 +31,13 @@ export default async function LeadGenPage() {
     { q: 'Do you work for B2B or B2C businesses?', a: 'Both! We architect specialized LinkedIn & Google Search funnels for B2B enterprises, and high-volume Meta/Instagram funnels for B2C consumer products and services.' },
   ];
 
+  const landing: any = (cms as any).pageSections?.['lead-generation-company-india'] || {};
   return (
     <ServiceDetailView
       service={service}
-      heroTagline="Best Lead Generation Company in India for Business Growth"
-      benefits={benefits}
-      faqs={faqs}
+      heroTagline={landing.hero?.heading || 'Best Lead Generation Company in India for Business Growth'}
+      benefits={landing.benefits?.items?.length ? landing.benefits.items : benefits}
+      faqs={landing.faqs?.items?.length ? landing.faqs.items : faqs}
     />
   );
 }

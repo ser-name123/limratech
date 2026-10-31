@@ -1,48 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Zap, Search, Server, TrendingUp, Sparkles, CheckCircle2, ShieldCheck, Activity } from 'lucide-react';
+import { defaultHomeSections } from '@/data/defaultCmsConfig';
+import RichText from '@/components/RichText';
+
+const pillarStyles = [
+  { icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+  { icon: Search, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
+  { icon: Server, color: 'text-cyan-600', bg: 'bg-cyan-50', border: 'border-cyan-200' },
+  { icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+];
 
 export default function CorePillarsSection() {
-  const pillars = [
-    {
-      icon: Zap,
-      title: 'Sub-Second Core Web Vitals',
-      desc: 'Google algorithms reward speed. Our serverless Next.js edge builds load in under 400ms, eliminating bounce rates.',
-      tag: '100/100 Lighthouse',
-      color: 'text-amber-600',
-      bg: 'bg-amber-50',
-      border: 'border-amber-200'
-    },
-    {
-      icon: Search,
-      title: 'Semantic Schema & Entity SEO',
-      desc: 'We map full JSON-LD schema graphs so Google search bots and AI engines immediately understand your topical authority.',
-      tag: 'AI Overview Immune',
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
-      border: 'border-purple-200'
-    },
-    {
-      icon: Server,
-      title: 'Serverless Cloud & Supabase',
-      desc: 'Enterprise PostgreSQL with real-time subscriptions, row-level security (RLS), and zero-maintenance cloud elasticity.',
-      tag: 'Enterprise Scalable',
-      color: 'text-cyan-600',
-      bg: 'bg-cyan-50',
-      border: 'border-cyan-200'
-    },
-    {
-      icon: TrendingUp,
-      title: 'Conversion Rate Architecture',
-      desc: 'Every layout is engineered with psychological heatmaps and friction-free inquiry funnels that convert visitors into revenue.',
-      tag: '+38% Avg. Uplift',
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-      border: 'border-emerald-200'
-    },
-  ];
+  const [cfg, setCfg] = useState(defaultHomeSections.corePillars);
+  useEffect(() => {
+    fetch('/api/admin')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.cms?.homeSections?.corePillars) setCfg(d.cms.homeSections.corePillars);
+      })
+      .catch(() => {});
+  }, []);
+
+  const pillars = cfg.items.map((it, i) => ({ ...pillarStyles[i % pillarStyles.length], ...it }));
 
   return (
     <section className="py-20 bg-slate-50 relative border-b border-slate-200">
@@ -51,14 +33,12 @@ export default function CorePillarsSection() {
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium">
             <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-            <span>OUR CORE PHILOSOPHY</span>
+            <span>{cfg.eyebrow}</span>
           </div>
           <h2 className="text-xl sm:text-3xl lg:text-[34px] font-medium text-slate-900 tracking-tight leading-snug">
-            Why Code-First SEO &amp; Sub-Second Engineering Win
+            {cfg.heading}
           </h2>
-          <p className="text-sm text-slate-600 leading-relaxed font-normal">
-            Legacy marketing agencies treat web development as an afterthought. We treat clean code and algorithmic performance as the foundational engine of business growth.
-          </p>
+          <RichText className="text-sm text-slate-600 leading-relaxed font-normal" html={cfg.description} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -83,9 +63,7 @@ export default function CorePillarsSection() {
                     {p.title}
                   </h3>
 
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    {p.desc}
-                  </p>
+                  <RichText className="text-xs text-slate-600 leading-relaxed font-normal" html={p.desc} />
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-slate-100 text-[11px] font-mono text-slate-400">

@@ -32,12 +32,13 @@ export default async function WebDevPage() {
     { q: 'Will my website be mobile friendly and SEO optimized?', a: 'Absolutely. Every single website we develop is 100% responsive across all smartphones, tablets, and desktops, with strict adherence to Google Core Web Vitals.' },
   ];
 
+  const landing: any = (cms as any).pageSections?.['website-development-services'] || {};
   return (
     <ServiceDetailView
       service={service}
-      heroTagline="Best Website Development Company in India For Modern Business Websites"
-      benefits={benefits}
-      faqs={faqs}
+      heroTagline={landing.hero?.heading || 'Best Website Development Company in India For Modern Business Websites'}
+      benefits={landing.benefits?.items?.length ? landing.benefits.items : benefits}
+      faqs={landing.faqs?.items?.length ? landing.faqs.items : faqs}
     />
   );
 }

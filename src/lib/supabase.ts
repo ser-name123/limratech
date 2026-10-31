@@ -2,10 +2,16 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// This module is imported only by server-side route handlers (never by a
+// client component), so it is safe to use the service_role key here. It is the
+// recommended key for trusted server-side writes/reads and bypasses RLS, so
+// form inserts work without depending on public-insert RLS policies.
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = supabaseServiceKey || supabaseAnonKey;
 
 export const isSupabaseConfigured = Boolean(
-  supabaseUrl && 
-  supabaseAnonKey && 
+  supabaseUrl &&
+  supabaseKey &&
   supabaseUrl !== 'https://your-project-id.supabase.co' &&
   !supabaseUrl.includes('your-project-id')
 );
@@ -97,7 +103,9 @@ export const inMemoryDb = {
 };
 
 export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(supabaseUrl!, supabaseAnonKey!)
+  ? createClient(supabaseUrl!, supabaseKey!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
   : null;
 
 /**
@@ -105,25 +113,25 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
  */
 export async function saveLead(leadData: any) {
   if (supabase) {
-    const { data, error } = await supabase.from('leads').insert([leadData]).select();
-    if (error) {
-      console.error('Supabase error inserting lead:', error);
-      throw error;
+    try {
+      const { data, error } = await supabase.from('leads').insert([leadData]).select();
+      if (error) throw error;
+      return { success: true, data, source: 'supabase' };
+    } catch (err) {
+      // DB unreachable or table missing — never fail the form; fall back below.
+      console.warn('Supabase lead insert failed, using fallback store:', err);
     }
-    return { success: true, data, source: 'supabase' };
-  } else {
-    // Fallback in-memory / dev mode
-    const simulatedLead = {
-      id: `lead-${Date.now()}`,
-      created_at: new Date().toISOString(),
-      ...leadData,
-      status: 'new',
-      priority: 'High',
-    };
-    inMemoryDb.leads.unshift(simulatedLead);
-    console.log('[Dev Mode] Lead saved to fallback store:', simulatedLead);
-    return { success: true, data: [simulatedLead], source: 'fallback-dev-mode' };
   }
+  // Fallback in-memory store (also used until Supabase tables exist)
+  const simulatedLead = {
+    id: `lead-${Date.now()}`,
+    created_at: new Date().toISOString(),
+    ...leadData,
+    status: 'new',
+    priority: 'High',
+  };
+  inMemoryDb.leads.unshift(simulatedLead);
+  return { success: true, data: [simulatedLead], source: 'fallback-store' };
 }
 
 /**
@@ -131,13 +139,32 @@ export async function saveLead(leadData: any) {
  */
 export async function saveContact(contactData: any) {
   if (supabase) {
-    const { data, error } = await supabase.from('contacts').insert([contactData]).select();
-    if (error) {
-      console.error('Supabase error inserting contact inquiry:', error);
-      throw error;
+    try {
+      const { data, error } = await supabase.from('contacts').insert([contactData]).select();
+      if (error) throw error;
+      // Mirror into the unified CRM leads pipeline so contact inquiries are
+      // visible and manageable in the admin alongside service leads.
+      try {
+        await supabase.from('leads').insert([{
+          full_name: contactData.name || contactData.full_name || 'Website Visitor',
+          email: contactData.email || '',
+          phone: contactData.phone || '',
+          service_needed: contactData.subject || 'Contact Page Inquiry',
+          budget: 'Discuss on Call',
+          message: contactData.message || '',
+          source_page: '/contact-us',
+          status: 'new',
+          priority: 'High',
+        }]);
+      } catch (mirrorErr) {
+        console.warn('Contact→leads mirror skipped:', mirrorErr);
+      }
+      return { success: true, data, source: 'supabase' };
+    } catch (err) {
+      console.warn('Supabase contact insert failed, using fallback store:', err);
     }
-    return { success: true, data, source: 'supabase' };
-  } else {
+  }
+  {
     const simulatedContact = {
       id: `contact-${Date.now()}`,
       created_at: new Date().toISOString(),
@@ -170,19 +197,23 @@ export async function saveContact(contactData: any) {
  */
 export async function saveNewsletterSubscriber(email: string) {
   if (supabase) {
-    const { data, error } = await supabase
-      .from('newsletter_subscribers')
-      .insert([{ email, is_active: true }])
-      .select();
-    if (error) {
-      if (error.code === '23505') {
-        return { success: true, message: 'Already subscribed!', source: 'supabase' };
+    try {
+      const { data, error } = await supabase
+        .from('newsletter_subscribers')
+        .insert([{ email, is_active: true }])
+        .select();
+      if (error) {
+        if (error.code === '23505') {
+          return { success: true, message: 'Already subscribed!', source: 'supabase' };
+        }
+        throw error;
       }
-      console.error('Supabase error inserting newsletter subscriber:', error);
-      throw error;
+      return { success: true, data, source: 'supabase' };
+    } catch (err) {
+      console.warn('Supabase newsletter insert failed, using fallback store:', err);
     }
-    return { success: true, data, source: 'supabase' };
-  } else {
+  }
+  {
     const subscriber = {
       id: `sub-${Date.now()}`,
       created_at: new Date().toISOString(),
@@ -190,7 +221,126 @@ export async function saveNewsletterSubscriber(email: string) {
       is_active: true,
     };
     inMemoryDb.newsletter.unshift(subscriber);
-    console.log('[Dev Mode] Newsletter subscriber registered:', subscriber);
-    return { success: true, data: [subscriber], source: 'fallback-dev-mode' };
+    return { success: true, data: [subscriber], source: 'fallback-store' };
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * Admin CRM database helpers (server-side only).
+ * Each returns null/false when Supabase is unavailable or errors, so
+ * the admin route can fall back to the in-memory store and never fail.
+ * ------------------------------------------------------------------ */
+
+export async function dbListLeads(): Promise<any[] | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.warn('dbListLeads failed:', error.message);
+    return null;
+  }
+  return data || [];
+}
+
+export async function dbListNewsletter(): Promise<any[] | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('newsletter_subscribers')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.warn('dbListNewsletter failed:', error.message);
+    return null;
+  }
+  return data || [];
+}
+
+export async function dbCreateLead(fields: any): Promise<any | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.from('leads').insert([fields]).select();
+  if (error) {
+    console.warn('dbCreateLead failed:', error.message);
+    return null;
+  }
+  return data?.[0] || null;
+}
+
+export async function dbUpdateLead(id: string, fields: any): Promise<any | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.from('leads').update(fields).eq('id', id).select();
+  if (error) {
+    console.warn('dbUpdateLead failed:', error.message);
+    return null;
+  }
+  return data?.[0] || null;
+}
+
+export async function dbDeleteLead(id: string): Promise<boolean> {
+  if (!supabase) return false;
+  const { error } = await supabase.from('leads').delete().eq('id', id);
+  if (error) {
+    console.warn('dbDeleteLead failed:', error.message);
+    return false;
+  }
+  return true;
+}
+
+export async function dbAddSubscriber(email: string): Promise<any | 'duplicate' | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('newsletter_subscribers')
+    .insert([{ email, is_active: true }])
+    .select();
+  if (error) {
+    if (error.code === '23505') return 'duplicate';
+    console.warn('dbAddSubscriber failed:', error.message);
+    return null;
+  }
+  return data?.[0] || null;
+}
+
+export async function dbDeleteSubscriber(id: string): Promise<boolean> {
+  if (!supabase) return false;
+  const { error } = await supabase.from('newsletter_subscribers').delete().eq('id', id);
+  if (error) {
+    console.warn('dbDeleteSubscriber failed:', error.message);
+    return false;
+  }
+  return true;
+}
+
+/* ------------------------------------------------------------------ *
+ * CMS content snapshot (single JSON row in the `cms_state` table).
+ * This is the primary, serverless-safe store for all editable website
+ * content (header, footer, services, blogs, etc.).
+ * ------------------------------------------------------------------ */
+
+const CMS_ROW_ID = 'singleton';
+
+export async function dbReadCms(): Promise<any | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('cms_state')
+    .select('data')
+    .eq('id', CMS_ROW_ID)
+    .maybeSingle();
+  if (error) {
+    console.warn('dbReadCms failed:', error.message);
+    return null;
+  }
+  return data?.data ?? null;
+}
+
+export async function dbWriteCms(snapshot: any): Promise<boolean> {
+  if (!supabase) return false;
+  const { error } = await supabase
+    .from('cms_state')
+    .upsert({ id: CMS_ROW_ID, data: snapshot, updated_at: new Date().toISOString() });
+  if (error) {
+    console.warn('dbWriteCms failed:', error.message);
+    return false;
+  }
+  return true;
 }

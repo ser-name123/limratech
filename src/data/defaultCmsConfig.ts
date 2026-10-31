@@ -6,6 +6,7 @@ import {
   testimonialsData,
 } from '@/data/mockData';
 import { industriesPagesData, technologiesPagesData } from '@/data/megaMenuData';
+import { defaultPageSections } from '@/data/pageContent';
 
 export const defaultFaqsData = [
   {
@@ -202,7 +203,24 @@ export interface SeoAndRedirectsConfig {
   enableSpeakableSchema?: boolean;
   honeypotEnabled: boolean;
   redirects: { from: string; to: string; permanent: boolean }[];
+  // Page URL changes: page serves at `to`, and `from` 301-redirects to `to`.
+  routeOverrides?: { from: string; to: string; enabled: boolean }[];
   customScripts?: CustomScriptSnippet[];
+  // robots.txt + crawl controls (admin-managed)
+  crawl?: {
+    allowIndexing: boolean; // master switch; false = ask all crawlers to stay out
+    disallowPaths: string[];
+    blockAiCrawlers: boolean; // disallow GPTBot, ClaudeBot, etc.
+    additionalSitemaps: string[];
+    crawlDelay?: number;
+  };
+  // PWA / web app manifest (admin-managed)
+  manifest?: {
+    name: string;
+    shortName: string;
+    themeColor: string;
+    backgroundColor: string;
+  };
 }
 
 export const defaultHeaderConfig: HeaderConfig = {
@@ -289,6 +307,10 @@ export const defaultFooterConfig: FooterConfig = {
     { label: 'Careers', href: '/careers', visible: true },
     { label: 'Privacy Policy', href: '/privacy-policy', visible: true },
     { label: 'Terms of Use', href: '/terms-and-conditions', visible: true },
+    { label: 'Cookie Policy', href: '/cookie-policy', visible: true },
+    { label: 'Refund & Cancellation Policy', href: '/refund-policy', visible: true },
+    { label: 'Disclaimer', href: '/disclaimer', visible: true },
+    { label: 'Acceptable Use Policy', href: '/acceptable-use-policy', visible: true },
     { label: 'Sitemap', href: '/sitemap-page', visible: true },
   ],
   customFooterScripts: `<!-- LIMRA Digitech Global Footer (</body>) Scripts: Conversion Pixels, Remarketing & Live Chat Widgets -->\n<script>\n  console.debug('[LIMRA Telemetry] Footer conversion & remarketing layer initialized.');\n</script>`,
@@ -396,6 +418,20 @@ export const defaultSeoConfig: SeoAndRedirectsConfig = {
   enableBreadcrumbSchema: true,
   enableSpeakableSchema: true,
   honeypotEnabled: true,
+  crawl: {
+    allowIndexing: true,
+    disallowPaths: ['/api/', '/admin', '/admin/editor'],
+    blockAiCrawlers: false,
+    additionalSitemaps: [],
+    crawlDelay: 0,
+  },
+  manifest: {
+    name: 'LIMRA Digitech',
+    shortName: 'LIMRA',
+    themeColor: '#7e22ce',
+    backgroundColor: '#f8fafc',
+  },
+  routeOverrides: [],
   redirects: [
     { from: '/about-us', to: '/about', permanent: true },
     { from: '/contact', to: '/contact-us', permanent: true },
@@ -822,6 +858,142 @@ export const defaultPageSeoRegistry: PageSeoEntry[] = [
     changeFreq: 'monthly',
     targetLocations: ['New Delhi', 'Pan-India', 'Global'],
   },
+  {
+    id: 'seo-privacy',
+    route: '/privacy-policy',
+    pageName: 'Privacy Policy',
+    category: 'Legal Page',
+    metaTitle: 'Privacy Policy',
+    metaDescription:
+      'How LIMRA Digitech collects, uses, secures, and lets you control your personal and inquiry data. 256-bit SSL, zero data selling, full user control.',
+    focusKeyword: 'LIMRA Digitech Privacy Policy',
+    secondaryKeywords: ['Data Protection Policy', 'GDPR Privacy India'],
+    canonicalUrl: 'https://limradigitech.com/privacy-policy',
+    ogTitle: 'Privacy Policy | LIMRA Digitech',
+    ogDescription: 'Our commitment to data privacy, security, and your rights.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'WebSite',
+    priority: 0.3,
+    changeFreq: 'monthly',
+    targetLocations: ['Pan-India'],
+  },
+  {
+    id: 'seo-terms',
+    route: '/terms-and-conditions',
+    pageName: 'Terms & Conditions',
+    category: 'Legal Page',
+    metaTitle: 'Terms of Use & Service Conditions',
+    metaDescription:
+      'The terms governing use of limradigitech.com and our services — IP ownership, commercial terms, warranties, acceptable use, and governing law.',
+    focusKeyword: 'LIMRA Digitech Terms and Conditions',
+    secondaryKeywords: ['Service Terms', 'Website Terms of Use'],
+    canonicalUrl: 'https://limradigitech.com/terms-and-conditions',
+    ogTitle: 'Terms of Use & Service Conditions | LIMRA Digitech',
+    ogDescription: 'Service governance, IP ownership, and engagement terms.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'WebSite',
+    priority: 0.3,
+    changeFreq: 'monthly',
+    targetLocations: ['Pan-India'],
+  },
+  {
+    id: 'seo-sitemap',
+    route: '/sitemap-page',
+    pageName: 'HTML Sitemap',
+    category: 'Core Page',
+    metaTitle: 'Sitemap | All Pages & Services',
+    metaDescription:
+      'Browse the complete directory of LIMRA Digitech pages — services, industries, technologies, blog articles, and case studies.',
+    focusKeyword: 'LIMRA Digitech Sitemap',
+    secondaryKeywords: ['Website Directory', 'All Pages'],
+    canonicalUrl: 'https://limradigitech.com/sitemap-page',
+    ogTitle: 'Sitemap | LIMRA Digitech',
+    ogDescription: 'The complete directory of LIMRA Digitech pages.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'CollectionPage',
+    priority: 0.3,
+    changeFreq: 'weekly',
+    targetLocations: ['Pan-India'],
+  },
+  {
+    id: 'seo-cookie-policy',
+    route: '/cookie-policy',
+    pageName: 'Cookie Policy',
+    category: 'Legal Page',
+    metaTitle: 'Cookie Policy',
+    metaDescription: 'How LIMRA Digitech uses cookies and similar technologies, and how you can control them.',
+    focusKeyword: 'LIMRA Digitech Cookie Policy',
+    secondaryKeywords: ['Cookie Policy', 'LIMRA Digitech Legal'],
+    canonicalUrl: 'https://limradigitech.com/cookie-policy',
+    ogTitle: 'Cookie Policy | LIMRA Digitech',
+    ogDescription: 'How LIMRA Digitech uses cookies and how you can control them.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'WebSite',
+    priority: 0.3,
+    changeFreq: 'monthly',
+    targetLocations: ['Pan-India'],
+  },
+  {
+    id: 'seo-refund-policy',
+    route: '/refund-policy',
+    pageName: 'Refund & Cancellation Policy',
+    category: 'Legal Page',
+    metaTitle: 'Refund & Cancellation Policy',
+    metaDescription: 'Our policy on project cancellations, milestone payments, and refund eligibility for LIMRA Digitech services.',
+    focusKeyword: 'LIMRA Digitech Refund Policy',
+    secondaryKeywords: ['Refund Policy', 'Cancellation Policy'],
+    canonicalUrl: 'https://limradigitech.com/refund-policy',
+    ogTitle: 'Refund & Cancellation Policy | LIMRA Digitech',
+    ogDescription: 'Cancellation, milestone payments, and refund eligibility.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'WebSite',
+    priority: 0.3,
+    changeFreq: 'monthly',
+    targetLocations: ['Pan-India'],
+  },
+  {
+    id: 'seo-disclaimer',
+    route: '/disclaimer',
+    pageName: 'Disclaimer',
+    category: 'Legal Page',
+    metaTitle: 'Disclaimer',
+    metaDescription: 'Important disclaimers regarding the information, results, and third-party platforms referenced on limradigitech.com.',
+    focusKeyword: 'LIMRA Digitech Disclaimer',
+    secondaryKeywords: ['Disclaimer', 'LIMRA Digitech Legal'],
+    canonicalUrl: 'https://limradigitech.com/disclaimer',
+    ogTitle: 'Disclaimer | LIMRA Digitech',
+    ogDescription: 'Disclaimers on information, results, and third-party platforms.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'WebSite',
+    priority: 0.3,
+    changeFreq: 'monthly',
+    targetLocations: ['Pan-India'],
+  },
+  {
+    id: 'seo-acceptable-use-policy',
+    route: '/acceptable-use-policy',
+    pageName: 'Acceptable Use Policy',
+    category: 'Legal Page',
+    metaTitle: 'Acceptable Use Policy',
+    metaDescription: 'The rules governing acceptable use of LIMRA Digitech websites, services, and deliverables.',
+    focusKeyword: 'LIMRA Digitech Acceptable Use Policy',
+    secondaryKeywords: ['Acceptable Use Policy', 'LIMRA Digitech Legal'],
+    canonicalUrl: 'https://limradigitech.com/acceptable-use-policy',
+    ogTitle: 'Acceptable Use Policy | LIMRA Digitech',
+    ogDescription: 'Rules for acceptable use of our websites and services.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'WebSite',
+    priority: 0.3,
+    changeFreq: 'monthly',
+    targetLocations: ['Pan-India'],
+  },
 ];
 
 export interface CareerOpeningItem {
@@ -1091,6 +1263,93 @@ export const defaultPricingPackages: PricingPackageItem[] = [
   },
 ];
 
+/* ------------------------------------------------------------------ *
+ * Home page editable sections (headings + card/row/step content).
+ * Icons and colours stay in code (mapped by index); only text is edited.
+ * ------------------------------------------------------------------ */
+
+export interface HomeSectionHeader {
+  eyebrow: string;
+  heading: string;
+  description: string;
+}
+
+export interface HomeSectionsConfig {
+  corePillars: HomeSectionHeader & { items: { title: string; desc: string; tag: string }[] };
+  seoPillars: HomeSectionHeader & { items: { title: string; desc: string; metrics: string }[] };
+  webDevPillars: HomeSectionHeader & { items: { title: string; desc: string; tech: string }[] };
+  comparison: HomeSectionHeader & { rows: { feature: string; traditional: string; limra: string }[] };
+  process: HomeSectionHeader & { steps: { title: string; desc: string; points: string[] }[] };
+}
+
+export const defaultHomeSections: HomeSectionsConfig = {
+  corePillars: {
+    eyebrow: 'OUR CORE PHILOSOPHY',
+    heading: 'Why Code-First SEO & Sub-Second Engineering Win',
+    description:
+      'Legacy marketing agencies treat web development as an afterthought. We treat clean code and algorithmic performance as the foundational engine of business growth.',
+    items: [
+      { title: 'Sub-Second Core Web Vitals', desc: 'Google algorithms reward speed. Our serverless Next.js edge builds load in under 400ms, eliminating bounce rates.', tag: '100/100 Lighthouse' },
+      { title: 'Semantic Schema & Entity SEO', desc: 'We map full JSON-LD schema graphs so Google search bots and AI engines immediately understand your topical authority.', tag: 'AI Overview Immune' },
+      { title: 'Serverless Cloud & Supabase', desc: 'Enterprise PostgreSQL with real-time subscriptions, row-level security (RLS), and zero-maintenance cloud elasticity.', tag: 'Enterprise Scalable' },
+      { title: 'Conversion Rate Architecture', desc: 'Every layout is engineered with psychological heatmaps and friction-free inquiry funnels that convert visitors into revenue.', tag: '+38% Avg. Uplift' },
+    ],
+  },
+  seoPillars: {
+    eyebrow: 'SEARCH ENGINE DOMINANCE',
+    heading: 'Our 6-Pillar Technical SEO Engine',
+    description:
+      'We go far beyond basic title tags and meta descriptions. Our SEO engineers build enduring search engine immunity that generates millions in organic pipeline value.',
+    items: [
+      { title: 'Technical Site Audits & Crawlability', desc: 'Eliminating indexation traps, 404 chains, render-blocking scripts, and duplicate canonicals that handicap your organic ranking potential.', metrics: '100% Crawl Efficiency' },
+      { title: 'Commercial Intent & Keyword Clusters', desc: 'Mapping high-value transactional search terms rather than useless informational queries, ensuring your rankings drive ready-to-buy prospects.', metrics: 'High Buyer Intent' },
+      { title: 'High-DA White-Hat Backlink Velocity', desc: 'Earning authoritative digital PR placements and contextual editorial mentions that build permanent domain authority in Google eyes.', metrics: 'DA 50+ Focus' },
+      { title: 'Google Maps & Local 3-Pack Dominance', desc: 'Dominating local search queries across Indian metro locations with structured NAP citations, verified GMB reviews, and local geotargeting.', metrics: '#1 Local Map Rank' },
+      { title: 'E-E-A-T Content Strategy & AI Immunity', desc: 'Creating authoritative, deeply researched editorial content that Google Helpful Content algorithms reward and AI Overviews cite.', metrics: 'Helpful Content Compliant' },
+      { title: 'Real-Time SERP Rank Attribution', desc: 'Continuous keyword position tracking, competitor backlink alerting, and transparent revenue conversion attribution via GA4.', metrics: '24/7 Live Monitoring' },
+    ],
+  },
+  webDevPillars: {
+    eyebrow: 'FULL-STACK ENGINEERING',
+    heading: 'Modern Web Development & Cloud Systems',
+    description:
+      'We build maintainable, lightning-fast digital products that never crash during high-traffic spikes and convert traffic with ease.',
+    items: [
+      { title: 'Next.js 15 Serverless Architecture', desc: 'Deploying sub-second applications on edge networks with automated SSG, dynamic SSR, and zero cold-start bottlenecks.', tech: 'Next.js 15 • React 19' },
+      { title: 'Supabase & PostgreSQL Cloud', desc: 'Normalized relational database schemas with built-in authentication, instant real-time data sync, and Row Level Security.', tech: 'Supabase • PostgreSQL' },
+      { title: 'High-Converting E-Commerce Stores', desc: 'Headless Shopify and custom stores built for maximum checkout velocity, frictionless one-click payments, and instant search.', tech: 'Headless • Shopify Plus' },
+      { title: 'Enterprise SaaS Platforms & Portals', desc: 'Internal team dashboards, CRM tools, and scalable SaaS multi-tenant software engineered to automate business workflows.', tech: 'Node.js • TypeScript' },
+      { title: 'Cross-Platform Mobile Apps', desc: 'Native-feel iOS and Android mobile apps engineered with Flutter and React Native with seamless offline local caching.', tech: 'Flutter • React Native' },
+      { title: 'Enterprise Security & Performance', desc: 'End-to-end encryption, strict Content Security Policies, TLS 1.3, and automated CI/CD unit testing for rock-solid uptime.', tech: 'Zero-Downtime CI/CD' },
+    ],
+  },
+  comparison: {
+    eyebrow: 'THE PERFORMANCE DIVIDE',
+    heading: 'Legacy Agencies vs. LIMRA Digitech Engine',
+    description:
+      'See why ambitious founders and enterprises switch their web and SEO infrastructure to our engineering.',
+    rows: [
+      { feature: 'PageSpeed & Core Web Vitals', traditional: '3 to 6+ seconds, bloated PHP plugins & slow mobile scores (40-60/100)', limra: '0.3s sub-second paint, perfect 100/100 Google Lighthouse score on edge CDN' },
+      { feature: 'SEO Engineering Methodology', traditional: 'Basic meta tags, keyword stuffing & generic articles that never rank', limra: 'Semantic topical clustering, Schema JSON-LD graphs & algorithmic SEO immunity' },
+      { feature: 'Tech Stack & Architecture', traditional: 'Monolithic legacy WordPress on slow shared cPanel hosting', limra: 'Next.js 15, TypeScript & serverless Supabase PostgreSQL edge cloud' },
+      { feature: 'Conversion & Lead Capture', traditional: 'Boring static forms with 80% abandonment rate and no CRM connection', limra: 'Multi-step psychological funnels with instant WhatsApp/CRM sync' },
+      { feature: 'Client Communication & Reporting', traditional: 'Bi-monthly confusing PDFs with vanity impressions and zero ROI visibility', limra: 'Real-time live attribution dashboard + Direct technical Slack/WhatsApp channel' },
+    ],
+  },
+  process: {
+    eyebrow: 'STRUCTURED METHODOLOGY',
+    heading: 'Our 4-Step Agile Delivery Engine',
+    description:
+      'From technical audit to sub-second production launch, our process ensures every milestone is engineered for maximum search visibility and ROI.',
+    steps: [
+      { title: 'Discovery & Algorithmic Audit', desc: 'We analyze your search competitors, backlink gaps, and technical bottlenecks to engineer a data-backed roadmap.', points: ['Core Web Vitals scan', 'Topical keyword mapping', 'Competitor backlink audit'] },
+      { title: 'Architecture & UI/UX Design', desc: 'Our engineers design pixel-perfect Figma UI/UX prototypes and model your Supabase database schema for high scalability.', points: ['Figma design system', 'Database schema modeling', 'Conversion journey mapping'] },
+      { title: 'Next.js Sprint & Schema Coding', desc: 'Building with clean TypeScript, implementing structured JSON-LD schema graphs, and integrating serverless API endpoints.', points: ['Sub-second page speed', 'Schema entity integration', 'Strict TypeScript code'] },
+      { title: 'Edge Deployment & Continuous SEO', desc: 'We deploy to global edge CDN, trigger instant Google indexing, and optimize search rankings and lead conversion weekly.', points: ['Zero-downtime launch', 'Instant Google indexing', 'Weekly rank tracking & CRO'] },
+    ],
+  },
+};
+
 export const initialCmsSnapshot = {
   header: defaultHeaderConfig,
   footer: defaultFooterConfig,
@@ -1111,4 +1370,6 @@ export const initialCmsSnapshot = {
   milestones: defaultMilestones,
   pricingPackages: defaultPricingPackages,
   pageSeoRegistry: defaultPageSeoRegistry,
+  homeSections: defaultHomeSections,
+  pageSections: defaultPageSections,
 };

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { homeWidgetsContent } from '@/data/pages/homeWidgets';
 import { 
   Search, 
   Zap, 
@@ -18,6 +19,13 @@ import {
 } from 'lucide-react';
 
 export default function InteractiveSeoAuditor() {
+  const [wc, setWc] = useState(homeWidgetsContent.seoAuditor);
+  useEffect(() => {
+    fetch('/api/admin')
+      .then((r) => r.json())
+      .then((d) => { if (d?.cms?.pageSections?.homeWidgets?.seoAuditor) setWc(d.cms.pageSections.homeWidgets.seoAuditor); })
+      .catch(() => {});
+  }, []);
   const [url, setUrl] = useState('');
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditStep, setAuditStep] = useState(0);
@@ -81,13 +89,13 @@ export default function InteractiveSeoAuditor() {
         <div className="text-center max-w-4xl mx-auto mb-12 space-y-4">
           <span className="text-xs uppercase font-semibold tracking-wider text-purple-700 bg-purple-50 border border-purple-200 px-4 py-1.5 rounded-full inline-flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-spin" style={{ animationDuration: '4s' }} />
-            <span>FREE LIVE TECHNICAL SEO DIAGNOSTIC</span>
+            <span>{wc.eyebrow}</span>
           </span>
           <h2 className="text-xl sm:text-3xl lg:text-[36px] font-bold text-slate-900 tracking-tight">
-            How Is Your Website Really Performing On Google?
+            {wc.heading}
           </h2>
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Test your domain in real-time against modern Google Core Web Vitals, mobile DOM efficiency, and algorithm ranking factors.
+            {wc.description}
           </p>
         </div>
 

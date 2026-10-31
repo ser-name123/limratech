@@ -1,57 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Search, 
-  MapPin, 
-  Link2, 
-  CheckCircle2, 
-  ArrowRight, 
-  Target, 
+import {
+  Search,
+  MapPin,
+  Link2,
+  CheckCircle2,
+  ArrowRight,
+  Target,
   FileText,
   LineChart
 } from 'lucide-react';
+import { defaultHomeSections } from '@/data/defaultCmsConfig';
+import RichText from '@/components/RichText';
+
+const seoIcons = [Search, Target, Link2, MapPin, FileText, LineChart];
 
 export default function SeoPillarsGrid() {
-  const seoModules = [
-    {
-      icon: Search,
-      title: 'Technical Site Audits & Crawlability',
-      desc: 'Eliminating indexation traps, 404 chains, render-blocking scripts, and duplicate canonicals that handicap your organic ranking potential.',
-      metrics: '100% Crawl Efficiency'
-    },
-    {
-      icon: Target,
-      title: 'Commercial Intent & Keyword Clusters',
-      desc: 'Mapping high-value transactional search terms rather than useless informational queries, ensuring your rankings drive ready-to-buy prospects.',
-      metrics: 'High Buyer Intent'
-    },
-    {
-      icon: Link2,
-      title: 'High-DA White-Hat Backlink Velocity',
-      desc: 'Earning authoritative digital PR placements and contextual editorial mentions that build permanent domain authority in Google eyes.',
-      metrics: 'DA 50+ Focus'
-    },
-    {
-      icon: MapPin,
-      title: 'Google Maps & Local 3-Pack Dominance',
-      desc: 'Dominating local search queries across Indian metro locations with structured NAP citations, verified GMB reviews, and local geotargeting.',
-      metrics: '#1 Local Map Rank'
-    },
-    {
-      icon: FileText,
-      title: 'E-E-A-T Content Strategy & AI Immunity',
-      desc: 'Creating authoritative, deeply researched editorial content that Google Helpful Content algorithms reward and AI Overviews cite.',
-      metrics: 'Helpful Content Compliant'
-    },
-    {
-      icon: LineChart,
-      title: 'Real-Time SERP Rank Attribution',
-      desc: 'Continuous keyword position tracking, competitor backlink alerting, and transparent revenue conversion attribution via GA4.',
-      metrics: '24/7 Live Monitoring'
-    },
-  ];
+  const [cfg, setCfg] = useState(defaultHomeSections.seoPillars);
+  useEffect(() => {
+    fetch('/api/admin')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.cms?.homeSections?.seoPillars) setCfg(d.cms.homeSections.seoPillars);
+      })
+      .catch(() => {});
+  }, []);
+
+  const seoModules = cfg.items.map((it, i) => ({ icon: seoIcons[i % seoIcons.length], ...it }));
 
   return (
     <section className="py-24 bg-slate-50 relative border-b border-slate-200">
@@ -60,14 +37,12 @@ export default function SeoPillarsGrid() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
           <div className="max-w-2xl space-y-3">
             <span className="text-xs uppercase font-medium tracking-widest text-purple-700 bg-purple-50 border border-purple-200 px-3.5 py-1 rounded-full inline-block">
-              SEARCH ENGINE DOMINANCE
+              {cfg.eyebrow}
             </span>
             <h2 className="text-xl sm:text-3xl lg:text-[34px] font-medium text-slate-900 tracking-tight leading-snug">
-              Our 6-Pillar Technical SEO Engine
+              {cfg.heading}
             </h2>
-            <p className="text-sm text-slate-600 font-normal leading-relaxed">
-              We go far beyond basic title tags and meta descriptions. Our SEO engineers build enduring search engine immunity that generates millions in organic pipeline value.
-            </p>
+            <RichText className="text-sm text-slate-600 font-normal leading-relaxed" html={cfg.description} />
           </div>
 
           <Link
@@ -101,9 +76,7 @@ export default function SeoPillarsGrid() {
                     {item.title}
                   </h3>
 
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                    {item.desc}
-                  </p>
+                  <RichText className="text-xs text-slate-600 leading-relaxed font-normal" html={item.desc} />
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">

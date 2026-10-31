@@ -28,6 +28,7 @@ import Testimonials from '@/components/Testimonials';
 import TechStackTicker from '@/components/TechStackTicker';
 import CaseStudies from '@/components/CaseStudies';
 import SeoAuthoritySection from '@/components/SeoAuthoritySection';
+import RichText from '@/components/RichText';
 
 interface ServiceDetailViewProps {
   service: ServiceItem;
@@ -222,7 +223,8 @@ export default function ServiceDetailView({
                       <Zap className="w-4 h-4" />
                     </div>
                     <h3 className="text-sm font-bold text-slate-900">{b.title}</h3>
-                    <p className="text-xs text-slate-600 leading-relaxed font-normal">{b.desc}</p>
+                    <RichText className="text-xs text-slate-600 leading-relaxed font-normal" html={b.desc} />
+
                   </div>
                 ))}
               </div>
@@ -498,9 +500,7 @@ export default function ServiceDetailView({
                   />
                 </button>
                 {openFaq === index && (
-                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-200/60 animate-in fade-in duration-200">
-                    {faq.a}
-                  </div>
+                  <RichText className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-200/60 animate-in fade-in duration-200" html={faq.a} />
                 )}
               </div>
             ))}

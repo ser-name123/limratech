@@ -10,6 +10,7 @@ import PageTransition from '@/components/PageTransition';
 import GlobalMotionEngine from '@/components/GlobalMotionEngine';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import CustomScriptsInjector from '@/components/CustomScriptsInjector';
+import { getServerCmsSnapshot } from '@/lib/cmsReader';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -67,50 +68,58 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLdSchema = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': 'https://limradigitech.com/#organization',
-      name: 'LIMRA Digitech',
-      url: 'https://limradigitech.com',
-      logo: 'https://limradigitech.com/limra-logo.png',
-      email: 'limradigitech@gmail.com',
-      telephone: '+91-9571302312',
-      sameAs: [
-        'https://www.facebook.com/limradigitech.india',
-        'https://x.com/limradigitech',
-        'https://www.linkedin.com/company/limra-digitech',
-        'https://www.instagram.com/limra.digitech/',
-      ],
-    },
-    {
-      '@type': 'WebSite',
-      '@id': 'https://limradigitech.com/#website',
-      url: 'https://limradigitech.com',
-      name: 'LIMRA Digitech',
-      publisher: { '@id': 'https://limradigitech.com/#organization' },
-    },
-    {
-      '@type': 'ProfessionalService',
-      '@id': 'https://limradigitech.com/#service',
-      name: 'LIMRA Digitech — Digital Marketing, Web & Software Solutions',
-      url: 'https://limradigitech.com',
-      telephone: '+91-9571302312',
-      email: 'limradigitech@gmail.com',
-      openingHours: 'Mo-Sa 09:00-19:00',
-      priceRange: '₹₹',
-      areaServed: 'IN',
-    },
-  ],
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Build Organization/Service structured data from the live CMS (admin Footer
+  // module) so contact details and social profiles stay in one place.
+  const cms = await getServerCmsSnapshot();
+  const f = cms.footer;
+  const telephone = f?.phone || '+91-9571302312';
+  const email = f?.email || 'limradigitech@gmail.com';
+  const sameAs = [
+    f?.social?.facebook,
+    f?.social?.twitter,
+    f?.social?.linkedin,
+    f?.social?.instagram,
+  ].filter(Boolean);
+
+  const jsonLdSchema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': 'https://limradigitech.com/#organization',
+        name: 'LIMRA Digitech',
+        url: 'https://limradigitech.com',
+        logo: 'https://limradigitech.com/limra-logo.png',
+        email,
+        telephone,
+        sameAs,
+      },
+      {
+        '@type': 'WebSite',
+        '@id': 'https://limradigitech.com/#website',
+        url: 'https://limradigitech.com',
+        name: 'LIMRA Digitech',
+        publisher: { '@id': 'https://limradigitech.com/#organization' },
+      },
+      {
+        '@type': 'ProfessionalService',
+        '@id': 'https://limradigitech.com/#service',
+        name: 'LIMRA Digitech — Digital Marketing, Web & Software Solutions',
+        url: 'https://limradigitech.com',
+        telephone,
+        email,
+        openingHours: 'Mo-Sa 09:00-19:00',
+        priceRange: '₹₹',
+        areaServed: 'IN',
+      },
+    ],
+  };
+
   return (
     <html lang="en" className={`${plusJakarta.variable} ${outfit.variable}`} suppressHydrationWarning>
       <head>

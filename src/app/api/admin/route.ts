@@ -1,65 +1,96 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import fs from 'fs/promises';
 import path from 'path';
-import { inMemoryDb, supabase, isSupabaseConfigured } from '@/lib/supabase';
+import {
+  inMemoryDb,
+  supabase,
+  isSupabaseConfigured,
+  dbListLeads,
+  dbListNewsletter,
+  dbCreateLead,
+  dbUpdateLead,
+  dbDeleteLead,
+  dbAddSubscriber,
+  dbDeleteSubscriber,
+  dbReadCms,
+  dbWriteCms,
+} from '@/lib/supabase';
 import { initialCmsSnapshot } from '@/data/defaultCmsConfig';
+import { ADMIN_SESSION_COOKIE, verifySessionToken } from '@/lib/adminAuth';
 
 const CMS_FILE_PATH = path.join(process.cwd(), 'src', 'data', 'cmsState.json');
+
+/** True when the request carries a valid admin session cookie. */
+async function isAdminRequest(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return Boolean(verifySessionToken(cookieStore.get(ADMIN_SESSION_COOKIE)?.value));
+}
 
 // In-memory singleton fallback if filesystem is read-only (e.g., serverless edge)
 let memoryCmsState: typeof initialCmsSnapshot = structuredClone(initialCmsSnapshot);
 
 async function readCmsState(): Promise<typeof initialCmsSnapshot> {
+  // 1) Primary source: the cms_state row in Supabase (serverless-safe).
+  const fromDb = await dbReadCms();
+  if (fromDb) {
+    memoryCmsState = { ...initialCmsSnapshot, ...fromDb };
+    return memoryCmsState;
+  }
+  // 2) Fallback: local file (useful for local dev / before first DB write).
   try {
     const raw = await fs.readFile(CMS_FILE_PATH, 'utf-8');
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed.leads) && parsed.leads.length > 0) {
-      inMemoryDb.leads = parsed.leads;
-    }
-    if (Array.isArray(parsed.newsletter) && parsed.newsletter.length > 0) {
-      inMemoryDb.newsletter = parsed.newsletter;
-    }
     memoryCmsState = { ...initialCmsSnapshot, ...parsed };
     return memoryCmsState;
   } catch {
+    // 3) Last resort: the in-memory default snapshot.
     return memoryCmsState;
   }
 }
 
 async function writeCmsState(nextState: typeof initialCmsSnapshot) {
-  const stateWithCrm = {
-    ...nextState,
-    leads: inMemoryDb.leads,
-    newsletter: inMemoryDb.newsletter,
-  };
-  memoryCmsState = stateWithCrm;
+  memoryCmsState = nextState;
+  // Primary: persist the CMS content to the database.
+  await dbWriteCms(nextState);
+  // Best-effort local file backup (ignored on read-only/serverless filesystems).
   try {
-    await fs.writeFile(CMS_FILE_PATH, JSON.stringify(stateWithCrm, null, 2), 'utf-8');
+    await fs.writeFile(CMS_FILE_PATH, JSON.stringify(nextState, null, 2), 'utf-8');
   } catch (err) {
-    console.warn('Could not persist cmsState.json to disk, using memory store:', err);
+    console.warn('Could not persist cmsState.json to disk (using DB + memory):', err);
   }
 }
 
 export async function GET() {
   try {
     const cms = await readCmsState();
-    let leads = inMemoryDb.leads;
 
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
-        leads = data;
-      }
+    // The public website reads this endpoint for live CMS content (header,
+    // footer, services, etc.), so `cms` stays public. Leads and newsletter
+    // subscribers are PII and are only returned to an authenticated admin.
+    const authed = await isAdminRequest();
+    if (!authed) {
+      return NextResponse.json({
+        success: true,
+        mode: isSupabaseConfigured ? 'supabase-cloud' : 'live-cms-engine',
+        authenticated: false,
+        leads: [],
+        newsletter: [],
+        cms,
+      });
     }
+
+    // Prefer the live database; fall back to the in-memory store if it is
+    // unavailable so the admin never shows an empty/broken screen.
+    const leads = (await dbListLeads()) ?? inMemoryDb.leads;
+    const newsletter = (await dbListNewsletter()) ?? inMemoryDb.newsletter;
 
     return NextResponse.json({
       success: true,
       mode: isSupabaseConfigured ? 'supabase-cloud' : 'live-cms-engine',
+      authenticated: true,
       leads,
-      newsletter: inMemoryDb.newsletter,
+      newsletter,
       cms,
     });
   } catch (error: any) {
@@ -72,6 +103,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // All mutations require a valid admin session.
+    if (!(await isAdminRequest())) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized. Please sign in to the admin console.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { action, payload } = body;
     const cms = await readCmsState();
@@ -89,36 +128,44 @@ export async function POST(request: Request) {
 
     if (action === 'update_lead_status') {
       const { id, status, priority, internal_notes, full_name, email, phone, service_needed, budget, message, source_page } = payload;
-      const target = inMemoryDb.leads.find((l) => l.id === id);
-      if (target) {
-        if (status !== undefined) target.status = status;
-        if (priority !== undefined) target.priority = priority;
-        if (internal_notes !== undefined) target.internal_notes = internal_notes;
-        if (full_name !== undefined) target.full_name = full_name;
-        if (email !== undefined) target.email = email;
-        if (phone !== undefined) target.phone = phone;
-        if (service_needed !== undefined) target.service_needed = service_needed;
-        if (budget !== undefined) target.budget = budget;
-        if (message !== undefined) target.message = message;
-        if (source_page !== undefined) target.source_page = source_page;
+      const fields: any = { updated_at: new Date().toISOString() };
+      if (status !== undefined) fields.status = status;
+      if (priority !== undefined) fields.priority = priority;
+      if (internal_notes !== undefined) fields.internal_notes = internal_notes;
+      if (full_name !== undefined) fields.full_name = full_name;
+      if (email !== undefined) fields.email = email;
+      if (phone !== undefined) fields.phone = phone;
+      if (service_needed !== undefined) fields.service_needed = service_needed;
+      if (budget !== undefined) fields.budget = budget;
+      if (message !== undefined) fields.message = message;
+      if (source_page !== undefined) fields.source_page = source_page;
+
+      if (supabase) {
+        await dbUpdateLead(id, fields);
+      } else {
+        const target = inMemoryDb.leads.find((l) => l.id === id);
+        if (target) Object.assign(target, fields);
       }
       addAuditLog(`Updated Lead ${id} in CRM Pipeline`);
       await writeCmsState(cms);
-      return NextResponse.json({ success: true, leads: inMemoryDb.leads, cms });
+      const leads = (await dbListLeads()) ?? inMemoryDb.leads;
+      return NextResponse.json({ success: true, leads, cms });
     }
 
     if (action === 'delete_lead') {
       const { id } = payload;
+      if (supabase) {
+        await dbDeleteLead(id);
+      }
       inMemoryDb.leads = inMemoryDb.leads.filter((l) => l.id !== id);
       addAuditLog(`Deleted Lead ${id} from CRM`);
       await writeCmsState(cms);
-      return NextResponse.json({ success: true, leads: inMemoryDb.leads, cms });
+      const leads = (await dbListLeads()) ?? inMemoryDb.leads;
+      return NextResponse.json({ success: true, leads, cms });
     }
 
     if (action === 'create_lead') {
-      const newLead = {
-        id: `lead-${Date.now()}`,
-        created_at: new Date().toISOString(),
+      const fields = {
         full_name: payload.full_name,
         email: payload.email,
         phone: payload.phone || '',
@@ -129,33 +176,52 @@ export async function POST(request: Request) {
         status: payload.status || 'new',
         priority: payload.priority || 'High',
       };
-      inMemoryDb.leads.unshift(newLead);
+      let newLead: any = null;
+      if (supabase) {
+        newLead = await dbCreateLead(fields);
+      }
+      if (!newLead) {
+        newLead = { id: `lead-${Date.now()}`, created_at: new Date().toISOString(), ...fields };
+        inMemoryDb.leads.unshift(newLead);
+      }
       addAuditLog(`Created manual CRM Lead: ${newLead.full_name}`);
       await writeCmsState(cms);
-      return NextResponse.json({ success: true, lead: newLead, leads: inMemoryDb.leads, cms });
+      const leads = (await dbListLeads()) ?? inMemoryDb.leads;
+      return NextResponse.json({ success: true, lead: newLead, leads, cms });
     }
 
     if (action === 'delete_subscriber') {
       const { id } = payload;
+      if (supabase) {
+        await dbDeleteSubscriber(id);
+      }
       inMemoryDb.newsletter = inMemoryDb.newsletter.filter((s) => s.id !== id);
       addAuditLog(`Removed newsletter subscriber ${id}`);
       await writeCmsState(cms);
-      return NextResponse.json({ success: true, newsletter: inMemoryDb.newsletter, cms });
+      const newsletter = (await dbListNewsletter()) ?? inMemoryDb.newsletter;
+      return NextResponse.json({ success: true, newsletter, cms });
     }
 
     if (action === 'add_subscriber') {
       const email = String(payload?.email || '').trim().toLowerCase();
       if (email) {
-        inMemoryDb.newsletter.unshift({
-          id: `sub-${Date.now()}`,
-          created_at: new Date().toISOString(),
-          email,
-          is_active: true,
-        });
+        let added: any = null;
+        if (supabase) {
+          added = await dbAddSubscriber(email);
+        }
+        if (!added) {
+          inMemoryDb.newsletter.unshift({
+            id: `sub-${Date.now()}`,
+            created_at: new Date().toISOString(),
+            email,
+            is_active: true,
+          });
+        }
         addAuditLog(`Added newsletter subscriber: ${email}`);
         await writeCmsState(cms);
       }
-      return NextResponse.json({ success: true, newsletter: inMemoryDb.newsletter, cms });
+      const newsletter = (await dbListNewsletter()) ?? inMemoryDb.newsletter;
+      return NextResponse.json({ success: true, newsletter, cms });
     }
 
     if (action === 'save_header') {
@@ -175,6 +241,20 @@ export async function POST(request: Request) {
     if (action === 'save_hero') {
       cms.hero = payload;
       addAuditLog('Updated Homepage Hero Headline, CTAs & Counter Stats');
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
+    if (action === 'save_home_sections') {
+      (cms as any).homeSections = payload;
+      addAuditLog('Updated Homepage Sections (Pillars, Comparison & Process content)');
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
+    if (action === 'save_page_sections') {
+      (cms as any).pageSections = payload;
+      addAuditLog('Updated Page Content (About, Services & other page sections)');
       await writeCmsState(cms);
       return NextResponse.json({ success: true, cms });
     }

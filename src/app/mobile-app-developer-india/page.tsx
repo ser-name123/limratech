@@ -31,12 +31,13 @@ export default async function MobileAppPage() {
     { q: 'Do you provide backend server development for the mobile app?', a: 'Yes! We engineer cloud-native backends with Node.js, Supabase, and PostgreSQL with robust REST / GraphQL APIs.' },
   ];
 
+  const landing: any = (cms as any).pageSections?.['mobile-app-developer-india'] || {};
   return (
     <ServiceDetailView
       service={service}
-      heroTagline="Best App Development Company in India Delivering Custom Mobile Solutions"
-      benefits={benefits}
-      faqs={faqs}
+      heroTagline={landing.hero?.heading || 'Best App Development Company in India Delivering Custom Mobile Solutions'}
+      benefits={landing.benefits?.items?.length ? landing.benefits.items : benefits}
+      faqs={landing.faqs?.items?.length ? landing.faqs.items : faqs}
     />
   );
 }

@@ -63,6 +63,7 @@ export default function Header() {
   const [activeMegaMenu, setActiveMegaMenu] = useState<'services' | 'industries' | 'technologies' | null>(null);
   const [mobileSubmenu, setMobileSubmenu] = useState<'services' | 'industries' | 'technologies' | null>('services');
   const [headerCfg, setHeaderCfg] = useState<HeaderConfig>(defaultHeaderConfig);
+  const [social, setSocial] = useState(companyInfo.social);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -86,6 +87,9 @@ export default function Header() {
       .then((data) => {
         if (data?.cms?.header) {
           setHeaderCfg(data.cms.header);
+        }
+        if (data?.cms?.footer?.social) {
+          setSocial(data.cms.footer.social);
         }
       })
       .catch(() => {});
@@ -185,7 +189,7 @@ export default function Header() {
               <span className="text-purple-700 font-medium">{headerCfg.topBarTagline}</span>
               <div className="flex items-center space-x-1.5 text-slate-500">
                 <a
-                  href={companyInfo.social.facebook}
+                  href={social.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
@@ -196,7 +200,7 @@ export default function Header() {
                   </svg>
                 </a>
                 <a
-                  href={companyInfo.social.twitter}
+                  href={social.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="X (Twitter)"
@@ -207,7 +211,7 @@ export default function Header() {
                   </svg>
                 </a>
                 <a
-                  href={companyInfo.social.linkedin}
+                  href={social.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn"
@@ -218,7 +222,7 @@ export default function Header() {
                   </svg>
                 </a>
                 <a
-                  href={companyInfo.social.instagram}
+                  href={social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
