@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -16,16 +16,29 @@ import {
   Sparkles, 
   ShieldCheck, 
   Star,
-  Activity,
-  MessageSquare
+  Activity
 } from 'lucide-react';
 import { companyInfo } from '@/data/mockData';
+import { defaultFooterConfig, FooterConfig } from '@/data/defaultCmsConfig';
 
 export default function Footer() {
   const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [feedback, setFeedback] = useState('');
+  const [footerCfg, setFooterCfg] = useState<FooterConfig>(defaultFooterConfig);
+
+  useEffect(() => {
+    if (pathname?.startsWith('/admin')) return;
+    fetch('/api/admin')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.cms?.footer) {
+          setFooterCfg(data.cms.footer);
+        }
+      })
+      .catch(() => {});
+  }, [pathname]);
 
   if (pathname?.startsWith('/admin')) {
     return null;
@@ -59,6 +72,10 @@ export default function Footer() {
     }
   };
 
+  const visibleServiceLinks = (footerCfg.serviceLinks || defaultFooterConfig.serviceLinks).filter((l) => l.visible);
+  const visibleQuickLinks = (footerCfg.quickLinks || defaultFooterConfig.quickLinks).filter((l) => l.visible);
+  const visibleLegalLinks = (footerCfg.legalLinks || defaultFooterConfig.legalLinks).filter((l) => l.visible);
+
   return (
     <footer className="bg-slate-100/90 text-slate-600 relative overflow-hidden border-t border-slate-200 pt-14 pb-8">
       {/* Top Accent Gradient Border */}
@@ -71,51 +88,52 @@ export default function Footer() {
       <div className="max-w-[1520px] mx-auto px-4 sm:px-8 lg:px-12 relative z-10">
         
         {/* 1. Pre-Footer Callout Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 mb-14 shadow-lg shadow-slate-200/50 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-purple-100/40 rounded-full blur-[80px] pointer-events-none" />
-          
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                <span>PARTNER WITH INDIA&apos;S ELITE ENGINEERING LAB</span>
+        {footerCfg.showNewsletter && (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 mb-14 shadow-lg shadow-slate-200/50 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-purple-100/40 rounded-full blur-[80px] pointer-events-none" />
+            
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-2 max-w-2xl">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-semibold">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                  <span>{footerCfg.newsletterBadge || 'DIGITAL GROWTH DISPATCH'}</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
+                  {footerCfg.newsletterHeading || 'Ready to Outrank Competitors & Deploy Sub-Second Speed?'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
+                  {footerCfg.newsletterSubtext}
+                </p>
               </div>
-              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
-                Ready to Outrank Competitors &amp; Deploy Sub-Second Speed?
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
-                Connect with our technical architects for an in-depth SEO gap audit and Next.js engineering roadmap.
-              </p>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/contact-us"
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-medium text-xs sm:text-sm shadow-md shadow-purple-200 flex items-center gap-2 transition-all hover:scale-[1.02]"
-              >
-                <span>Request Blueprint</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/contact-us"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-medium text-xs sm:text-sm shadow-md shadow-purple-200 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                >
+                  <span>Request Blueprint</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
 
-              <a
-                href={`https://wa.me/${companyInfo.phoneClean.replace('+', '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-5 py-3 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-sm"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span>WhatsApp Hotline</span>
-              </a>
+                <a
+                  href={`https://wa.me/${(footerCfg.phoneClean || companyInfo.phoneClean).replace('+', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-5 py-3 rounded-xl font-semibold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-sm"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span>WhatsApp Hotline</span>
+                </a>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 2. Main 4-Column Navigation Directory */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-12 border-b border-slate-200">
           
           {/* Column 1: Brand & Dispatch (4 cols) */}
           <div className="lg:col-span-4 space-y-5">
-            {/* Logo without background box */}
             <Link href="/" className="inline-block group">
               <Image 
                 src="/limra-logo.png" 
@@ -127,13 +145,13 @@ export default function Footer() {
             </Link>
 
             <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
-              India&apos;s premier Next-Gen web engineering and technical SEO agency. We bridge the divide between sub-second Next.js speed, Supabase cloud elasticity, and ruthless Google search engine dominance.
+              {footerCfg.companyDescription}
             </p>
 
             {/* Infrastructure Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-mono text-slate-700 shadow-sm">
               <Activity className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Next.js 15 • Supabase Cloud • 99.98% SLA</span>
+              <span>Next.js 16 • Supabase Cloud • 99.98% SLA</span>
             </div>
 
             {/* Newsletter Dispatch */}
@@ -183,7 +201,7 @@ export default function Footer() {
             <div className="flex items-center gap-2 pt-1">
               {/* X / Twitter */}
               <a
-                href={companyInfo.social.twitter}
+                href={footerCfg.social?.twitter || companyInfo.social.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LIMRA Digitech on X"
@@ -196,7 +214,7 @@ export default function Footer() {
 
               {/* LinkedIn */}
               <a
-                href={companyInfo.social.linkedin}
+                href={footerCfg.social?.linkedin || companyInfo.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LIMRA Digitech on LinkedIn"
@@ -209,7 +227,7 @@ export default function Footer() {
 
               {/* Instagram */}
               <a
-                href={companyInfo.social.instagram}
+                href={footerCfg.social?.instagram || companyInfo.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LIMRA Digitech on Instagram"
@@ -222,7 +240,7 @@ export default function Footer() {
 
               {/* Facebook */}
               <a
-                href={companyInfo.social.facebook}
+                href={footerCfg.social?.facebook || companyInfo.social.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LIMRA Digitech on Facebook"
@@ -235,87 +253,41 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 2: Services Directory (2.5 cols) */}
+          {/* Column 2: Services Directory */}
           <div className="lg:col-span-2 space-y-3.5">
             <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />
               Core Services
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-600">
-              <li>
-                <Link href="/website-development-services" className="hover:text-purple-700 transition-colors">
-                  Website Development
-                </Link>
-              </li>
-              <li>
-                <Link href="/digital-marketing-agency-india" className="hover:text-purple-700 transition-colors">
-                  Digital Marketing &amp; SEO
-                </Link>
-              </li>
-              <li>
-                <Link href="/lead-generation-company-india" className="hover:text-purple-700 transition-colors">
-                  Lead Generation Funnels
-                </Link>
-              </li>
-              <li>
-                <Link href="/creative-design-solutions-india" className="hover:text-purple-700 transition-colors">
-                  Creative Design Studio
-                </Link>
-              </li>
-              <li>
-                <Link href="/mobile-app-developer-india" className="hover:text-purple-700 transition-colors">
-                  App Development (iOS/Android)
-                </Link>
-              </li>
-              <li>
-                <Link href="/software-developers-india" className="hover:text-purple-700 transition-colors">
-                  Custom Software &amp; ERP
-                </Link>
-              </li>
+              {visibleServiceLinks.map((lnk, idx) => (
+                <li key={idx}>
+                  <Link href={lnk.href} className="hover:text-purple-700 transition-colors">
+                    {lnk.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Column 3: Quick Links & Ecosystem (2.5 cols) */}
+          {/* Column 3: Quick Links & Ecosystem */}
           <div className="lg:col-span-2 space-y-3.5">
             <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-600" />
               Quick Links
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-600">
-              <li>
-                <Link href="/about" className="hover:text-cyan-700 transition-colors">
-                  About LIMRA Digitech
-                </Link>
-              </li>
-              <li>
-                <Link href="/industries" className="hover:text-cyan-700 transition-colors">
-                  Industries We Serve
-                </Link>
-              </li>
-              <li>
-                <Link href="/technologies" className="hover:text-cyan-700 transition-colors">
-                  Technology Stack
-                </Link>
-              </li>
-              <li>
-                <Link href="/portfolio" className="hover:text-cyan-700 transition-colors">
-                  Portfolio &amp; Case Studies
-                </Link>
-              </li>
-              <li>
-                <Link href="/clients" className="hover:text-cyan-700 transition-colors">
-                  Clients &amp; Testimonials
-                </Link>
-              </li>
-              <li>
-                <Link href="/blogs" className="hover:text-cyan-700 transition-colors">
-                  Blogs &amp; Insights
-                </Link>
-              </li>
+              {visibleQuickLinks.map((lnk, idx) => (
+                <li key={idx}>
+                  <Link href={lnk.href} className="hover:text-cyan-700 transition-colors">
+                    {lnk.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Column 4: Advisory & Direct Desk (4 cols on lg:grid-cols-12) */}
+          {/* Column 4: Advisory & Direct Desk */}
           <div className="lg:col-span-4 space-y-4">
             <h4 className="text-slate-900 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
@@ -327,7 +299,7 @@ export default function Footer() {
                 <MapPin className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
                 <div className="text-xs">
                   <span className="text-slate-900 font-semibold block">Headquarters:</span>
-                  <span className="text-slate-600">New Delhi, India (Pan-India &amp; Global Delivery)</span>
+                  <span className="text-slate-600">{footerCfg.address}</span>
                 </div>
               </div>
 
@@ -335,8 +307,8 @@ export default function Footer() {
                 <Phone className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
                 <div className="text-xs">
                   <span className="text-slate-900 font-semibold block">Direct Strategy Line:</span>
-                  <a href={`tel:${companyInfo.phoneClean}`} className="text-purple-700 hover:text-purple-900 font-medium transition-colors">
-                    {companyInfo.phone}
+                  <a href={`tel:${footerCfg.phoneClean || companyInfo.phoneClean}`} className="text-purple-700 hover:text-purple-900 font-medium transition-colors">
+                    {footerCfg.phone}
                   </a>
                 </div>
               </div>
@@ -345,8 +317,8 @@ export default function Footer() {
                 <Mail className="w-4 h-4 text-cyan-600 flex-shrink-0 mt-0.5" />
                 <div className="text-xs">
                   <span className="text-slate-900 font-semibold block">Engineering Desk:</span>
-                  <a href={`mailto:${companyInfo.email}`} className="text-cyan-700 hover:text-cyan-900 font-medium transition-colors">
-                    {companyInfo.email}
+                  <a href={`mailto:${footerCfg.email}`} className="text-cyan-700 hover:text-cyan-900 font-medium transition-colors">
+                    {footerCfg.email}
                   </a>
                 </div>
               </div>
@@ -355,7 +327,7 @@ export default function Footer() {
                 <Clock className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                 <div className="text-xs">
                   <span className="text-slate-900 font-semibold block">Operational Hours:</span>
-                  <span className="text-slate-600">{companyInfo.workingHours} IST</span>
+                  <span className="text-slate-600">{footerCfg.workingHours}</span>
                 </div>
               </div>
             </div>
@@ -409,24 +381,22 @@ export default function Footer() {
         <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-            <span>&copy; {new Date().getFullYear()} LIMRA Digitech. All rights reserved.</span>
+            <span>{footerCfg.copyrightText}</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-5 text-[11px]">
-            <Link href="/about" className="hover:text-purple-700 transition-colors">About Agency</Link>
-            <Link href="/industries" className="hover:text-purple-700 transition-colors">Industries</Link>
-            <Link href="/technologies" className="hover:text-purple-700 transition-colors">Technologies</Link>
-            <Link href="/careers" className="hover:text-purple-700 transition-colors">Careers</Link>
-            <Link href="/privacy-policy" className="hover:text-purple-700 transition-colors">Privacy Policy</Link>
-            <Link href="/terms-and-conditions" className="hover:text-purple-700 transition-colors">Terms of Use</Link>
-            <Link href="/sitemap-page" className="hover:text-purple-700 transition-colors">Sitemap</Link>
+            {visibleLegalLinks.map((lnk, idx) => (
+              <Link key={idx} href={lnk.href} className="hover:text-purple-700 transition-colors">
+                {lnk.label}
+              </Link>
+            ))}
             <a href="/sitemap.xml" className="hover:text-purple-700 transition-colors font-mono">XML Sitemap</a>
             <Link href="/admin" className="text-purple-700 font-semibold hover:text-purple-900 transition-colors">Admin Console</Link>
           </div>
 
           <div className="text-[11px] font-mono text-slate-500 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Serverless Next.js 15 &bull; New Delhi, India</span>
+            <span>{footerCfg.serverBadgeText}</span>
           </div>
         </div>
 

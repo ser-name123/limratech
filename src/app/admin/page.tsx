@@ -18,7 +18,6 @@ import {
   Download,
   ExternalLink,
   CheckCircle2,
-  Clock,
   TrendingUp,
   ShieldCheck,
   Sparkles,
@@ -29,38 +28,45 @@ import {
   Edit3,
   ArrowUpRight,
   RefreshCw,
-  Filter,
   Lock,
-  Bell,
-  ChevronRight,
   Activity,
-  Database,
   Code2,
-  Check,
   X,
   MessageSquare,
+  PanelTop,
+  PanelBottom,
+  UserCheck,
+  HelpCircle,
+  Save,
+  RotateCcw,
+  KeyRound,
+  Building2,
 } from 'lucide-react';
 import {
-  servicesData,
-  caseStudiesData,
-  blogPostsData,
-  testimonialsData,
-  companyInfo,
-} from '@/data/mockData';
-import { industriesPagesData, technologiesPagesData } from '@/data/megaMenuData';
+  initialCmsSnapshot,
+  HeaderConfig,
+  FooterConfig,
+  HeroAndStatsConfig,
+  AdminProfileConfig,
+  SeoAndRedirectsConfig,
+} from '@/data/defaultCmsConfig';
 
 type AdminTab =
   | 'overview'
+  | 'header'
+  | 'footer'
+  | 'hero'
   | 'leads'
+  | 'services'
+  | 'mega_pages'
   | 'portfolio'
   | 'blogs'
-  | 'catalog'
-  | 'testimonials'
+  | 'testimonials_faqs'
   | 'seo'
-  | 'settings';
+  | 'profile';
 
 export default function AdminDashboardPage() {
-  // Authentication Gate State
+  // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [loginEmail, setLoginEmail] = useState('admin@limradigitech.com');
   const [loginPass, setLoginPass] = useState('Limra@2026');
@@ -71,23 +77,55 @@ export default function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Live Data State
+  // Full Live CMS & CRM State
   const [leads, setLeads] = useState<any[]>([]);
-  const [caseStudies, setCaseStudies] = useState<any[]>(caseStudiesData);
-  const [blogs, setBlogs] = useState<any[]>(blogPostsData);
-  const [testimonials, setTestimonials] = useState<any[]>(testimonialsData);
   const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [headerCfg, setHeaderCfg] = useState<HeaderConfig>(initialCmsSnapshot.header);
+  const [footerCfg, setFooterCfg] = useState<FooterConfig>(initialCmsSnapshot.footer);
+  const [heroCfg, setHeroCfg] = useState<HeroAndStatsConfig>(initialCmsSnapshot.hero);
+  const [adminProfile, setAdminProfile] = useState<AdminProfileConfig>(initialCmsSnapshot.adminProfile);
+  const [seoCfg, setSeoCfg] = useState<SeoAndRedirectsConfig>(initialCmsSnapshot.seo);
+  const [servicesList, setServicesList] = useState<any[]>(initialCmsSnapshot.services);
+  const [industriesList, setIndustriesList] = useState<any[]>(initialCmsSnapshot.industries);
+  const [technologiesList, setTechnologiesList] = useState<any[]>(initialCmsSnapshot.technologies);
+  const [caseStudies, setCaseStudies] = useState<any[]>(initialCmsSnapshot.caseStudies);
+  const [blogs, setBlogs] = useState<any[]>(initialCmsSnapshot.blogs);
+  const [testimonials, setTestimonials] = useState<any[]>(initialCmsSnapshot.testimonials);
+  const [faqs, setFaqs] = useState<any[]>(initialCmsSnapshot.faqs);
 
-  // Modals State
+  // Modals & Editors State
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
   const [isAddBlogOpen, setIsAddBlogOpen] = useState(false);
+  const [editingBlog, setEditingBlog] = useState<any | null>(null);
   const [isAddCaseStudyOpen, setIsAddCaseStudyOpen] = useState(false);
+  const [editingCaseStudy, setEditingCaseStudy] = useState<any | null>(null);
   const [isAddTestimonialOpen, setIsAddTestimonialOpen] = useState(false);
+  const [isAddFaqOpen, setIsAddFaqOpen] = useState(false);
+  const [editingServiceIdx, setEditingServiceIdx] = useState<number | null>(null);
+  const [newSubServiceName, setNewSubServiceName] = useState('');
 
   // Form States
+  const [newNavLabel, setNewNavLabel] = useState('');
+  const [newNavHref, setNewNavHref] = useState('');
+  const [newFooterQuickLabel, setNewFooterQuickLabel] = useState('');
+  const [newFooterQuickHref, setNewFooterQuickHref] = useState('');
+  const [newRedirectFrom, setNewRedirectFrom] = useState('');
+  const [newRedirectTo, setNewRedirectTo] = useState('');
+  const [newTeamMember, setNewTeamMember] = useState({
+    name: '',
+    email: '',
+    role: 'SEO Strategist' as AdminProfileConfig['teamMembers'][0]['role'],
+  });
+  const [passwordForm, setPasswordForm] = useState({
+    current: '',
+    next: '',
+    confirm: '',
+  });
+
   const [newLeadForm, setNewLeadForm] = useState({
     full_name: '',
     email: '',
@@ -125,30 +163,15 @@ export default function AdminDashboardPage() {
     rating: 5,
   });
 
-  // SEO & Settings State
-  const [seoConfig, setSeoConfig] = useState({
-    ga4Id: 'G-LIMRA2026IN',
-    gscVerification: 'limra-gsc-verified-token-2026',
-    canonicalDomain: 'https://limradigitech.com',
-    honeypotProtection: true,
-    autoSitemapPing: true,
-  });
-
-  const [brandSettings, setBrandSettings] = useState({
-    name: companyInfo.name,
-    phone: companyInfo.phone,
-    email: companyInfo.email,
-    address: companyInfo.address,
-    hours: 'Mon - Sat: 09:00 AM - 07:00 PM IST',
-    facebook: companyInfo.social.facebook,
-    twitter: companyInfo.social.twitter,
-    linkedin: companyInfo.social.linkedin,
-    instagram: companyInfo.social.instagram,
+  const [newFaqForm, setNewFaqForm] = useState({
+    question: '',
+    answer: '',
+    category: 'General & Strategy',
   });
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3200);
+    setTimeout(() => setToastMessage(null), 3400);
   };
 
   const fetchAdminData = async () => {
@@ -159,11 +182,25 @@ export default function AdminDashboardPage() {
       if (data.success) {
         setLeads(data.leads || []);
         setSubscribers(data.newsletter || []);
+        if (data.cms) {
+          setHeaderCfg(data.cms.header || initialCmsSnapshot.header);
+          setFooterCfg(data.cms.footer || initialCmsSnapshot.footer);
+          setHeroCfg(data.cms.hero || initialCmsSnapshot.hero);
+          setAdminProfile(data.cms.adminProfile || initialCmsSnapshot.adminProfile);
+          setSeoCfg(data.cms.seo || initialCmsSnapshot.seo);
+          setServicesList(data.cms.services || initialCmsSnapshot.services);
+          setIndustriesList(data.cms.industries || initialCmsSnapshot.industries);
+          setTechnologiesList(data.cms.technologies || initialCmsSnapshot.technologies);
+          setCaseStudies(data.cms.caseStudies || initialCmsSnapshot.caseStudies);
+          setBlogs(data.cms.blogs || initialCmsSnapshot.blogs);
+          setTestimonials(data.cms.testimonials || initialCmsSnapshot.testimonials);
+          setFaqs(data.cms.faqs || initialCmsSnapshot.faqs);
+        }
       }
     } catch (err) {
       console.error('Admin fetch error:', err);
     } finally {
-      setTimeout(() => setIsRefreshing(false), 350);
+      setTimeout(() => setIsRefreshing(false), 300);
     }
   };
 
@@ -171,65 +208,70 @@ export default function AdminDashboardPage() {
     fetchAdminData();
   }, []);
 
-  // Handlers
+  const postAdminAction = async (action: string, payload: any, toastMsg: string) => {
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, payload }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.leads) setLeads(data.leads);
+        if (data.newsletter) setSubscribers(data.newsletter);
+        if (data.cms?.adminProfile) setAdminProfile(data.cms.adminProfile);
+        showToast(toastMsg);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Saved locally in session');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Auth Handler
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (loginEmail.trim() && loginPass.trim()) {
       setIsAuthenticated(true);
       setLoginError('');
-      showToast('Authenticated as LIMRA Super Admin');
+      showToast(`Welcome back, ${adminProfile.fullName}`);
     } else {
       setLoginError('Please enter valid admin credentials.');
     }
   };
 
+  // CRM Handlers
   const handleUpdateLeadStatus = async (id: string, status: string) => {
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
     if (selectedLead?.id === id) {
       setSelectedLead((prev: any) => ({ ...prev, status }));
     }
-    await fetch('/api/admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'update_lead_status', payload: { id, status } }),
-    });
-    showToast(`Lead status updated to "${status.toUpperCase()}"`);
+    await postAdminAction('update_lead_status', { id, status }, `Lead stage updated to "${status.toUpperCase()}"`);
   };
 
   const handleDeleteLead = async (id: string) => {
     setLeads((prev) => prev.filter((l) => l.id !== id));
     if (selectedLead?.id === id) setSelectedLead(null);
-    await fetch('/api/admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'delete_lead', payload: { id } }),
-    });
-    showToast('Lead removed from pipeline');
+    await postAdminAction('delete_lead', { id }, 'Lead deleted from CRM pipeline');
   };
 
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLeadForm.full_name || !newLeadForm.email) return;
-    const res = await fetch('/api/admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'create_lead', payload: newLeadForm }),
+    await postAdminAction('create_lead', newLeadForm, 'New lead added to CRM pipeline');
+    setIsAddLeadOpen(false);
+    setNewLeadForm({
+      full_name: '',
+      email: '',
+      phone: '',
+      service_needed: 'Website Development',
+      budget: '₹80,000 - ₹1,50,000',
+      message: '',
+      priority: 'High',
     });
-    const data = await res.json();
-    if (data.success) {
-      setLeads(data.leads);
-      setIsAddLeadOpen(false);
-      setNewLeadForm({
-        full_name: '',
-        email: '',
-        phone: '',
-        service_needed: 'Website Development',
-        budget: '₹80,000 - ₹1,50,000',
-        message: '',
-        priority: 'High',
-      });
-      showToast('New lead added to CRM pipeline');
-    }
   };
 
   const handleExportLeadsCsv = () => {
@@ -256,8 +298,16 @@ export default function AdminDashboardPage() {
     showToast('Exported CRM Leads to CSV');
   };
 
-  const handleCreateBlog = (e: React.FormEvent) => {
+  // Blog CRUD
+  const handleSaveBlogModal = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingBlog) {
+      const next = blogs.map((b) => (b.id === editingBlog.id ? editingBlog : b));
+      setBlogs(next);
+      setEditingBlog(null);
+      await postAdminAction('save_blogs', next, 'Blog article updated');
+      return;
+    }
     if (!newBlogForm.title) return;
     const slug =
       newBlogForm.slug ||
@@ -276,7 +326,8 @@ export default function AdminDashboardPage() {
       published_at: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       cover_image: '/images/blog-seo.png',
     };
-    setBlogs((prev) => [created, ...prev]);
+    const next = [created, ...blogs];
+    setBlogs(next);
     setIsAddBlogOpen(false);
     setNewBlogForm({
       title: '',
@@ -286,11 +337,19 @@ export default function AdminDashboardPage() {
       excerpt: '',
       author: 'LIMRA SEO Desk',
     });
-    showToast('New blog article published');
+    await postAdminAction('save_blogs', next, 'New blog article published');
   };
 
-  const handleCreateCaseStudy = (e: React.FormEvent) => {
+  // Case Study CRUD
+  const handleSaveCaseStudyModal = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingCaseStudy) {
+      const next = caseStudies.map((cs) => (cs.id === editingCaseStudy.id ? editingCaseStudy : cs));
+      setCaseStudies(next);
+      setEditingCaseStudy(null);
+      await postAdminAction('save_case_studies', next, 'Portfolio case study updated');
+      return;
+    }
     if (!newCaseStudyForm.title || !newCaseStudyForm.client) return;
     const slug = newCaseStudyForm.title
       .toLowerCase()
@@ -312,7 +371,8 @@ export default function AdminDashboardPage() {
         { label: 'Page Speed', value: '0.3s' },
       ],
     };
-    setCaseStudies((prev) => [created, ...prev]);
+    const next = [created, ...caseStudies];
+    setCaseStudies(next);
     setIsAddCaseStudyOpen(false);
     setNewCaseStudyForm({
       title: '',
@@ -323,10 +383,11 @@ export default function AdminDashboardPage() {
       solution: '',
       technologies: 'Next.js, Shopify, Tailwind CSS',
     });
-    showToast('New portfolio case study published');
+    await postAdminAction('save_case_studies', next, 'New portfolio case study published');
   };
 
-  const handleCreateTestimonial = (e: React.FormEvent) => {
+  // Testimonial & FAQ CRUD
+  const handleCreateTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTestimonialForm.name || !newTestimonialForm.content) return;
     const created = {
@@ -337,13 +398,29 @@ export default function AdminDashboardPage() {
       content: newTestimonialForm.content,
       rating: Number(newTestimonialForm.rating) || 5,
     };
-    setTestimonials((prev) => [created, ...prev]);
+    const next = [created, ...testimonials];
+    setTestimonials(next);
     setIsAddTestimonialOpen(false);
     setNewTestimonialForm({ name: '', role: '', company: '', content: '', rating: 5 });
-    showToast('Verified client testimonial added');
+    await postAdminAction('save_testimonials', next, 'Verified client review published');
   };
 
-  // Filtered Leads
+  const handleCreateFaq = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFaqForm.question || !newFaqForm.answer) return;
+    const created = {
+      id: `faq-${Date.now()}`,
+      question: newFaqForm.question,
+      answer: newFaqForm.answer,
+      category: newFaqForm.category,
+    };
+    const next = [created, ...faqs];
+    setFaqs(next);
+    setIsAddFaqOpen(false);
+    setNewFaqForm({ question: '', answer: '', category: 'General & Strategy' });
+    await postAdminAction('save_faqs', next, 'New FAQ item added');
+  };
+
   const filteredLeads = useMemo(() => {
     return leads.filter((l) => {
       const matchesStatus = leadStatusFilter === 'all' || l.status === leadStatusFilter;
@@ -358,7 +435,6 @@ export default function AdminDashboardPage() {
     });
   }, [leads, leadStatusFilter, searchQuery]);
 
-  // Status Badge Helper
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'new':
@@ -376,7 +452,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Login Gate Screen (if locked)
+  // Authentication Screen
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
@@ -395,7 +471,7 @@ export default function AdminDashboardPage() {
             </span>
             <h1 className="text-xl font-bold text-slate-900">Sign In To Admin Console</h1>
             <p className="text-xs text-slate-500">
-              Manage CRM leads, portfolio case studies, blogs, mega-menu pages, and SEO telemetry.
+              Manage Header, Footer, Hero, CRM Leads, Services, Mega Menus, Blogs, Portfolio &amp; Admin Profile.
             </p>
           </div>
 
@@ -425,7 +501,7 @@ export default function AdminDashboardPage() {
               type="submit"
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-200 hover:opacity-95 transition-all"
             >
-              Unlock Admin Dashboard
+              Unlock Admin Command Center
             </button>
           </form>
 
@@ -441,21 +517,25 @@ export default function AdminDashboardPage() {
   }
 
   const navItems: { id: AdminTab; label: string; icon: any; badge?: string | number }[] = [
-    { id: 'overview', label: 'Executive Overview', icon: LayoutDashboard },
+    { id: 'overview', label: 'Executive Dashboard', icon: LayoutDashboard },
+    { id: 'header', label: 'Header & Mega-Menu', icon: PanelTop, badge: 'Live' },
+    { id: 'footer', label: 'Footer & Links CMS', icon: PanelBottom, badge: 'Live' },
+    { id: 'hero', label: 'Hero & Trust Stats', icon: Sparkles },
     { id: 'leads', label: 'Leads & CRM Pipeline', icon: Users, badge: leads.length },
-    { id: 'portfolio', label: 'Portfolio & Case Studies', icon: Briefcase, badge: caseStudies.length },
+    { id: 'services', label: 'Services & Sub-Services', icon: Code2, badge: servicesList.length },
+    { id: 'mega_pages', label: 'Industries & Tech Pages', icon: Layers, badge: industriesList.length + technologiesList.length },
+    { id: 'portfolio', label: 'Portfolio Case Studies', icon: Briefcase, badge: caseStudies.length },
     { id: 'blogs', label: 'Blogs & Editorial CMS', icon: FileText, badge: blogs.length },
-    { id: 'catalog', label: 'Mega-Menu & Pages Hub', icon: Layers, badge: '22' },
-    { id: 'testimonials', label: 'Client Testimonials', icon: Star, badge: testimonials.length },
-    { id: 'seo', label: 'SEO, Sitemap & GA4', icon: Globe, badge: '99%' },
-    { id: 'settings', label: 'Brand & System Settings', icon: Settings },
+    { id: 'testimonials_faqs', label: 'Reviews & FAQs CMS', icon: Star, badge: testimonials.length + faqs.length },
+    { id: 'seo', label: 'SEO, Redirects & GA4', icon: Globe, badge: '99%' },
+    { id: 'profile', label: 'Admin Profile & Roles', icon: UserCheck },
   ];
 
   return (
     <div className="min-h-screen bg-[#f4f6fb] text-slate-800 flex flex-col lg:flex-row">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[200] bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-purple-500/40 flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-bottom-3">
+        <div className="fixed bottom-6 right-6 z-[200] bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-purple-500/40 flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-bottom-3">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -475,29 +555,31 @@ export default function AdminDashboardPage() {
                 className="h-9 w-auto object-contain"
               />
               <span className="text-[10px] font-mono uppercase font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
-                ADMIN v2.5
+                PRO CMS
               </span>
             </Link>
           </div>
 
-          {/* Admin Status Pill */}
-          <div className="px-5 py-4 border-b border-slate-100">
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl p-3.5 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
-                LD
+          {/* Admin Profile Quick Card */}
+          <div className="px-5 py-3.5 border-b border-slate-100">
+            <button
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className="w-full text-left bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100/80 hover:to-indigo-100/80 border border-purple-200/80 rounded-2xl p-3 flex items-center gap-3 transition-all"
+            >
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs flex-shrink-0">
+                {adminProfile.avatarInitials || 'LA'}
               </div>
-              <div className="min-w-0">
-                <div className="text-xs font-bold text-slate-900 truncate">Super Admin Console</div>
-                <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Production Live Sync</span>
-                </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-900 truncate">{adminProfile.fullName}</div>
+                <div className="text-[10px] text-purple-700 font-medium truncate">{adminProfile.role}</div>
               </div>
-            </div>
+              <Settings className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
+            </button>
           </div>
 
-          {/* Navigation Menu */}
-          <nav className="p-3.5 space-y-1 flex lg:flex-col overflow-x-auto">
+          {/* 12-Module Navigation Menu */}
+          <nav className="p-3 space-y-1 flex lg:flex-col overflow-x-auto max-h-[calc(100vh-250px)] lg:overflow-y-auto">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -506,7 +588,7 @@ export default function AdminDashboardPage() {
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap w-full ${
+                  className={`flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap w-full ${
                     isActive
                       ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-200'
                       : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
@@ -544,10 +626,10 @@ export default function AdminDashboardPage() {
           <button
             type="button"
             onClick={() => setIsAuthenticated(false)}
-            className="w-full px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
+            className="w-full px-3.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Lock Admin Session</span>
+            <span>Lock Admin Console</span>
           </button>
         </div>
       </aside>
@@ -562,13 +644,12 @@ export default function AdminDashboardPage() {
                 {navItems.find((n) => n.id === activeTab)?.label}
               </h1>
               <p className="text-[11px] text-slate-500 hidden sm:block">
-                limradigitech.com • Real-Time Agency Command &amp; Content Management System
+                Logged in as <span className="font-semibold text-purple-700">{adminProfile.fullName}</span> ({adminProfile.email})
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* Search Box */}
             <div className="relative hidden md:block">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
@@ -579,7 +660,7 @@ export default function AdminDashboardPage() {
                   if (activeTab === 'overview') setActiveTab('leads');
                 }}
                 placeholder="Search leads, clients, pages..."
-                className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 w-60 focus:outline-none focus:border-purple-500 focus:bg-white transition-all"
+                className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 w-56 focus:outline-none focus:border-purple-500 focus:bg-white transition-all"
               />
             </div>
 
@@ -594,26 +675,28 @@ export default function AdminDashboardPage() {
 
             <button
               type="button"
+              onClick={() => setActiveTab('profile')}
+              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 hover:border-purple-300 bg-slate-50 text-xs font-bold text-slate-800"
+            >
+              <UserCheck className="w-3.5 h-3.5 text-purple-600" />
+              <span>Profile</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsAddLeadOpen(true)}
               className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm hover:opacity-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Add Lead</span>
             </button>
-
-            <Link
-              href="/"
-              className="lg:hidden p-2.5 rounded-xl border border-slate-200 text-purple-700 bg-purple-50 text-xs font-bold"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </Link>
           </div>
         </header>
 
         {/* WORKSPACE BODY */}
         <main className="p-4 sm:p-8 space-y-8 flex-1">
           {/* ==========================================
-              TAB 1: EXECUTIVE OVERVIEW
+              MODULE 1: EXECUTIVE OVERVIEW
              ========================================== */}
           {activeTab === 'overview' && (
             <div className="space-y-8">
@@ -633,13 +716,13 @@ export default function AdminDashboardPage() {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    {leads.filter((l) => l.status === 'new').length} new inquiries awaiting response
+                    {leads.filter((l) => l.status === 'new').length} new inquiries • {subscribers.length} newsletter subs
                   </p>
                 </div>
 
                 <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Indexed Live Routes</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Total Managed Pages</span>
                     <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200">
                       <Layers className="w-4 h-4" />
                     </div>
@@ -651,25 +734,25 @@ export default function AdminDashboardPage() {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    6 Services • 8 Industries • 8 Tech • 6 Case Studies
+                    {servicesList.length} Services • {industriesList.length} Industries • {technologiesList.length} Tech
                   </p>
                 </div>
 
                 <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Est. Active Pipeline</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Header &amp; Footer CMS</span>
                     <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <TrendingUp className="w-4 h-4" />
+                      <PanelTop className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <div className="text-3xl font-black text-slate-900 font-mono">₹14.8L</div>
+                    <div className="text-2xl font-black text-slate-900 font-mono">Live Synced</div>
                     <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                      3.8x ROI Avg
+                      Dynamic
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    Across Web Dev, SEO, Meta/Google Ads &amp; ERP
+                    {headerCfg.navItems.filter((n) => n.visible).length} Active Nav Links • 3 Mega Menus
                   </p>
                 </div>
 
@@ -687,36 +770,80 @@ export default function AdminDashboardPage() {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    Sitemap.xml, Robots.txt, JSON-LD &amp; GA4 Active
+                    {seoCfg.redirects.length} 301 Redirects • GA4 ({seoCfg.ga4Id})
                   </p>
                 </div>
               </div>
 
-              {/* Charts & Telemetry Row */}
+              {/* Quick Management Shortcuts Grid */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-mono uppercase font-bold text-purple-700">
+                      COMPLETE WEBSITE CONTROL
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Quick Jump To Website Management Modules
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+                  {[
+                    { id: 'header', title: 'Header & Mega Menu', sub: 'Nav, Phone, CTA, TopBar', icon: PanelTop },
+                    { id: 'footer', title: 'Footer & Socials', sub: 'Bio, Links, Newsletter, HQ', icon: PanelBottom },
+                    { id: 'hero', title: 'Hero & Counters', sub: 'Headline, CTAs, 500+ Stats', icon: Sparkles },
+                    { id: 'services', title: 'Services & Sub-Pills', sub: '6 Services & Sub-Services', icon: Code2 },
+                    { id: 'mega_pages', title: 'Industries & Tech', sub: '16 Dedicated 11-Sec Pages', icon: Layers },
+                    { id: 'profile', title: 'Admin Profile', sub: 'Profile, Password, Roles', icon: UserCheck },
+                  ].map((card) => {
+                    const Icon = card.icon;
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => setActiveTab(card.id as AdminTab)}
+                        className="p-4 rounded-2xl bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 text-left transition-all group space-y-2"
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center transition-colors">
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 group-hover:text-purple-700">
+                            {card.title}
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">{card.sub}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Charts & Audit Logs Row */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Monthly Lead & Conversion Velocity Chart */}
-                <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs space-y-6">
+                <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <span className="text-[11px] font-mono uppercase font-bold text-purple-700">
                         GROWTH ANALYTICS
                       </span>
                       <h2 className="text-lg font-bold text-slate-900">
-                        Monthly Lead Acquisition &amp; Channel Attribution
+                        Lead Acquisition &amp; Channel Attribution
                       </h2>
                     </div>
                     <div className="flex items-center gap-3 text-xs">
                       <span className="flex items-center gap-1.5 text-slate-600">
-                        <span className="w-2.5 h-2.5 rounded-full bg-purple-600" /> Organic SEO &amp; Web
+                        <span className="w-2.5 h-2.5 rounded-full bg-purple-600" /> Organic SEO
                       </span>
                       <span className="flex items-center gap-1.5 text-slate-600">
-                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-400" /> Google &amp; Meta Ads
+                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-400" /> Paid Ads
                       </span>
                     </div>
                   </div>
 
-                  {/* Interactive Bar Chart */}
-                  <div className="grid grid-cols-6 gap-3 sm:gap-5 items-end h-52 pt-6 px-2 border-b border-slate-100">
+                  <div className="grid grid-cols-6 gap-3 sm:gap-5 items-end h-48 pt-6 px-2 border-b border-slate-100">
                     {[
                       { month: 'May', seo: 55, ads: 40, total: 42 },
                       { month: 'Jun', seo: 68, ads: 48, total: 54 },
@@ -726,19 +853,15 @@ export default function AdminDashboardPage() {
                       { month: 'Oct', seo: 100, ads: 85, total: 112 },
                     ].map((bar, idx) => (
                       <div key={idx} className="flex flex-col items-center gap-2 h-full justify-end group">
-                        <div className="text-[10px] font-mono font-bold text-purple-700 opacity-80 group-hover:opacity-100">
-                          {bar.total}
-                        </div>
-                        <div className="w-full max-w-[48px] flex items-end gap-1 h-36">
+                        <div className="text-[10px] font-mono font-bold text-purple-700">{bar.total}</div>
+                        <div className="w-full max-w-[44px] flex items-end gap-1 h-32">
                           <div
                             style={{ height: `${bar.seo}%` }}
-                            className="flex-1 bg-gradient-to-t from-purple-700 to-purple-500 rounded-t-lg transition-all group-hover:opacity-90"
-                            title={`Organic SEO: ${bar.seo}%`}
+                            className="flex-1 bg-gradient-to-t from-purple-700 to-purple-500 rounded-t-lg"
                           />
                           <div
                             style={{ height: `${bar.ads}%` }}
-                            className="flex-1 bg-gradient-to-t from-indigo-500 to-indigo-300 rounded-t-lg transition-all group-hover:opacity-90"
-                            title={`Paid Ads: ${bar.ads}%`}
+                            className="flex-1 bg-gradient-to-t from-indigo-500 to-indigo-300 rounded-t-lg"
                           />
                         </div>
                         <span className="text-xs font-bold text-slate-500 pb-2">{bar.month}</span>
@@ -746,183 +869,894 @@ export default function AdminDashboardPage() {
                     ))}
                   </div>
 
-                  {/* Channel Breakdown Pills */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-                    <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80">
-                      <div className="text-[11px] text-slate-500">Organic Search (SEO)</div>
-                      <div className="text-base font-bold text-slate-900 mt-0.5">46.2% Share</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
+                      <div className="text-[10px] text-slate-500">Organic Search</div>
+                      <div className="text-sm font-bold text-slate-900">46.2% Share</div>
                     </div>
-                    <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80">
-                      <div className="text-[11px] text-slate-500">Google Search PPC</div>
-                      <div className="text-base font-bold text-slate-900 mt-0.5">28.5% Share</div>
+                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
+                      <div className="text-[10px] text-slate-500">Google Ads PPC</div>
+                      <div className="text-sm font-bold text-slate-900">28.5% Share</div>
                     </div>
-                    <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80">
-                      <div className="text-[11px] text-slate-500">Meta Lead Funnels</div>
-                      <div className="text-base font-bold text-slate-900 mt-0.5">18.1% Share</div>
+                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
+                      <div className="text-[10px] text-slate-500">Meta Funnels</div>
+                      <div className="text-sm font-bold text-slate-900">18.1% Share</div>
                     </div>
-                    <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80">
-                      <div className="text-[11px] text-slate-500">Direct &amp; WhatsApp</div>
-                      <div className="text-base font-bold text-slate-900 mt-0.5">7.2% Share</div>
+                    <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
+                      <div className="text-[10px] text-slate-500">Direct / WhatsApp</div>
+                      <div className="text-sm font-bold text-slate-900">7.2% Share</div>
                     </div>
                   </div>
                 </div>
 
-                {/* System Health & Quick Actions */}
-                <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs flex flex-col justify-between space-y-6">
+                {/* Live Activity & Audit Feed */}
+                <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs flex flex-col justify-between space-y-5">
                   <div className="space-y-4">
-                    <div>
-                      <span className="text-[11px] font-mono uppercase font-bold text-emerald-700">
-                        INFRASTRUCTURE TELEMETRY
-                      </span>
-                      <h2 className="text-lg font-bold text-slate-900">System &amp; Security Status</h2>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[11px] font-mono uppercase font-bold text-emerald-700">
+                          SECURITY &amp; ACTIVITY LOG
+                        </span>
+                        <h2 className="text-lg font-bold text-slate-900">Recent Admin Actions</h2>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('profile')}
+                        className="text-xs font-bold text-purple-700 hover:underline"
+                      >
+                        Full Log →
+                      </button>
                     </div>
 
-                    <div className="space-y-2.5">
-                      {[
-                        { label: 'Next.js App Router Engine', status: 'Online (v16.4)', ok: true },
-                        { label: 'Lead Form Honeypot Shield', status: 'Active & Blocking Bots', ok: true },
-                        { label: 'GA4 Conversion Event Hook', status: 'Tracking (generate_lead)', ok: true },
-                        { label: 'XML Sitemap & Robots.txt', status: '44 URLs Indexed', ok: true },
-                        { label: '301 Legacy URL Redirects', status: '11 Rules Active', ok: true },
-                      ].map((sys, idx) => (
+                    <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                      {(adminProfile.auditLogs || []).slice(0, 5).map((log) => (
                         <div
-                          key={idx}
-                          className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs"
+                          key={log.id}
+                          className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs space-y-1"
                         >
-                          <span className="font-semibold text-slate-800">{sys.label}</span>
-                          <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                            {sys.status}
-                          </span>
+                          <div className="font-bold text-slate-900">{log.action}</div>
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                            <span>{log.actor}</span>
+                            <span>{log.timestamp}</span>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-2.5">
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Want to reset all CMS settings to default?</span>
                     <button
                       type="button"
-                      onClick={() => {
-                        setActiveTab('blogs');
-                        setIsAddBlogOpen(true);
-                      }}
-                      className="p-3 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                      onClick={() =>
+                        postAdminAction('reset_cms_defaults', {}, 'All CMS configurations restored to defaults').then(
+                          fetchAdminData
+                        )
+                      }
+                      className="text-rose-600 font-bold hover:underline flex items-center gap-1"
                     >
-                      <Plus className="w-3.5 h-3.5" /> New Blog Post
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('portfolio');
-                        setIsAddCaseStudyOpen(true);
-                      }}
-                      className="p-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> New Case Study
+                      <RotateCcw className="w-3.5 h-3.5" /> Reset Defaults
                     </button>
                   </div>
-                </div>
-              </div>
-
-              {/* Recent Leads Table Preview */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs overflow-hidden">
-                <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900">Recent Website Enquiries &amp; Leads</h2>
-                    <p className="text-xs text-slate-500">
-                      Live submissions from Contact Us, Service Pages, and Industry Funnels.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={handleExportLeadsCsv}
-                      className="px-3.5 py-2 rounded-xl border border-slate-200 hover:border-purple-300 text-xs font-bold text-slate-700 flex items-center gap-1.5"
-                    >
-                      <Download className="w-3.5 h-3.5 text-purple-600" /> Export CSV
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('leads')}
-                      className="px-4 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold hover:bg-purple-100"
-                    >
-                      Open Full CRM →
-                    </button>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-mono uppercase text-slate-500">
-                        <th className="py-3.5 px-5">Client &amp; Contact</th>
-                        <th className="py-3.5 px-4">Service Requested</th>
-                        <th className="py-3.5 px-4">Budget</th>
-                        <th className="py-3.5 px-4">Source Route</th>
-                        <th className="py-3.5 px-4">Stage</th>
-                        <th className="py-3.5 px-5 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200/70 text-xs">
-                      {leads.slice(0, 5).map((lead) => (
-                        <tr key={lead.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-4 px-5">
-                            <div className="font-bold text-slate-900">{lead.full_name}</div>
-                            <div className="text-slate-500 text-[11px]">
-                              {lead.email} • {lead.phone}
-                            </div>
-                          </td>
-                          <td className="py-4 px-4 font-semibold text-slate-800">{lead.service_needed}</td>
-                          <td className="py-4 px-4 font-mono text-purple-700 font-semibold">{lead.budget}</td>
-                          <td className="py-4 px-4 font-mono text-[11px] text-slate-500">{lead.source_page}</td>
-                          <td className="py-4 px-4">
-                            <select
-                              value={lead.status}
-                              onChange={(e) => handleUpdateLeadStatus(lead.id, e.target.value)}
-                              className={`text-[11px] font-bold uppercase px-2.5 py-1 rounded-full border cursor-pointer ${getStatusBadge(
-                                lead.status
-                              )}`}
-                            >
-                              <option value="new">New</option>
-                              <option value="contacted">Contacted</option>
-                              <option value="qualified">Qualified</option>
-                              <option value="proposal">Proposal</option>
-                              <option value="won">Won</option>
-                            </select>
-                          </td>
-                          <td className="py-4 px-5 text-right space-x-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedLead(lead)}
-                              className="p-2 rounded-lg bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-700 transition-colors"
-                              title="Inspect Lead"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                            <a
-                              href={`https://wa.me/${(lead.phone || '').replace(/[^0-9]/g, '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors"
-                              title="WhatsApp Client"
-                            >
-                              <MessageSquare className="w-3.5 h-3.5" />
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               </div>
             </div>
           )}
 
           {/* ==========================================
-              TAB 2: LEADS & CRM PIPELINE
+              MODULE 2: HEADER & MEGA-MENU MANAGER
+             ========================================== */}
+          {activeTab === 'header' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      LIVE HEADER &amp; NAVIGATION CMS
+                    </span>
+                    <h2 className="text-xl font-bold text-slate-900">
+                      Manage Website Header, Top Status Bar &amp; CTA Button
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Changes saved here immediately update the live Header across all pages.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={() => postAdminAction('save_header', headerCfg, 'Website Header & Mega Menus saved live!')}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-purple-200 self-start"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{isSaving ? 'Saving...' : 'Save Header Live'}</span>
+                  </button>
+                </div>
+
+                {/* Top Status Bar & Contact Controls */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">Show Top Status Bar</div>
+                      <div className="text-[11px] text-slate-500">Top bar with availability, phone &amp; socials</div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={headerCfg.showTopBar}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, showTopBar: e.target.checked })}
+                      className="w-4 h-4 accent-purple-600"
+                    />
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">Show Phone Pill in Navbar</div>
+                      <div className="text-[11px] text-slate-500">Display clickable phone next to CTA</div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={headerCfg.showPhoneInHeader}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, showPhoneInHeader: e.target.checked })}
+                      className="w-4 h-4 accent-purple-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Availability Status Text</label>
+                    <input
+                      type="text"
+                      value={headerCfg.availabilityText}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, availabilityText: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Top Bar Right Tagline</label>
+                    <input
+                      type="text"
+                      value={headerCfg.topBarTagline}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, topBarTagline: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Header Phone Number</label>
+                    <input
+                      type="text"
+                      value={headerCfg.phone}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, phone: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Header Official Email</label>
+                    <input
+                      type="email"
+                      value={headerCfg.email}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, email: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Primary CTA Button Text</label>
+                    <input
+                      type="text"
+                      value={headerCfg.ctaText}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, ctaText: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-purple-700"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Primary CTA Destination URL</label>
+                    <input
+                      type="text"
+                      value={headerCfg.ctaHref}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, ctaHref: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Brand Logo Path</label>
+                    <input
+                      type="text"
+                      value={headerCfg.logoUrl}
+                      onChange={(e) => setHeaderCfg({ ...headerCfg, logoUrl: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Navigation Menu Items Editor */}
+                <div className="pt-6 border-t border-slate-100 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Header Navigation Links &amp; Mega-Menu Triggers
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Rename labels, edit URLs, toggle visibility, or add custom navigation items.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {headerCfg.navItems.map((nav, idx) => (
+                      <div
+                        key={nav.id}
+                        className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center p-3.5 rounded-2xl bg-slate-50 border border-slate-200"
+                      >
+                        <div className="sm:col-span-1 flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={nav.visible}
+                            onChange={(e) => {
+                              const next = [...headerCfg.navItems];
+                              next[idx] = { ...nav, visible: e.target.checked };
+                              setHeaderCfg({ ...headerCfg, navItems: next });
+                            }}
+                            className="w-4 h-4 accent-purple-600"
+                          />
+                          <span className="text-[11px] font-mono text-slate-400">0{idx + 1}</span>
+                        </div>
+
+                        <div className="sm:col-span-4">
+                          <input
+                            type="text"
+                            value={nav.label}
+                            onChange={(e) => {
+                              const next = [...headerCfg.navItems];
+                              next[idx] = { ...nav, label: e.target.value };
+                              setHeaderCfg({ ...headerCfg, navItems: next });
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-900"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-4">
+                          <input
+                            type="text"
+                            value={nav.href}
+                            onChange={(e) => {
+                              const next = [...headerCfg.navItems];
+                              next[idx] = { ...nav, href: e.target.value };
+                              setHeaderCfg({ ...headerCfg, navItems: next });
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-mono text-purple-700"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-3 flex items-center justify-between">
+                          <span className="text-[10px] font-mono uppercase font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                            {nav.type === 'link' ? 'Standard Link' : nav.type.replace('mega-', 'Mega Menu: ')}
+                          </span>
+                          {nav.type === 'link' && nav.id.startsWith('custom-') && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setHeaderCfg({
+                                  ...headerCfg,
+                                  navItems: headerCfg.navItems.filter((i) => i.id !== nav.id),
+                                })
+                              }
+                              className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add Custom Header Link */}
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <input
+                      type="text"
+                      placeholder="New Menu Label (e.g. Case Studies)"
+                      value={newNavLabel}
+                      onChange={(e) => setNewNavLabel(e.target.value)}
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs w-56"
+                    />
+                    <input
+                      type="text"
+                      placeholder="URL (e.g. /clients)"
+                      value={newNavHref}
+                      onChange={(e) => setNewNavHref(e.target.value)}
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono w-56"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newNavLabel || !newNavHref) return;
+                        setHeaderCfg({
+                          ...headerCfg,
+                          navItems: [
+                            ...headerCfg.navItems,
+                            {
+                              id: `custom-${Date.now()}`,
+                              label: newNavLabel,
+                              href: newNavHref,
+                              type: 'link',
+                              visible: true,
+                            },
+                          ],
+                        });
+                        setNewNavLabel('');
+                        setNewNavHref('');
+                        showToast('Added custom menu item — click Save Header Live to publish');
+                      }}
+                      className="px-4 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Menu Link
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mega Menu Featured Promo Cards Editor */}
+                <div className="pt-6 border-t border-slate-100 space-y-4">
+                  <h3 className="text-base font-bold text-slate-900">
+                    Mega-Menu Featured Right-Column Promo Cards
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <span className="text-[10px] font-mono uppercase font-bold text-purple-700">
+                        Services Mega Menu Card
+                      </span>
+                      <input
+                        type="text"
+                        value={headerCfg.megaMenuPromo.servicesTitle}
+                        onChange={(e) =>
+                          setHeaderCfg({
+                            ...headerCfg,
+                            megaMenuPromo: { ...headerCfg.megaMenuPromo, servicesTitle: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                      />
+                      <textarea
+                        rows={3}
+                        value={headerCfg.megaMenuPromo.servicesDesc}
+                        onChange={(e) =>
+                          setHeaderCfg({
+                            ...headerCfg,
+                            megaMenuPromo: { ...headerCfg.megaMenuPromo, servicesDesc: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs"
+                      />
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <span className="text-[10px] font-mono uppercase font-bold text-purple-700">
+                        Industries Mega Menu Card
+                      </span>
+                      <input
+                        type="text"
+                        value={headerCfg.megaMenuPromo.industriesTitle}
+                        onChange={(e) =>
+                          setHeaderCfg({
+                            ...headerCfg,
+                            megaMenuPromo: { ...headerCfg.megaMenuPromo, industriesTitle: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                      />
+                      <textarea
+                        rows={3}
+                        value={headerCfg.megaMenuPromo.industriesDesc}
+                        onChange={(e) =>
+                          setHeaderCfg({
+                            ...headerCfg,
+                            megaMenuPromo: { ...headerCfg.megaMenuPromo, industriesDesc: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs"
+                      />
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <span className="text-[10px] font-mono uppercase font-bold text-purple-700">
+                        Technologies Mega Menu Card
+                      </span>
+                      <input
+                        type="text"
+                        value={headerCfg.megaMenuPromo.techTitle}
+                        onChange={(e) =>
+                          setHeaderCfg({
+                            ...headerCfg,
+                            megaMenuPromo: { ...headerCfg.megaMenuPromo, techTitle: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                      />
+                      <textarea
+                        rows={3}
+                        value={headerCfg.megaMenuPromo.techDesc}
+                        onChange={(e) =>
+                          setHeaderCfg({
+                            ...headerCfg,
+                            megaMenuPromo: { ...headerCfg.megaMenuPromo, techDesc: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 3: FOOTER & LINKS CMS
+             ========================================== */}
+          {activeTab === 'footer' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      LIVE FOOTER, LINKS &amp; SOCIAL CMS
+                    </span>
+                    <h2 className="text-xl font-bold text-slate-900">
+                      Manage Website Footer, Bio, Links, Socials &amp; Copyright
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Changes saved here immediately update the live Footer across the entire website.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={() => postAdminAction('save_footer', footerCfg, 'Website Footer saved live!')}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-purple-200 self-start"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{isSaving ? 'Saving...' : 'Save Footer Live'}</span>
+                  </button>
+                </div>
+
+                {/* Company Bio & Pre-Footer Callout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Footer Brand Bio / Company Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={footerCfg.companyDescription}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, companyDescription: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Pre-Footer Callout Heading
+                    </label>
+                    <input
+                      type="text"
+                      value={footerCfg.newsletterHeading}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, newsletterHeading: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Pre-Footer Callout Subtext
+                    </label>
+                    <input
+                      type="text"
+                      value={footerCfg.newsletterSubtext}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, newsletterSubtext: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Headquarters Address</label>
+                    <input
+                      type="text"
+                      value={footerCfg.address}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, address: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Operational Hours</label>
+                    <input
+                      type="text"
+                      value={footerCfg.workingHours}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, workingHours: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Footer Phone</label>
+                    <input
+                      type="text"
+                      value={footerCfg.phone}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, phone: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Footer Email</label>
+                    <input
+                      type="email"
+                      value={footerCfg.email}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, email: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Bottom Copyright Text</label>
+                    <input
+                      type="text"
+                      value={footerCfg.copyrightText}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, copyrightText: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Right Bottom Server Tag</label>
+                    <input
+                      type="text"
+                      value={footerCfg.serverBadgeText}
+                      onChange={(e) => setFooterCfg({ ...footerCfg, serverBadgeText: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Social Media Links */}
+                <div className="pt-5 border-t border-slate-100 space-y-3">
+                  <h3 className="text-base font-bold text-slate-900">Social Media Profile URLs</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Facebook URL</label>
+                      <input
+                        type="text"
+                        value={footerCfg.social.facebook}
+                        onChange={(e) =>
+                          setFooterCfg({
+                            ...footerCfg,
+                            social: { ...footerCfg.social, facebook: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Instagram URL</label>
+                      <input
+                        type="text"
+                        value={footerCfg.social.instagram}
+                        onChange={(e) =>
+                          setFooterCfg({
+                            ...footerCfg,
+                            social: { ...footerCfg.social, instagram: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">LinkedIn URL</label>
+                      <input
+                        type="text"
+                        value={footerCfg.social.linkedin}
+                        onChange={(e) =>
+                          setFooterCfg({
+                            ...footerCfg,
+                            social: { ...footerCfg.social, linkedin: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">X / Twitter URL</label>
+                      <input
+                        type="text"
+                        value={footerCfg.social.twitter}
+                        onChange={(e) =>
+                          setFooterCfg({
+                            ...footerCfg,
+                            social: { ...footerCfg.social, twitter: e.target.value },
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Quick Links & Service Links Columns */}
+                <div className="pt-5 border-t border-slate-100 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Service Links */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-slate-900">Footer Core Service Links</h3>
+                    <div className="space-y-2">
+                      {footerCfg.serviceLinks.map((lnk, idx) => (
+                        <div key={idx} className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                          <input
+                            type="checkbox"
+                            checked={lnk.visible}
+                            onChange={(e) => {
+                              const next = [...footerCfg.serviceLinks];
+                              next[idx] = { ...lnk, visible: e.target.checked };
+                              setFooterCfg({ ...footerCfg, serviceLinks: next });
+                            }}
+                            className="w-4 h-4 accent-purple-600"
+                          />
+                          <input
+                            type="text"
+                            value={lnk.label}
+                            onChange={(e) => {
+                              const next = [...footerCfg.serviceLinks];
+                              next[idx] = { ...lnk, label: e.target.value };
+                              setFooterCfg({ ...footerCfg, serviceLinks: next });
+                            }}
+                            className="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold"
+                          />
+                          <input
+                            type="text"
+                            value={lnk.href}
+                            onChange={(e) => {
+                              const next = [...footerCfg.serviceLinks];
+                              next[idx] = { ...lnk, href: e.target.value };
+                              setFooterCfg({ ...footerCfg, serviceLinks: next });
+                            }}
+                            className="w-36 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[11px] font-mono text-purple-700"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Quick Links */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-slate-900">Footer Quick Links</h3>
+                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                      {footerCfg.quickLinks.map((lnk, idx) => (
+                        <div key={idx} className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                          <input
+                            type="checkbox"
+                            checked={lnk.visible}
+                            onChange={(e) => {
+                              const next = [...footerCfg.quickLinks];
+                              next[idx] = { ...lnk, visible: e.target.checked };
+                              setFooterCfg({ ...footerCfg, quickLinks: next });
+                            }}
+                            className="w-4 h-4 accent-purple-600"
+                          />
+                          <input
+                            type="text"
+                            value={lnk.label}
+                            onChange={(e) => {
+                              const next = [...footerCfg.quickLinks];
+                              next[idx] = { ...lnk, label: e.target.value };
+                              setFooterCfg({ ...footerCfg, quickLinks: next });
+                            }}
+                            className="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold"
+                          />
+                          <input
+                            type="text"
+                            value={lnk.href}
+                            onChange={(e) => {
+                              const next = [...footerCfg.quickLinks];
+                              next[idx] = { ...lnk, href: e.target.value };
+                              setFooterCfg({ ...footerCfg, quickLinks: next });
+                            }}
+                            className="w-32 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-[11px] font-mono text-purple-700"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        placeholder="Quick Link Label"
+                        value={newFooterQuickLabel}
+                        onChange={(e) => setNewFooterQuickLabel(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                      />
+                      <input
+                        type="text"
+                        placeholder="/url"
+                        value={newFooterQuickHref}
+                        onChange={(e) => setNewFooterQuickHref(e.target.value)}
+                        className="w-28 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!newFooterQuickLabel || !newFooterQuickHref) return;
+                          setFooterCfg({
+                            ...footerCfg,
+                            quickLinks: [
+                              ...footerCfg.quickLinks,
+                              { label: newFooterQuickLabel, href: newFooterQuickHref, visible: true },
+                            ],
+                          });
+                          setNewFooterQuickLabel('');
+                          setNewFooterQuickHref('');
+                        }}
+                        className="px-3 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold"
+                      >
+                        + Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 4: HERO & HOMEPAGE TRUST STATS
+             ========================================== */}
+          {activeTab === 'hero' && (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-6 max-w-4xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                <div>
+                  <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                    HOMEPAGE HERO &amp; PROOF POINTS
+                  </span>
+                  <h2 className="text-xl font-bold text-slate-900">
+                    Manage Hero Headline, CTAs &amp; Verified Counter Metrics
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => postAdminAction('save_hero', heroCfg, 'Hero & Trust Counters saved!')}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-purple-200 self-start"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save Hero &amp; Stats</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Top Hero Pill Badge</label>
+                  <input
+                    type="text"
+                    value={heroCfg.badgeText}
+                    onChange={(e) => setHeroCfg({ ...heroCfg, badgeText: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Main Headline Prefix</label>
+                  <input
+                    type="text"
+                    value={heroCfg.headlineMain}
+                    onChange={(e) => setHeroCfg({ ...heroCfg, headlineMain: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Highlighted Gradient Headline</label>
+                  <input
+                    type="text"
+                    value={heroCfg.headlineGradient}
+                    onChange={(e) => setHeroCfg({ ...heroCfg, headlineGradient: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-purple-700"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Hero Supporting Description</label>
+                  <textarea
+                    rows={3}
+                    value={heroCfg.subheadline}
+                    onChange={(e) => setHeroCfg({ ...heroCfg, subheadline: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Primary Enquiry CTA Text</label>
+                  <input
+                    type="text"
+                    value={heroCfg.primaryCtaText}
+                    onChange={(e) => setHeroCfg({ ...heroCfg, primaryCtaText: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Secondary Portfolio CTA Text</label>
+                  <input
+                    type="text"
+                    value={heroCfg.secondaryCtaText}
+                    onChange={(e) => setHeroCfg({ ...heroCfg, secondaryCtaText: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100">
+                <h3 className="text-sm font-bold text-slate-900 mb-3">Verified Agency Proof Counters</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Projects Delivered</label>
+                    <input
+                      type="text"
+                      value={heroCfg.stats.projectsDelivered}
+                      onChange={(e) =>
+                        setHeroCfg({
+                          ...heroCfg,
+                          stats: { ...heroCfg.stats, projectsDelivered: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono font-bold text-purple-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Happy Clients</label>
+                    <input
+                      type="text"
+                      value={heroCfg.stats.happyClients}
+                      onChange={(e) =>
+                        setHeroCfg({
+                          ...heroCfg,
+                          stats: { ...heroCfg.stats, happyClients: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono font-bold text-purple-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Client Retention</label>
+                    <input
+                      type="text"
+                      value={heroCfg.stats.clientRetention}
+                      onChange={(e) =>
+                        setHeroCfg({
+                          ...heroCfg,
+                          stats: { ...heroCfg.stats, clientRetention: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono font-bold text-emerald-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Verified Rating</label>
+                    <input
+                      type="text"
+                      value={heroCfg.stats.googleRating}
+                      onChange={(e) =>
+                        setHeroCfg({
+                          ...heroCfg,
+                          stats: { ...heroCfg.stats, googleRating: e.target.value },
+                        })
+                      }
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono font-bold text-amber-600"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 5: LEADS & CRM PIPELINE
              ========================================== */}
           {activeTab === 'leads' && (
             <div className="space-y-6">
-              {/* Filter Bar */}
               <div className="bg-white rounded-3xl p-5 border border-slate-200 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                   {['all', 'new', 'contacted', 'qualified', 'proposal', 'won'].map((st) => (
@@ -936,8 +1770,7 @@ export default function AdminDashboardPage() {
                           : 'bg-slate-100 text-slate-600 hover:bg-purple-50 hover:text-purple-700'
                       }`}
                     >
-                      {st} (
-                      {st === 'all' ? leads.length : leads.filter((l) => l.status === st).length})
+                      {st} ({st === 'all' ? leads.length : leads.filter((l) => l.status === st).length})
                     </button>
                   ))}
                 </div>
@@ -960,7 +1793,6 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Full CRM Table */}
               <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -1008,7 +1840,7 @@ export default function AdminDashboardPage() {
                               type="button"
                               onClick={() => setSelectedLead(lead)}
                               className="p-2 rounded-lg bg-slate-100 hover:bg-purple-100 text-slate-700 hover:text-purple-700"
-                              title="View Full Message"
+                              title="View Full Dossier"
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
@@ -1034,11 +1866,334 @@ export default function AdminDashboardPage() {
                   </table>
                 </div>
               </div>
+
+              {/* Newsletter Subscribers Table */}
+              <div className="bg-white rounded-3xl p-6 border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Newsletter Subscribers ({subscribers.length})
+                    </h3>
+                    <p className="text-xs text-slate-500">Emails captured via Footer newsletter form.</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {subscribers.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs"
+                    >
+                      <div>
+                        <div className="font-bold text-slate-900">{sub.email}</div>
+                        <div className="text-[10px] text-emerald-700 font-mono">● Active Subscriber</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => postAdminAction('delete_subscriber', { id: sub.id }, 'Subscriber removed')}
+                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
           {/* ==========================================
-              TAB 3: PORTFOLIO & CASE STUDIES CMS
+              MODULE 6: SERVICES & SUB-SERVICES MANAGER
+             ========================================== */}
+          {activeTab === 'services' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                    6 CORE SERVICES &amp; SUB-SERVICE PILLS
+                  </span>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Manage Core Services &amp; Sub-Service Offerings
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Edit service titles, descriptions, or add new sub-services (WordPress, Shopify, SEO, Meta Ads, etc.).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => postAdminAction('save_services', servicesList, 'Services catalog saved!')}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                >
+                  <Save className="w-4 h-4" /> Save Services Catalog
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {servicesList.map((svc, idx) => (
+                  <div
+                    key={svc.id}
+                    className="bg-white rounded-3xl p-6 border border-slate-200 space-y-4 flex flex-col justify-between"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono font-bold text-purple-700">/{svc.slug}</span>
+                        <Link
+                          href={`/${svc.slug}`}
+                          target="_blank"
+                          className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
+                        >
+                          Live 12-Sec Page <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={svc.title}
+                        onChange={(e) => {
+                          const next = [...servicesList];
+                          next[idx] = { ...svc, title: e.target.value };
+                          setServicesList(next);
+                        }}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900"
+                      />
+
+                      <textarea
+                        rows={2}
+                        value={svc.short_description}
+                        onChange={(e) => {
+                          const next = [...servicesList];
+                          next[idx] = { ...svc, short_description: e.target.value };
+                          setServicesList(next);
+                        }}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-600"
+                      />
+
+                      <div>
+                        <span className="text-[11px] font-mono uppercase font-bold text-slate-500 block mb-2">
+                          Retained Sub-Services ({(svc.sub_services || []).length})
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(svc.sub_services || []).map((sub: any, si: number) => (
+                            <span
+                              key={si}
+                              className="inline-flex items-center gap-1.5 text-[11px] font-medium bg-purple-50 text-purple-800 border border-purple-200 px-2.5 py-1 rounded-lg"
+                            >
+                              <span>{sub.name}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = [...servicesList];
+                                  next[idx] = {
+                                    ...svc,
+                                    sub_services: svc.sub_services.filter((_: any, i: number) => i !== si),
+                                  };
+                                  setServicesList(next);
+                                }}
+                                className="text-purple-500 hover:text-rose-600"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Add Sub-Service Input */}
+                    <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Add sub-service (e.g. Headless Commerce)"
+                        value={editingServiceIdx === idx ? newSubServiceName : ''}
+                        onFocus={() => setEditingServiceIdx(idx)}
+                        onChange={(e) => {
+                          setEditingServiceIdx(idx);
+                          setNewSubServiceName(e.target.value);
+                        }}
+                        className="flex-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (editingServiceIdx !== idx || !newSubServiceName.trim()) return;
+                          const next = [...servicesList];
+                          next[idx] = {
+                            ...svc,
+                            sub_services: [
+                              ...(svc.sub_services || []),
+                              {
+                                name: newSubServiceName.trim(),
+                                desc: 'Custom implementation and optimization by LIMRA Digitech.',
+                                tag: 'Active',
+                              },
+                            ],
+                          };
+                          setServicesList(next);
+                          setNewSubServiceName('');
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                      >
+                        + Add Pill
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 7: INDUSTRIES & TECH MEGA-MENU PAGES
+             ========================================== */}
+          {activeTab === 'mega_pages' && (
+            <div className="space-y-8">
+              {/* 8 Industry Pages */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      INDUSTRIES MEGA-MENU // 8 DEDICATED PAGES
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Manage Industry Vertical Pages (/industries/[slug])
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      postAdminAction('save_industries', industriesList, 'Industry pages updated!')
+                    }
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                  >
+                    <Save className="w-3.5 h-3.5" /> Save Industries
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {industriesList.map((ind, idx) => (
+                    <div key={ind.slug} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-mono text-purple-700">/industries/{ind.slug}</span>
+                        <Link
+                          href={`/industries/${ind.slug}`}
+                          target="_blank"
+                          className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
+                        >
+                          Open 11-Sec Page <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          value={ind.shortTitle}
+                          onChange={(e) => {
+                            const next = [...industriesList];
+                            next[idx] = { ...ind, shortTitle: e.target.value };
+                            setIndustriesList(next);
+                          }}
+                          className="sm:col-span-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                        />
+                        <input
+                          type="text"
+                          value={ind.metricBadge}
+                          onChange={(e) => {
+                            const next = [...industriesList];
+                            next[idx] = { ...ind, metricBadge: e.target.value };
+                            setIndustriesList(next);
+                          }}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-mono text-emerald-700 font-bold"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={ind.subtitle}
+                        onChange={(e) => {
+                          const next = [...industriesList];
+                          next[idx] = { ...ind, subtitle: e.target.value };
+                          setIndustriesList(next);
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-600"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 8 Technology Stack Pages */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      TECHNOLOGIES MEGA-MENU // 8 DEDICATED PAGES
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Manage Technology Stack Pages (/technologies/[slug])
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      postAdminAction('save_technologies', technologiesList, 'Technology pages updated!')
+                    }
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
+                  >
+                    <Save className="w-3.5 h-3.5" /> Save Technologies
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {technologiesList.map((tech, idx) => (
+                    <div key={tech.slug} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-mono text-purple-700">/technologies/{tech.slug}</span>
+                        <Link
+                          href={`/technologies/${tech.slug}`}
+                          target="_blank"
+                          className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
+                        >
+                          Open 11-Sec Page <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          value={tech.shortTitle}
+                          onChange={(e) => {
+                            const next = [...technologiesList];
+                            next[idx] = { ...tech, shortTitle: e.target.value };
+                            setTechnologiesList(next);
+                          }}
+                          className="sm:col-span-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold"
+                        />
+                        <input
+                          type="text"
+                          value={tech.metricBadge}
+                          onChange={(e) => {
+                            const next = [...technologiesList];
+                            next[idx] = { ...tech, metricBadge: e.target.value };
+                            setTechnologiesList(next);
+                          }}
+                          className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-mono text-emerald-700 font-bold"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={tech.subtitle}
+                        onChange={(e) => {
+                          const next = [...technologiesList];
+                          next[idx] = { ...tech, subtitle: e.target.value };
+                          setTechnologiesList(next);
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-600"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 8: PORTFOLIO & CASE STUDIES CMS
              ========================================== */}
           {activeTab === 'portfolio' && (
             <div className="space-y-6">
@@ -1051,7 +2206,7 @@ export default function AdminDashboardPage() {
                     Manage Case Studies ({caseStudies.length} Active Projects)
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Each case study generates a dedicated 10-section page at /portfolio/[slug].
+                    Add, edit, or delete portfolio case studies (/portfolio/[slug]).
                   </p>
                 </div>
                 <button
@@ -1089,16 +2244,6 @@ export default function AdminDashboardPage() {
                         <div className="text-xs font-mono font-bold text-purple-700">{cs.client}</div>
                         <h3 className="text-base font-bold text-slate-900">{cs.title}</h3>
                         <p className="text-xs text-slate-500 line-clamp-2">{cs.challenge}</p>
-                        <div className="flex flex-wrap gap-1.5 pt-2">
-                          {(cs.technologies || []).slice(0, 4).map((t: string, ti: number) => (
-                            <span
-                              key={ti}
-                              className="text-[10px] font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
                       </div>
                     </div>
 
@@ -1108,19 +2253,29 @@ export default function AdminDashboardPage() {
                         target="_blank"
                         className="text-xs font-bold text-purple-700 hover:text-purple-900 flex items-center gap-1"
                       >
-                        <span>View Live Page</span>
+                        <span>View Live</span>
                         <ExternalLink className="w-3 h-3" />
                       </Link>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCaseStudies((prev) => prev.filter((item) => item.id !== cs.id));
-                          showToast('Case study removed');
-                        }}
-                        className="text-xs font-semibold text-rose-600 hover:underline flex items-center gap-1"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" /> Remove
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setEditingCaseStudy(cs)}
+                          className="text-xs font-semibold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" /> Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = caseStudies.filter((item) => item.id !== cs.id);
+                            setCaseStudies(next);
+                            postAdminAction('save_case_studies', next, 'Case study removed');
+                          }}
+                          className="text-xs font-semibold text-rose-600 hover:underline flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1129,7 +2284,7 @@ export default function AdminDashboardPage() {
           )}
 
           {/* ==========================================
-              TAB 4: BLOGS & EDITORIAL CMS
+              MODULE 9: BLOGS & EDITORIAL CMS
              ========================================== */}
           {activeTab === 'blogs' && (
             <div className="space-y-6">
@@ -1142,7 +2297,7 @@ export default function AdminDashboardPage() {
                     Manage Blog Articles ({blogs.length} Published)
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Publish SEO guides, Next.js teardowns, and Google Ads insights without code changes.
+                    Create, edit, or delete blog articles (/blogs/[slug]).
                   </p>
                 </div>
                 <button
@@ -1188,19 +2343,29 @@ export default function AdminDashboardPage() {
                         target="_blank"
                         className="text-xs font-bold text-purple-700 hover:text-purple-900 flex items-center gap-1"
                       >
-                        <span>Read Live Article</span>
+                        <span>Read Live</span>
                         <ExternalLink className="w-3 h-3" />
                       </Link>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBlogs((prev) => prev.filter((b) => b.id !== post.id));
-                          showToast('Article deleted');
-                        }}
-                        className="text-xs font-semibold text-rose-600 hover:underline flex items-center gap-1"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setEditingBlog(post)}
+                          className="text-xs font-semibold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" /> Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = blogs.filter((b) => b.id !== post.id);
+                            setBlogs(next);
+                            postAdminAction('save_blogs', next, 'Article deleted');
+                          }}
+                          className="text-xs font-semibold text-rose-600 hover:underline flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1209,161 +2374,111 @@ export default function AdminDashboardPage() {
           )}
 
           {/* ==========================================
-              TAB 5: MEGA-MENU & PAGES CATALOG
+              MODULE 10: TESTIMONIALS & FAQS CMS
              ========================================== */}
-          {activeTab === 'catalog' && (
+          {activeTab === 'testimonials_faqs' && (
             <div className="space-y-8">
-              {/* 6 Core Services */}
-              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
-                <div className="flex items-center justify-between">
+              {/* Testimonials Section */}
+              <div className="space-y-4">
+                <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      MEGA MENU // 01
+                      SOCIAL PROOF CMS
                     </span>
                     <h2 className="text-lg font-bold text-slate-900">
-                      6 Core Services &amp; Sub-Service Capabilities (12 Sections/Page)
+                      Verified Client Testimonials ({testimonials.length})
                     </h2>
                   </div>
-                  <Link
-                    href="/services"
-                    target="_blank"
-                    className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
+                  <button
+                    type="button"
+                    onClick={() => setIsAddTestimonialOpen(true)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
                   >
-                    View /services <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
+                    <Plus className="w-4 h-4" /> Add Client Review
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {servicesData.map((svc) => (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {testimonials.map((t) => (
                     <div
-                      key={svc.id}
-                      className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 flex flex-col justify-between"
+                      key={t.id}
+                      className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col justify-between space-y-4"
                     >
-                      <div>
+                      <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-bold text-slate-900">{svc.title}</span>
+                          <div className="flex items-center gap-1 text-amber-500">
+                            {Array.from({ length: t.rating || 5 }).map((_, idx) => (
+                              <Star key={idx} className="w-3.5 h-3.5 fill-current" />
+                            ))}
+                          </div>
                           <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                            12 Sections
+                            Verified
                           </span>
                         </div>
-                        <div className="text-[11px] font-mono text-purple-700 mt-0.5">/{svc.slug}</div>
-                        <div className="flex flex-wrap gap-1 mt-2.5">
-                          {(svc.sub_services || []).map((sub, si) => (
-                            <span
-                              key={si}
-                              className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600"
-                            >
-                              {sub.name}
-                            </span>
-                          ))}
+                        <p className="text-xs text-slate-600 italic leading-relaxed">&ldquo;{t.content}&rdquo;</p>
+                      </div>
+                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900">{t.name}</div>
+                          <div className="text-[11px] text-purple-700">
+                            {t.role}, {t.company}
+                          </div>
                         </div>
-                      </div>
-                      <div className="pt-3 border-t border-slate-200/70 flex items-center justify-between text-xs">
-                        <span className="text-emerald-700 font-semibold">● Live in Mega Menu</span>
-                        <Link
-                          href={`/${svc.slug}`}
-                          target="_blank"
-                          className="font-bold text-purple-700 hover:underline flex items-center gap-1"
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = testimonials.filter((item) => item.id !== t.id);
+                            setTestimonials(next);
+                            postAdminAction('save_testimonials', next, 'Testimonial removed');
+                          }}
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
                         >
-                          Open <ExternalLink className="w-3 h-3" />
-                        </Link>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* 8 Industries Mega-Menu Pages */}
-              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
-                <div className="flex items-center justify-between">
+              {/* FAQs Section */}
+              <div className="space-y-4">
+                <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      MEGA MENU // 02
+                      KNOWLEDGE BASE CMS
                     </span>
                     <h2 className="text-lg font-bold text-slate-900">
-                      8 Dedicated Industry Vertical Pages (11 Sections/Page)
+                      Frequently Asked Questions ({faqs.length})
                     </h2>
                   </div>
-                  <Link
-                    href="/industries"
-                    target="_blank"
-                    className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
+                  <button
+                    type="button"
+                    onClick={() => setIsAddFaqOpen(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
                   >
-                    View /industries <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
+                    <Plus className="w-4 h-4" /> Add New FAQ
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {industriesPagesData.map((ind) => (
-                    <div
-                      key={ind.slug}
-                      className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 flex flex-col justify-between"
-                    >
-                      <div>
-                        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                          {ind.metricBadge}
-                        </span>
-                        <h3 className="text-sm font-bold text-slate-900 mt-2">{ind.shortTitle}</h3>
-                        <p className="text-[11px] font-mono text-purple-700">/industries/{ind.slug}</p>
-                      </div>
-                      <div className="pt-3 border-t border-slate-200/70 flex items-center justify-between text-xs">
-                        <span className="text-slate-500">11 Sections</span>
-                        <Link
-                          href={`/industries/${ind.slug}`}
-                          target="_blank"
-                          className="font-bold text-purple-700 hover:underline flex items-center gap-1"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {faqs.map((f) => (
+                    <div key={f.id} className="bg-white rounded-2xl p-5 border border-slate-200 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-900">{f.question}</h3>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = faqs.filter((item) => item.id !== f.id);
+                            setFaqs(next);
+                            postAdminAction('save_faqs', next, 'FAQ item deleted');
+                          }}
+                          className="text-rose-600 hover:bg-rose-50 p-1 rounded"
                         >
-                          Preview <ExternalLink className="w-3 h-3" />
-                        </Link>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 8 Technologies Mega-Menu Pages */}
-              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      MEGA MENU // 03
-                    </span>
-                    <h2 className="text-lg font-bold text-slate-900">
-                      8 Dedicated Technology Stack Pages (11 Sections/Page)
-                    </h2>
-                  </div>
-                  <Link
-                    href="/technologies"
-                    target="_blank"
-                    className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
-                  >
-                    View /technologies <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {technologiesPagesData.map((tech) => (
-                    <div
-                      key={tech.slug}
-                      className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 flex flex-col justify-between"
-                    >
-                      <div>
-                        <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
-                          {tech.tag}
-                        </span>
-                        <h3 className="text-sm font-bold text-slate-900 mt-2">{tech.shortTitle}</h3>
-                        <p className="text-[11px] font-mono text-purple-700">/technologies/{tech.slug}</p>
-                      </div>
-                      <div className="pt-3 border-t border-slate-200/70 flex items-center justify-between text-xs">
-                        <span className="text-slate-500">11 Sections</span>
-                        <Link
-                          href={`/technologies/${tech.slug}`}
-                          target="_blank"
-                          className="font-bold text-purple-700 hover:underline flex items-center gap-1"
-                        >
-                          Preview <ExternalLink className="w-3 h-3" />
-                        </Link>
-                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed">{f.answer}</p>
                     </div>
                   ))}
                 </div>
@@ -1372,308 +2487,417 @@ export default function AdminDashboardPage() {
           )}
 
           {/* ==========================================
-              TAB 6: CLIENT TESTIMONIALS MANAGER
-             ========================================== */}
-          {activeTab === 'testimonials' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                    TRUST &amp; SOCIAL PROOF
-                  </span>
-                  <h2 className="text-lg font-bold text-slate-900">
-                    Verified Client Testimonials ({testimonials.length} Approved)
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Only verified, authentic client reviews are published across the website.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddTestimonialOpen(true)}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
-                >
-                  <Plus className="w-4 h-4" /> Add Verified Review
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {testimonials.map((t) => (
-                  <div
-                    key={t.id}
-                    className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col justify-between space-y-4"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-amber-500">
-                          {Array.from({ length: t.rating || 5 }).map((_, idx) => (
-                            <Star key={idx} className="w-4 h-4 fill-current" />
-                          ))}
-                        </div>
-                        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                          Verified Client
-                        </span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
-                        &ldquo;{t.content}&rdquo;
-                      </p>
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-bold text-slate-900">{t.name}</div>
-                        <div className="text-xs text-purple-700 font-medium">
-                          {t.role}, {t.company}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTestimonials((prev) => prev.filter((item) => item.id !== t.id));
-                          showToast('Testimonial removed');
-                        }}
-                        className="p-2 rounded-lg text-rose-600 hover:bg-rose-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ==========================================
-              TAB 7: SEO, SITEMAP & GA4 CONSOLE
+              MODULE 11: SEO, SITEMAP, 301 REDIRECTS & GA4
              ========================================== */}
           {activeTab === 'seo' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* GA4 & Search Console Settings */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Global SEO & GA4 Config */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                   <div>
                     <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      ANALYTICS &amp; CONVERSION TRACKING
+                      SEARCH &amp; ANALYTICS ENGINE
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">Global Meta, GA4 &amp; Search Console</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => postAdminAction('save_seo', seoCfg, 'SEO & Analytics configuration saved!')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Save className="w-3.5 h-3.5" /> Save SEO
+                  </button>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Default Meta Title</label>
+                  <input
+                    type="text"
+                    value={seoCfg.siteTitle}
+                    onChange={(e) => setSeoCfg({ ...seoCfg, siteTitle: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Global Meta Description</label>
+                  <textarea
+                    rows={3}
+                    value={seoCfg.metaDescription}
+                    onChange={(e) => setSeoCfg({ ...seoCfg, metaDescription: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">GA4 Measurement ID</label>
+                    <input
+                      type="text"
+                      value={seoCfg.ga4Id}
+                      onChange={(e) => setSeoCfg({ ...seoCfg, ga4Id: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">GSC Verification Token</label>
+                    <input
+                      type="text"
+                      value={seoCfg.gscVerification}
+                      onChange={(e) => setSeoCfg({ ...seoCfg, gscVerification: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 301 Redirects Manager */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-emerald-700 uppercase">
+                      URL REDIRECT MANAGER
                     </span>
                     <h2 className="text-lg font-bold text-slate-900">
-                      Google Analytics 4 &amp; Search Console Configuration
+                      301 Redirect Rules ({seoCfg.redirects.length})
                     </h2>
                   </div>
+                  <div className="flex gap-2">
+                    <a
+                      href="/sitemap.xml"
+                      target="_blank"
+                      className="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-mono font-bold"
+                    >
+                      /sitemap.xml ↗
+                    </a>
+                    <a
+                      href="/robots.txt"
+                      target="_blank"
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 text-xs font-mono font-bold"
+                    >
+                      /robots.txt ↗
+                    </a>
+                  </div>
+                </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        GA4 Measurement ID (NEXT_PUBLIC_GA_MEASUREMENT_ID)
-                      </label>
-                      <input
-                        type="text"
-                        value={seoConfig.ga4Id}
-                        onChange={(e) => setSeoConfig({ ...seoConfig, ga4Id: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900"
-                      />
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {seoCfg.redirects.map((rule, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono"
+                    >
+                      <span>{rule.from}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-purple-700 font-bold">301 → {rule.to}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = {
+                              ...seoCfg,
+                              redirects: seoCfg.redirects.filter((_, i) => i !== idx),
+                            };
+                            setSeoCfg(next);
+                          }}
+                          className="text-rose-500 hover:text-rose-700"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Google Search Console Verification Meta Token
-                      </label>
-                      <input
-                        type="text"
-                        value={seoConfig.gscVerification}
-                        onChange={(e) => setSeoConfig({ ...seoConfig, gscVerification: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Primary Canonical Domain
-                      </label>
-                      <input
-                        type="text"
-                        value={seoConfig.canonicalDomain}
-                        onChange={(e) => setSeoConfig({ ...seoConfig, canonicalDomain: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900"
-                      />
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="text"
+                    placeholder="Old URL (e.g. /old-page)"
+                    value={newRedirectFrom}
+                    onChange={(e) => setNewRedirectFrom(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                  />
+                  <input
+                    type="text"
+                    placeholder="New URL (e.g. /services)"
+                    value={newRedirectTo}
+                    onChange={(e) => setNewRedirectTo(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newRedirectFrom || !newRedirectTo) return;
+                      const next = {
+                        ...seoCfg,
+                        redirects: [
+                          { from: newRedirectFrom, to: newRedirectTo, permanent: true },
+                          ...seoCfg.redirects,
+                        ],
+                      };
+                      setSeoCfg(next);
+                      setNewRedirectFrom('');
+                      setNewRedirectTo('');
+                      postAdminAction('save_seo', next, 'Added 301 redirect rule');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                  >
+                    + Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              MODULE 12: ADMIN PROFILE, ROLES & SECURITY
+             ========================================== */}
+          {activeTab === 'profile' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Admin Personal Profile Card */}
+                <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-black text-lg flex items-center justify-center shadow-md shadow-purple-200">
+                        {adminProfile.avatarInitials || 'LA'}
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-mono uppercase font-bold text-purple-700">
+                          ADMINISTRATOR PROFILE
+                        </span>
+                        <h2 className="text-xl font-bold text-slate-900">{adminProfile.fullName}</h2>
+                        <p className="text-xs text-slate-500">{adminProfile.role}</p>
+                      </div>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => showToast('SEO & Analytics settings saved successfully')}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold"
+                      disabled={isSaving}
+                      onClick={() =>
+                        postAdminAction('save_admin_profile', adminProfile, 'Admin Profile & Security updated!')
+                      }
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
                     >
-                      Save SEO Configuration
+                      <Save className="w-4 h-4" />
+                      <span>Save Admin Profile</span>
                     </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Admin Full Name</label>
+                      <input
+                        type="text"
+                        value={adminProfile.fullName}
+                        onChange={(e) => setAdminProfile({ ...adminProfile, fullName: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Role / Designation</label>
+                      <input
+                        type="text"
+                        value={adminProfile.role}
+                        onChange={(e) => setAdminProfile({ ...adminProfile, role: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Admin Login Email</label>
+                      <input
+                        type="email"
+                        value={adminProfile.email}
+                        onChange={(e) => setAdminProfile({ ...adminProfile, email: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Direct Mobile / Alerts</label>
+                      <input
+                        type="text"
+                        value={adminProfile.phone}
+                        onChange={(e) => setAdminProfile({ ...adminProfile, phone: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Department</label>
+                      <input
+                        type="text"
+                        value={adminProfile.department}
+                        onChange={(e) => setAdminProfile({ ...adminProfile, department: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Avatar Initials (2 Chars)</label>
+                      <input
+                        type="text"
+                        maxLength={2}
+                        value={adminProfile.avatarInitials}
+                        onChange={(e) =>
+                          setAdminProfile({ ...adminProfile, avatarInitials: e.target.value.toUpperCase() })
+                        }
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password & Security Update */}
+                  <div className="pt-5 border-t border-slate-100 space-y-4">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-900">
+                      <KeyRound className="w-4 h-4 text-purple-600" />
+                      <span>Update Master Password &amp; Session Security</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <input
+                        type="password"
+                        placeholder="Current Password"
+                        value={passwordForm.current}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                        className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                      />
+                      <input
+                        type="password"
+                        placeholder="New Password"
+                        value={passwordForm.next}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, next: e.target.value })}
+                        className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!passwordForm.next) return;
+                          setLoginPass(passwordForm.next);
+                          setPasswordForm({ current: '', next: '', confirm: '' });
+                          showToast('Master password updated successfully');
+                        }}
+                        className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold"
+                      >
+                        Update Password
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* 301 Redirects & Sitemap Feeds */}
-                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-xs font-mono font-bold text-emerald-700 uppercase">
-                        LINK INTEGRITY &amp; CRAWLERS
-                      </span>
-                      <h2 className="text-lg font-bold text-slate-900">
-                        Active 301 Permanent Redirect Rules
-                      </h2>
-                    </div>
-                    <div className="flex gap-2">
-                      <a
-                        href="/sitemap.xml"
-                        target="_blank"
-                        className="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-mono font-bold"
-                      >
-                        /sitemap.xml ↗
-                      </a>
-                      <a
-                        href="/robots.txt"
-                        target="_blank"
-                        className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 text-xs font-mono font-bold"
-                      >
-                        /robots.txt ↗
-                      </a>
-                    </div>
+                {/* Team Role Access Control (RBAC) */}
+                <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-5">
+                  <div>
+                    <span className="text-[11px] font-mono uppercase font-bold text-purple-700">
+                      ROLE-BASED ACCESS (RBAC)
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">Admin Team &amp; Permissions</h2>
+                    <p className="text-xs text-slate-500">Manage team accounts with access to the console.</p>
                   </div>
 
-                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                    {[
-                      { from: '/about-us', to: '/about' },
-                      { from: '/contact', to: '/contact-us' },
-                      { from: '/our-services', to: '/services' },
-                      { from: '/web-development', to: '/website-development-services' },
-                      { from: '/digital-marketing', to: '/digital-marketing-agency-india' },
-                      { from: '/lead-generation', to: '/lead-generation-company-india' },
-                      { from: '/graphic-design', to: '/creative-design-solutions-india' },
-                      { from: '/app-development', to: '/mobile-app-developer-india' },
-                      { from: '/software-development', to: '/software-developers-india' },
-                      { from: '/work', to: '/portfolio' },
-                      { from: '/blog', to: '/blogs' },
-                    ].map((rule, idx) => (
+                  <div className="space-y-2.5">
+                    {(adminProfile.teamMembers || []).map((tm) => (
                       <div
-                        key={idx}
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono"
+                        key={tm.id}
+                        className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs"
                       >
-                        <span className="text-slate-600">{rule.from}</span>
-                        <span className="text-purple-700 font-bold">301 → {rule.to}</span>
+                        <div>
+                          <div className="font-bold text-slate-900">{tm.name}</div>
+                          <div className="text-[11px] text-slate-500">{tm.email}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full">
+                            {tm.role}
+                          </span>
+                          {tm.role !== 'Super Admin' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = {
+                                  ...adminProfile,
+                                  teamMembers: adminProfile.teamMembers.filter((m) => m.id !== tm.id),
+                                };
+                                setAdminProfile(next);
+                                postAdminAction('save_admin_profile', next, 'Team member removed');
+                              }}
+                              className="text-rose-500 hover:text-rose-700"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* ==========================================
-              TAB 8: BRAND & SYSTEM SETTINGS
-             ========================================== */}
-          {activeTab === 'settings' && (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 max-w-4xl space-y-6">
-              <div>
-                <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                  GLOBAL BRAND CONFIGURATION
-                </span>
-                <h2 className="text-lg font-bold text-slate-900">
-                  LIMRA Digitech Contact, Office &amp; Social Links
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Confirm phone numbers, email address, office address, business hours, and social links.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Company Name</label>
-                  <input
-                    type="text"
-                    value={brandSettings.name}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, name: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Primary Phone / WhatsApp</label>
-                  <input
-                    type="text"
-                    value={brandSettings.phone}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, phone: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Official Email Address</label>
-                  <input
-                    type="email"
-                    value={brandSettings.email}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, email: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Business Hours</label>
-                  <input
-                    type="text"
-                    value={brandSettings.hours}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, hours: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Headquarters Address</label>
-                  <input
-                    type="text"
-                    value={brandSettings.address}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, address: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Facebook URL</label>
-                  <input
-                    type="text"
-                    value={brandSettings.facebook}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, facebook: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Instagram URL</label>
-                  <input
-                    type="text"
-                    value={brandSettings.instagram}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, instagram: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">LinkedIn URL</label>
-                  <input
-                    type="text"
-                    value={brandSettings.linkedin}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, linkedin: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">X (Twitter) URL</label>
-                  <input
-                    type="text"
-                    value={brandSettings.twitter}
-                    onChange={(e) => setBrandSettings({ ...brandSettings, twitter: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900"
-                  />
+                  {/* Add Team Member */}
+                  <div className="pt-3 border-t border-slate-100 space-y-2.5">
+                    <div className="text-xs font-bold text-slate-800">Invite Team Member</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Full Name"
+                        value={newTeamMember.name}
+                        onChange={(e) => setNewTeamMember({ ...newTeamMember, name: e.target.value })}
+                        className="px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                      />
+                      <input
+                        type="email"
+                        placeholder="Email Address"
+                        value={newTeamMember.email}
+                        onChange={(e) => setNewTeamMember({ ...newTeamMember, email: e.target.value })}
+                        className="px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <select
+                        value={newTeamMember.role}
+                        onChange={(e) =>
+                          setNewTeamMember({ ...newTeamMember, role: e.target.value as any })
+                        }
+                        className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                      >
+                        <option>SEO Strategist</option>
+                        <option>Content Editor</option>
+                        <option>CRM Manager</option>
+                        <option>Super Admin</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!newTeamMember.name || !newTeamMember.email) return;
+                          const next = {
+                            ...adminProfile,
+                            teamMembers: [
+                              ...adminProfile.teamMembers,
+                              {
+                                id: `tm-${Date.now()}`,
+                                name: newTeamMember.name,
+                                email: newTeamMember.email,
+                                role: newTeamMember.role,
+                                status: 'Active' as const,
+                              },
+                            ],
+                          };
+                          setAdminProfile(next);
+                          setNewTeamMember({ name: '', email: '', role: 'SEO Strategist' });
+                          postAdminAction('save_admin_profile', next, 'New team member added');
+                        }}
+                        className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                      >
+                        + Add Member
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs text-emerald-700 font-semibold">
-                  ✓ Logo Continuity Locked: /limra-logo.png
-                </span>
-                <button
-                  type="button"
-                  onClick={() => showToast('Brand & contact configuration saved')}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-sm"
-                >
-                  Save Brand Details
-                </button>
+              {/* Full Security Audit Logs */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
+                <h3 className="text-base font-bold text-slate-900">Complete Admin Activity &amp; Security Audit Log</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {(adminProfile.auditLogs || []).map((log) => (
+                    <div key={log.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                      <div className="font-bold text-slate-900">{log.action}</div>
+                      <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
+                        <span>{log.actor}</span>
+                        <span>{log.timestamp}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -1681,7 +2905,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ==========================================
-          MODAL 1: INSPECT LEAD DRAWER / MODAL
+          MODAL 1: INSPECT LEAD DOSSIER
          ========================================== */}
       {selectedLead && (
         <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -1829,31 +3053,48 @@ export default function AdminDashboardPage() {
       )}
 
       {/* ==========================================
-          MODAL 3: ADD NEW BLOG POST
+          MODAL 3: ADD / EDIT BLOG POST
          ========================================== */}
-      {isAddBlogOpen && (
+      {(isAddBlogOpen || editingBlog) && (
         <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
           <form
-            onSubmit={handleCreateBlog}
+            onSubmit={handleSaveBlogModal}
             className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">Publish New Blog Article</h3>
-              <button type="button" onClick={() => setIsAddBlogOpen(false)} className="p-1.5 rounded-lg bg-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">
+                {editingBlog ? 'Edit Blog Article' : 'Publish New Blog Article'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddBlogOpen(false);
+                  setEditingBlog(null);
+                }}
+                className="p-1.5 rounded-lg bg-slate-100"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <input
               type="text"
               placeholder="Article Headline *"
-              value={newBlogForm.title}
-              onChange={(e) => setNewBlogForm({ ...newBlogForm, title: e.target.value })}
+              value={editingBlog ? editingBlog.title : newBlogForm.title}
+              onChange={(e) =>
+                editingBlog
+                  ? setEditingBlog({ ...editingBlog, title: e.target.value })
+                  : setNewBlogForm({ ...newBlogForm, title: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
               required
             />
             <select
-              value={newBlogForm.category}
-              onChange={(e) => setNewBlogForm({ ...newBlogForm, category: e.target.value })}
+              value={editingBlog ? editingBlog.category : newBlogForm.category}
+              onChange={(e) =>
+                editingBlog
+                  ? setEditingBlog({ ...editingBlog, category: e.target.value })
+                  : setNewBlogForm({ ...newBlogForm, category: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
             >
               <option>SEO &amp; Core Vitals</option>
@@ -1863,8 +3104,12 @@ export default function AdminDashboardPage() {
             <textarea
               placeholder="Article summary / SEO meta description..."
               rows={3}
-              value={newBlogForm.excerpt}
-              onChange={(e) => setNewBlogForm({ ...newBlogForm, excerpt: e.target.value })}
+              value={editingBlog ? editingBlog.excerpt : newBlogForm.excerpt}
+              onChange={(e) =>
+                editingBlog
+                  ? setEditingBlog({ ...editingBlog, excerpt: e.target.value })
+                  : setNewBlogForm({ ...newBlogForm, excerpt: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
               required
             />
@@ -1872,26 +3117,31 @@ export default function AdminDashboardPage() {
               type="submit"
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
             >
-              Publish Article Live
+              {editingBlog ? 'Save Article Changes' : 'Publish Article Live'}
             </button>
           </form>
         </div>
       )}
 
       {/* ==========================================
-          MODAL 4: ADD NEW CASE STUDY
+          MODAL 4: ADD / EDIT CASE STUDY
          ========================================== */}
-      {isAddCaseStudyOpen && (
+      {(isAddCaseStudyOpen || editingCaseStudy) && (
         <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
           <form
-            onSubmit={handleCreateCaseStudy}
+            onSubmit={handleSaveCaseStudyModal}
             className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-bold text-slate-900">Publish Portfolio Case Study</h3>
+              <h3 className="text-lg font-bold text-slate-900">
+                {editingCaseStudy ? 'Edit Portfolio Case Study' : 'Publish Portfolio Case Study'}
+              </h3>
               <button
                 type="button"
-                onClick={() => setIsAddCaseStudyOpen(false)}
+                onClick={() => {
+                  setIsAddCaseStudyOpen(false);
+                  setEditingCaseStudy(null);
+                }}
                 className="p-1.5 rounded-lg bg-slate-100"
               >
                 <X className="w-4 h-4" />
@@ -1900,45 +3150,54 @@ export default function AdminDashboardPage() {
             <input
               type="text"
               placeholder="Project Title *"
-              value={newCaseStudyForm.title}
-              onChange={(e) => setNewCaseStudyForm({ ...newCaseStudyForm, title: e.target.value })}
+              value={editingCaseStudy ? editingCaseStudy.title : newCaseStudyForm.title}
+              onChange={(e) =>
+                editingCaseStudy
+                  ? setEditingCaseStudy({ ...editingCaseStudy, title: e.target.value })
+                  : setNewCaseStudyForm({ ...newCaseStudyForm, title: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
               required
             />
             <input
               type="text"
               placeholder="Client / Brand Name *"
-              value={newCaseStudyForm.client}
-              onChange={(e) => setNewCaseStudyForm({ ...newCaseStudyForm, client: e.target.value })}
+              value={editingCaseStudy ? editingCaseStudy.client : newCaseStudyForm.client}
+              onChange={(e) =>
+                editingCaseStudy
+                  ? setEditingCaseStudy({ ...editingCaseStudy, client: e.target.value })
+                  : setNewCaseStudyForm({ ...newCaseStudyForm, client: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
               required
             />
             <input
               type="text"
               placeholder="Verified Result Metric (e.g. +240% Organic Traffic)"
-              value={newCaseStudyForm.results}
-              onChange={(e) => setNewCaseStudyForm({ ...newCaseStudyForm, results: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
-            />
-            <input
-              type="text"
-              placeholder="Technologies (comma separated)"
-              value={newCaseStudyForm.technologies}
-              onChange={(e) => setNewCaseStudyForm({ ...newCaseStudyForm, technologies: e.target.value })}
+              value={editingCaseStudy ? editingCaseStudy.results : newCaseStudyForm.results}
+              onChange={(e) =>
+                editingCaseStudy
+                  ? setEditingCaseStudy({ ...editingCaseStudy, results: e.target.value })
+                  : setNewCaseStudyForm({ ...newCaseStudyForm, results: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
             />
             <textarea
               placeholder="Challenge & Solution Overview..."
               rows={3}
-              value={newCaseStudyForm.challenge}
-              onChange={(e) => setNewCaseStudyForm({ ...newCaseStudyForm, challenge: e.target.value })}
+              value={editingCaseStudy ? editingCaseStudy.challenge : newCaseStudyForm.challenge}
+              onChange={(e) =>
+                editingCaseStudy
+                  ? setEditingCaseStudy({ ...editingCaseStudy, challenge: e.target.value })
+                  : setNewCaseStudyForm({ ...newCaseStudyForm, challenge: e.target.value })
+              }
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
             />
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
             >
-              Publish Case Study
+              {editingCaseStudy ? 'Save Case Study Changes' : 'Publish Case Study'}
             </button>
           </form>
         </div>
@@ -1998,6 +3257,47 @@ export default function AdminDashboardPage() {
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
             >
               Publish Verified Review
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 6: ADD FAQ ITEM
+         ========================================== */}
+      {isAddFaqOpen && (
+        <div className="fixed inset-0 z-[150] bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <form
+            onSubmit={handleCreateFaq}
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-bold text-slate-900">Add Website FAQ</h3>
+              <button type="button" onClick={() => setIsAddFaqOpen(false)} className="p-1.5 rounded-lg bg-slate-100">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Question *"
+              value={newFaqForm.question}
+              onChange={(e) => setNewFaqForm({ ...newFaqForm, question: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              required
+            />
+            <textarea
+              placeholder="Detailed Answer *"
+              rows={4}
+              value={newFaqForm.answer}
+              onChange={(e) => setNewFaqForm({ ...newFaqForm, answer: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl text-xs font-bold"
+            >
+              Save FAQ Item
             </button>
           </form>
         </div>
