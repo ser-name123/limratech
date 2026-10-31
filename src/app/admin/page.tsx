@@ -252,6 +252,16 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
+  // Keep the URL in sync with the active tab so a refresh stays on the same tab.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !authChecked) return;
+    try {
+      window.history.replaceState(null, '', `/admin?tab=${activeTab}`);
+    } catch {
+      /* ignore */
+    }
+  }, [activeTab, authChecked]);
+
   const postAdminAction = async (action: string, payload: any, toastMsg: string) => {
     setIsSaving(true);
     try {
