@@ -13,6 +13,12 @@ async function readCmsState(): Promise<typeof initialCmsSnapshot> {
   try {
     const raw = await fs.readFile(CMS_FILE_PATH, 'utf-8');
     const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed.leads) && parsed.leads.length > 0) {
+      inMemoryDb.leads = parsed.leads;
+    }
+    if (Array.isArray(parsed.newsletter) && parsed.newsletter.length > 0) {
+      inMemoryDb.newsletter = parsed.newsletter;
+    }
     memoryCmsState = { ...initialCmsSnapshot, ...parsed };
     return memoryCmsState;
   } catch {
@@ -21,9 +27,14 @@ async function readCmsState(): Promise<typeof initialCmsSnapshot> {
 }
 
 async function writeCmsState(nextState: typeof initialCmsSnapshot) {
-  memoryCmsState = nextState;
+  const stateWithCrm = {
+    ...nextState,
+    leads: inMemoryDb.leads,
+    newsletter: inMemoryDb.newsletter,
+  };
+  memoryCmsState = stateWithCrm;
   try {
-    await fs.writeFile(CMS_FILE_PATH, JSON.stringify(nextState, null, 2), 'utf-8');
+    await fs.writeFile(CMS_FILE_PATH, JSON.stringify(stateWithCrm, null, 2), 'utf-8');
   } catch (err) {
     console.warn('Could not persist cmsState.json to disk, using memory store:', err);
   }
@@ -77,12 +88,19 @@ export async function POST(request: Request) {
     };
 
     if (action === 'update_lead_status') {
-      const { id, status, priority, internal_notes } = payload;
+      const { id, status, priority, internal_notes, full_name, email, phone, service_needed, budget, message, source_page } = payload;
       const target = inMemoryDb.leads.find((l) => l.id === id);
       if (target) {
-        if (status) target.status = status;
-        if (priority) target.priority = priority;
+        if (status !== undefined) target.status = status;
+        if (priority !== undefined) target.priority = priority;
         if (internal_notes !== undefined) target.internal_notes = internal_notes;
+        if (full_name !== undefined) target.full_name = full_name;
+        if (email !== undefined) target.email = email;
+        if (phone !== undefined) target.phone = phone;
+        if (service_needed !== undefined) target.service_needed = service_needed;
+        if (budget !== undefined) target.budget = budget;
+        if (message !== undefined) target.message = message;
+        if (source_page !== undefined) target.source_page = source_page;
       }
       addAuditLog(`Updated Lead ${id} in CRM Pipeline`);
       await writeCmsState(cms);

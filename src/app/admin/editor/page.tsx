@@ -50,7 +50,9 @@ type EditorEntityType =
   | 'client_brand'
   | 'leader'
   | 'pricing'
-  | 'page_seo';
+  | 'page_seo'
+  | 'milestone'
+  | 'media';
 
 function AdminStudioEditorInner() {
   const searchParams = useSearchParams();
@@ -401,6 +403,28 @@ function AdminStudioEditorInner() {
               targetLocations: ['New Delhi', 'Mumbai', 'Bengaluru', 'Hyderabad', 'Pan-India'],
             }
           );
+        } else if (entityType === 'milestone') {
+          const existing = loadedCms.milestones?.find((m: any) => m.id === entityId || m.year === entityId);
+          setFormData(
+            existing || {
+              id: `ms-${Date.now()}`,
+              year: '2026',
+              title: '',
+              desc: '',
+            }
+          );
+        } else if (entityType === 'media') {
+          const existing = loadedCms.mediaAssets?.find((m: any) => m.id === entityId);
+          setFormData(
+            existing || {
+              id: `media-${Date.now()}`,
+              title: '',
+              category: 'Brand Logo & Favicon',
+              url: '/limra-logo.png',
+              dimensions: '1200 × 800 PNG',
+              altText: '',
+            }
+          );
         }
       } catch (err) {
         console.error('Error loading studio editor data:', err);
@@ -551,13 +575,22 @@ function AdminStudioEditorInner() {
           payload = formData;
         } else {
           action = 'update_lead_status';
-          payload = {
-            id: formData.id,
-            status: formData.status,
-            priority: formData.priority,
-            internal_notes: formData.internal_notes,
-          };
+          payload = formData;
         }
+      } else if (entityType === 'milestone') {
+        const list = [...(cms.milestones || [])];
+        const idx = list.findIndex((m: any) => m.id === formData.id);
+        if (idx >= 0) list[idx] = formData;
+        else list.push(formData);
+        action = 'save_milestones';
+        payload = list;
+      } else if (entityType === 'media') {
+        const list = [...(cms.mediaAssets || [])];
+        const idx = list.findIndex((m: any) => m.id === formData.id);
+        if (idx >= 0) list[idx] = formData;
+        else list.unshift(formData);
+        action = 'save_media';
+        payload = list;
       } else if (entityType === 'client_brand') {
         const list = [...(cms.clientBrands || [])];
         const idx = list.findIndex((b: any) => b.id === formData.id);
@@ -691,6 +724,16 @@ function AdminStudioEditorInner() {
           : `SEO Studio: ${formData.pageName || formData.route || ''}`,
       livePath: formData.route || '/',
     },
+    milestone: {
+      badge: 'COMPANY TIMELINE MILESTONE STUDIO',
+      title: mode === 'create' ? 'Add Company Milestone' : `Edit Milestone: ${formData.year || ''} – ${formData.title || ''}`,
+      livePath: '/about',
+    },
+    media: {
+      badge: 'MEDIA & BRAND ASSET SEO STUDIO',
+      title: mode === 'create' ? 'Register Brand / Media Asset' : `Edit Media Asset: ${formData.title || ''}`,
+      livePath: formData.url || '/',
+    },
   };
 
   const currentMeta = entityLabels[entityType] || entityLabels.blog;
@@ -760,6 +803,8 @@ function AdminStudioEditorInner() {
             <option value="faq">+ New Website FAQ</option>
             <option value="lead">+ New CRM Lead</option>
             <option value="pricing">+ New Pricing Tier</option>
+            <option value="milestone">+ New Company Milestone</option>
+            <option value="media">+ New Brand Media Asset</option>
             <option value="page_seo">+ Page / Service SEO Route</option>
           </select>
 
@@ -1271,6 +1316,135 @@ function AdminStudioEditorInner() {
                   </div>
                 )}
 
+                {/* CLIENT BRAND / LEADER / MILESTONE / MEDIA FIELDS */}
+                {entityType === 'client_brand' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Client Brand Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name || ''}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Industry Sector</label>
+                      <input
+                        type="text"
+                        value={formData.sector || ''}
+                        onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Verification Tag / Badge</label>
+                      <input
+                        type="text"
+                        value={formData.tag || ''}
+                        onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-purple-700"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {entityType === 'leader' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Leader Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name || ''}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Designation / Role *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.role || ''}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-purple-700"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {entityType === 'milestone' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Milestone Year *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. 2026"
+                        value={formData.year || ''}
+                        onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold text-purple-700"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Milestone Headline *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Crossed 500+ Global Projects & AI Growth Suite"
+                        value={formData.title || ''}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {entityType === 'media' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Asset Title *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.title || ''}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Asset Category</label>
+                      <input
+                        type="text"
+                        value={formData.category || ''}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Image / Asset URL Path *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.url || ''}
+                        onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-purple-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Dimensions / Format</label>
+                      <input
+                        type="text"
+                        value={formData.dimensions || ''}
+                        onChange={(e) => setFormData({ ...formData, dimensions: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* PRICING PACKAGE FIELDS */}
                 {entityType === 'pricing' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1731,17 +1905,33 @@ function AdminStudioEditorInner() {
                   </div>
                 )}
 
-                {(entityType === 'client_brand' || entityType === 'leader' || entityType === 'pricing') && (
+                {(entityType === 'client_brand' ||
+                  entityType === 'leader' ||
+                  entityType === 'pricing' ||
+                  entityType === 'milestone' ||
+                  entityType === 'media') && (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Summary / Description
+                      {entityType === 'media'
+                        ? 'SEO Image Alt Text (Accessibility & Google Image Search)'
+                        : entityType === 'milestone'
+                        ? 'Milestone Detailed Description'
+                        : 'Summary / Description'}
                     </label>
                     <textarea
                       rows={4}
-                      value={formData.description || formData.exp || formData.sector || ''}
+                      value={
+                        entityType === 'media'
+                          ? formData.altText || ''
+                          : entityType === 'milestone'
+                          ? formData.desc || ''
+                          : formData.description || formData.exp || formData.sector || ''
+                      }
                       onChange={(e) => {
                         if (entityType === 'pricing') setFormData({ ...formData, description: e.target.value });
                         else if (entityType === 'leader') setFormData({ ...formData, exp: e.target.value });
+                        else if (entityType === 'milestone') setFormData({ ...formData, desc: e.target.value });
+                        else if (entityType === 'media') setFormData({ ...formData, altText: e.target.value });
                         else setFormData({ ...formData, sector: e.target.value });
                       }}
                       className="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs sm:text-sm"

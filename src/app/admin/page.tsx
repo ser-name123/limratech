@@ -1055,12 +1055,18 @@ export default function AdminDashboardPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
                   {[
-                    { id: 'header', title: 'Header & Mega Menu', sub: 'Nav, Phone, CTA, TopBar', icon: PanelTop },
-                    { id: 'footer', title: 'Footer & Socials', sub: 'Bio, Links, Newsletter, HQ', icon: PanelBottom },
+                    { id: 'header', title: 'Header & Mega Menu', sub: 'Nav, Phone, CTA, Scripts', icon: PanelTop },
+                    { id: 'footer', title: 'Footer & Socials', sub: 'Bio, Links, Scripts, HQ', icon: PanelBottom },
                     { id: 'hero', title: 'Hero & Counters', sub: 'Headline, CTAs, 500+ Stats', icon: Sparkles },
+                    { id: 'leads', title: 'CRM Leads & Kanban', sub: `${leads.length} Leads & Subscribers`, icon: Users },
                     { id: 'services', title: 'Services & Sub-Pills', sub: '6 Services & Sub-Services', icon: Code2 },
                     { id: 'mega_pages', title: 'Industries & Tech', sub: '16 Dedicated 11-Sec Pages', icon: Layers },
-                    { id: 'profile', title: 'Admin Profile', sub: 'Profile, Password, Roles', icon: UserCheck },
+                    { id: 'portfolio', title: 'Portfolio Case Studies', sub: `${caseStudies.length} Case Studies`, icon: Briefcase },
+                    { id: 'blogs', title: 'Blogs & Editorial', sub: `${blogs.length} Articles & Guides`, icon: FileText },
+                    { id: 'testimonials_faqs', title: 'Reviews & FAQs', sub: `${testimonials.length} Reviews • ${faqs.length} FAQs`, icon: Star },
+                    { id: 'clients_team', title: 'Clients, Team & Pricing', sub: 'Brands, Leaders, Milestones', icon: TrendingUp },
+                    { id: 'seo', title: 'SEO, Schema & Scripts', sub: `${pageSeoRegistry.length} Routes • Script Vault`, icon: Globe },
+                    { id: 'profile', title: 'Admin Profile & RBAC', sub: 'Profile, Password, Roles', icon: UserCheck },
                   ].map((card) => {
                     const Icon = card.icon;
                     return (
@@ -2378,6 +2384,17 @@ export default function AdminDashboardPage() {
                                 <Eye className="w-3.5 h-3.5" />
                               </button>
                               <a
+                                href={`https://wa.me/${(lead.phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                                  `Hello ${lead.full_name}, this is LIMRA Digitech regarding your inquiry for ${lead.service_needed}.`
+                                )}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
+                                title="Reply on WhatsApp"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                              </a>
+                              <a
                                 href={`tel:${lead.phone}`}
                                 className="inline-flex p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700"
                                 title="Call Client"
@@ -2468,7 +2485,28 @@ export default function AdminDashboardPage() {
                     <p className="text-xs text-slate-500">Emails captured via Footer newsletter form or manual entry.</p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const headers = ['ID', 'Email', 'Subscribed Date', 'Status'];
+                        const rows = subscribers.map((s) => [s.id, s.email, s.created_at, s.is_active ? 'Active' : 'Inactive']);
+                        const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `limra-newsletter-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showToast(`Exported ${subscribers.length} subscribers to CSV`);
+                      }}
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 hover:border-purple-300 text-xs font-bold text-slate-700 flex items-center gap-1.5"
+                    >
+                      <Download className="w-3.5 h-3.5 text-purple-600" /> Export CSV
+                    </button>
                     <input
                       type="email"
                       placeholder="Add subscriber email..."
@@ -3566,6 +3604,96 @@ export default function AdminDashboardPage() {
                   ))}
                 </div>
               </div>
+
+              {/* 4. Company Timeline Milestones (/about History) */}
+              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                      COMPANY JOURNEY &amp; TIMELINE (/ABOUT)
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Manage Company Growth Milestones ({milestones.length} Milestones)
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Live synced with the Company History Timeline on the /about page.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2.5 self-start">
+                    <Link
+                      href="/admin/editor?type=milestone&mode=create&tab=clients_team"
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Milestone in Studio
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => postAdminAction('save_milestones', milestones, 'Company milestones saved live!')}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Save Milestones
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {milestones.map((ms, idx) => (
+                    <div key={ms.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <input
+                          type="text"
+                          value={ms.year}
+                          onChange={(e) => {
+                            const next = [...milestones];
+                            next[idx] = { ...ms, year: e.target.value };
+                            setMilestones(next);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-purple-100 text-purple-800 border border-purple-200 text-xs font-mono font-black w-24"
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <Link
+                            href={`/admin/editor?type=milestone&id=${ms.id}&tab=clients_team`}
+                            className="text-purple-700 hover:bg-purple-50 px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3" /> Studio
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = milestones.filter((m) => m.id !== ms.id);
+                              setMilestones(next);
+                              postAdminAction('save_milestones', next, 'Milestone removed');
+                            }}
+                            className="text-rose-600 hover:bg-rose-50 p-1 rounded"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        value={ms.title}
+                        onChange={(e) => {
+                          const next = [...milestones];
+                          next[idx] = { ...ms, title: e.target.value };
+                          setMilestones(next);
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-900"
+                      />
+                      <textarea
+                        rows={2}
+                        value={ms.desc}
+                        onChange={(e) => {
+                          const next = [...milestones];
+                          next[idx] = { ...ms, desc: e.target.value };
+                          setMilestones(next);
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-600"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -3698,13 +3826,21 @@ export default function AdminDashboardPage() {
                     Manage official brand logos, generated square favicons, and visual assets used across the site.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddMediaOpen(true)}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
-                >
-                  <Plus className="w-4 h-4" /> Register New Media Asset
-                </button>
+                <div className="flex flex-wrap items-center gap-2.5 self-start">
+                  <Link
+                    href="/admin/editor?type=media&mode=create&tab=media"
+                    className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" /> Open Media Studio
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddMediaOpen(true)}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" /> Quick Register Asset
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -3747,6 +3883,12 @@ export default function AdminDashboardPage() {
                         Copy Asset Path
                       </button>
                       <div className="flex items-center gap-3">
+                        <Link
+                          href={`/admin/editor?type=media&id=${asset.id}&tab=media`}
+                          className="text-[11px] font-bold text-purple-700 hover:underline flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3 h-3" /> Edit SEO Alt
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {

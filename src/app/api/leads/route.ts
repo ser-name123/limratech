@@ -1,5 +1,21 @@
 import { NextResponse } from 'next/server';
-import { saveLead } from '@/lib/supabase';
+import fs from 'fs/promises';
+import path from 'path';
+import { saveLead, inMemoryDb } from '@/lib/supabase';
+
+const CMS_FILE_PATH = path.join(process.cwd(), 'src', 'data', 'cmsState.json');
+
+async function persistCrmToDisk() {
+  try {
+    const raw = await fs.readFile(CMS_FILE_PATH, 'utf-8');
+    const parsed = JSON.parse(raw);
+    parsed.leads = inMemoryDb.leads;
+    parsed.newsletter = inMemoryDb.newsletter;
+    await fs.writeFile(CMS_FILE_PATH, JSON.stringify(parsed, null, 2), 'utf-8');
+  } catch {
+    // Non-fatal in serverless/read-only environments
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -33,6 +49,8 @@ export async function POST(request: Request) {
       message: message || '',
       source_page: source_page || 'website',
     });
+
+    await persistCrmToDisk();
 
     return NextResponse.json({
       success: true,
