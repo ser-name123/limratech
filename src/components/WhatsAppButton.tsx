@@ -1,10 +1,15 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { MessageSquareText } from 'lucide-react';
 import { companyInfo } from '@/data/mockData';
 
 export default function WhatsAppButton() {
+  const pathname = usePathname();
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
   const whatsappUrl = `https://wa.me/${companyInfo.phoneClean.replace('+', '')}?text=${encodeURIComponent(
     'Hello LIMRA Digitech! I would like to inquire about your SEO & Web Development solutions.'
   )}`;

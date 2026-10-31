@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -21,9 +22,14 @@ import {
 import { companyInfo } from '@/data/mockData';
 
 export default function Footer() {
+  const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [feedback, setFeedback] = useState('');
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -415,6 +421,7 @@ export default function Footer() {
             <Link href="/terms-and-conditions" className="hover:text-purple-700 transition-colors">Terms of Use</Link>
             <Link href="/sitemap-page" className="hover:text-purple-700 transition-colors">Sitemap</Link>
             <a href="/sitemap.xml" className="hover:text-purple-700 transition-colors font-mono">XML Sitemap</a>
+            <Link href="/admin" className="text-purple-700 font-semibold hover:text-purple-900 transition-colors">Admin Console</Link>
           </div>
 
           <div className="text-[11px] font-mono text-slate-500 flex items-center gap-1.5">

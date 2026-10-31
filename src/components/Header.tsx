@@ -76,6 +76,10 @@ export default function Header() {
     setActiveMegaMenu(null);
   }, [pathname]);
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   const serviceItems = [
     {
       title: 'Website Development',
