@@ -16,6 +16,7 @@ import {
   Zap
 } from 'lucide-react';
 import { blogPostsData } from '@/data/mockData';
+import { getServerCmsSnapshot } from '@/lib/cmsReader';
 import ContactCta from '@/components/ContactCta';
 import Testimonials from '@/components/Testimonials';
 
@@ -25,7 +26,9 @@ interface BlogDetailProps {
 
 export async function generateMetadata({ params }: BlogDetailProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = blogPostsData.find((p) => p.slug === slug);
+  const cms = await getServerCmsSnapshot();
+  const list = cms.blogs || blogPostsData;
+  const post = list.find((p: any) => p.slug === slug);
 
   if (!post) {
     return {
@@ -46,13 +49,15 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
 
 export default async function BlogDetailPage({ params }: BlogDetailProps) {
   const { slug } = await params;
-  const post = blogPostsData.find((p) => p.slug === slug);
+  const cms = await getServerCmsSnapshot();
+  const list = cms.blogs || blogPostsData;
+  const post = list.find((p: any) => p.slug === slug);
 
   if (!post) {
     notFound();
   }
 
-  const relatedPosts = blogPostsData.filter((p) => p.slug !== slug).slice(0, 3);
+  const relatedPosts = list.filter((p: any) => p.slug !== slug).slice(0, 3);
 
   return (
     <div className="bg-[#f8fafc] text-slate-700 min-h-screen">

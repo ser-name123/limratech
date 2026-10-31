@@ -267,6 +267,13 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchAdminData();
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab') as AdminTab | null;
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    }
   }, []);
 
   const postAdminAction = async (action: string, payload: any, toastMsg: string) => {
@@ -882,14 +889,22 @@ export default function AdminDashboardPage() {
               <span>Profile</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setIsAddLeadOpen(true)}
+            <Link
+              href={`/admin/editor?type=blog&mode=create&tab=${activeTab}`}
+              className="bg-slate-900 hover:bg-purple-800 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+              title="Open Dedicated Full-Page Create & Edit Studio"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-purple-300" />
+              <span className="hidden sm:inline">Content Studio</span>
+            </Link>
+
+            <Link
+              href={`/admin/editor?type=lead&mode=create&tab=leads`}
               className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm hover:opacity-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Add Lead</span>
-            </button>
+            </Link>
           </div>
         </header>
 
@@ -900,6 +915,41 @@ export default function AdminDashboardPage() {
              ========================================== */}
           {activeTab === 'overview' && (
             <div className="space-y-8">
+              {/* Dedicated Full-Page Content & Architecture Studio Launcher Banner */}
+              <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-950 rounded-3xl p-6 sm:p-7 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-5 shadow-md">
+                <div className="space-y-1.5">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/30 text-[10px] font-mono uppercase tracking-wider text-purple-200">
+                    <span>DEDICATED FULL-PAGE STUDIO EDITOR // 12 ENTITY TYPES</span>
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-bold">
+                    Create or Edit Any Website Item in the Full-Page Studio Editor
+                  </h2>
+                  <p className="text-xs text-purple-200/85 max-w-2xl">
+                    Rich formatting toolbar (H2, H3, Bold, Lists, Callouts, Code, KPI Tables), split-screen live preview, Media Asset picker, and Google SERP simulator for Blogs, Case Studies, Services, Industries, Tech Pages, Careers, Leads &amp; Reviews.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <Link
+                    href="/admin/editor?type=blog&mode=create&tab=overview"
+                    className="px-4 py-2.5 rounded-xl bg-white text-purple-900 hover:bg-purple-50 text-xs font-bold flex items-center gap-1.5 shadow-xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> New Blog Article
+                  </Link>
+                  <Link
+                    href="/admin/editor?type=case_study&mode=create&tab=overview"
+                    className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> New Case Study
+                  </Link>
+                  <Link
+                    href="/admin/editor?type=service&mode=create&tab=overview"
+                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" /> Open Studio Workspace
+                  </Link>
+                </div>
+              </div>
+
               {/* 4 KPI Stat Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
                 <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs space-y-3">
@@ -2015,13 +2065,12 @@ export default function AdminDashboardPage() {
                   >
                     <Download className="w-3.5 h-3.5 text-purple-600" /> Export CSV
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsAddLeadOpen(true)}
+                  <Link
+                    href="/admin/editor?type=lead&mode=create&tab=leads"
                     className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Add Manual Lead
-                  </button>
+                    <Plus className="w-3.5 h-3.5" /> Add Lead in Studio
+                  </Link>
                 </div>
               </div>
 
@@ -2074,6 +2123,13 @@ export default function AdminDashboardPage() {
                               </select>
                             </td>
                             <td className="py-4 px-5 text-right whitespace-nowrap space-x-1.5">
+                              <Link
+                                href={`/admin/editor?type=lead&id=${lead.id}&tab=leads`}
+                                className="inline-flex p-2 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700"
+                                title="Edit Lead in Full Studio"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </Link>
                               <button
                                 type="button"
                                 onClick={() => setSelectedLead(lead)}
@@ -2232,16 +2288,24 @@ export default function AdminDashboardPage() {
                     Manage Core Services &amp; Sub-Service Offerings
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Edit service titles, descriptions, or add new sub-services (WordPress, Shopify, SEO, Meta Ads, etc.).
+                    Edit service titles, descriptions, or open any service in the Dedicated Full-Page Studio Editor.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => postAdminAction('save_services', servicesList, 'Services catalog saved!')}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
-                >
-                  <Save className="w-4 h-4" /> Save Services Catalog
-                </button>
+                <div className="flex flex-wrap items-center gap-2.5 self-start">
+                  <Link
+                    href="/admin/editor?type=service&mode=create&tab=services"
+                    className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" /> Create Service in Studio
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => postAdminAction('save_services', servicesList, 'Services catalog saved!')}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                  >
+                    <Save className="w-4 h-4" /> Save Services Catalog
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2253,13 +2317,21 @@ export default function AdminDashboardPage() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-mono font-bold text-purple-700">/{svc.slug}</span>
-                        <Link
-                          href={`/${svc.slug}`}
-                          target="_blank"
-                          className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
-                        >
-                          Live 12-Sec Page <ExternalLink className="w-3 h-3" />
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          <Link
+                            href={`/admin/editor?type=service&id=${svc.slug}&tab=services`}
+                            className="text-xs font-bold text-slate-800 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-lg flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3 text-purple-700" /> Full Studio Editor
+                          </Link>
+                          <Link
+                            href={`/${svc.slug}`}
+                            target="_blank"
+                            className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
+                          >
+                            Live Page <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
                       </div>
 
                       <input
@@ -2368,21 +2440,29 @@ export default function AdminDashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      INDUSTRIES MEGA-MENU // 8 DEDICATED PAGES
+                      INDUSTRIES MEGA-MENU // DEDICATED PAGES
                     </span>
                     <h2 className="text-lg font-bold text-slate-900">
                       Manage Industry Vertical Pages (/industries/[slug])
                     </h2>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      postAdminAction('save_industries', industriesList, 'Industry pages updated!')
-                    }
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
-                  >
-                    <Save className="w-3.5 h-3.5" /> Save Industries
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2.5 self-start">
+                    <Link
+                      href="/admin/editor?type=industry&mode=create&tab=mega_pages"
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> New Industry Page
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        postAdminAction('save_industries', industriesList, 'Industry pages updated!')
+                      }
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Save Industries
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2391,13 +2471,12 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-mono text-purple-700">/industries/{ind.slug}</span>
                         <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setEditingMegaPage({ type: 'industry', idx, item: ind })}
-                            className="text-xs font-bold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                          <Link
+                            href={`/admin/editor?type=industry&id=${ind.slug}&tab=mega_pages`}
+                            className="text-xs font-bold text-purple-700 bg-purple-100/80 hover:bg-purple-100 px-2.5 py-1 rounded-lg flex items-center gap-1"
                           >
-                            <Edit3 className="w-3 h-3" /> Edit Blueprint
-                          </button>
+                            <Edit3 className="w-3 h-3" /> Studio Editor
+                          </Link>
                           <Link
                             href={`/industries/${ind.slug}`}
                             target="_blank"
@@ -2449,21 +2528,29 @@ export default function AdminDashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      TECHNOLOGIES MEGA-MENU // 8 DEDICATED PAGES
+                      TECHNOLOGIES MEGA-MENU // DEDICATED PAGES
                     </span>
                     <h2 className="text-lg font-bold text-slate-900">
                       Manage Technology Stack Pages (/technologies/[slug])
                     </h2>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      postAdminAction('save_technologies', technologiesList, 'Technology pages updated!')
-                    }
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
-                  >
-                    <Save className="w-3.5 h-3.5" /> Save Technologies
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2.5 self-start">
+                    <Link
+                      href="/admin/editor?type=technology&mode=create&tab=mega_pages"
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> New Tech Page
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        postAdminAction('save_technologies', technologiesList, 'Technology pages updated!')
+                      }
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Save Technologies
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2472,13 +2559,12 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-mono text-purple-700">/technologies/{tech.slug}</span>
                         <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setEditingMegaPage({ type: 'technology', idx, item: tech })}
-                            className="text-xs font-bold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                          <Link
+                            href={`/admin/editor?type=technology&id=${tech.slug}&tab=mega_pages`}
+                            className="text-xs font-bold text-purple-700 bg-purple-100/80 hover:bg-purple-100 px-2.5 py-1 rounded-lg flex items-center gap-1"
                           >
-                            <Edit3 className="w-3 h-3" /> Edit Blueprint
-                          </button>
+                            <Edit3 className="w-3 h-3" /> Studio Editor
+                          </Link>
                           <Link
                             href={`/technologies/${tech.slug}`}
                             target="_blank"
@@ -2535,22 +2621,21 @@ export default function AdminDashboardPage() {
               <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                    PORTFOLIO CMS
+                    PORTFOLIO CMS // FULL-PAGE STUDIO EDITOR
                   </span>
                   <h2 className="text-lg font-bold text-slate-900">
                     Manage Case Studies ({caseStudies.length} Active Projects)
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Add, edit, or delete portfolio case studies (/portfolio/[slug]).
+                    Create or edit portfolio case studies in the Dedicated Full-Page Studio Editor (/portfolio/[slug]).
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddCaseStudyOpen(true)}
+                <Link
+                  href="/admin/editor?type=case_study&mode=create&tab=portfolio"
                   className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
                 >
-                  <Plus className="w-4 h-4" /> Publish New Case Study
-                </button>
+                  <Plus className="w-4 h-4" /> Publish Case Study in Studio
+                </Link>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2592,13 +2677,12 @@ export default function AdminDashboardPage() {
                         <ExternalLink className="w-3 h-3" />
                       </Link>
                       <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setEditingCaseStudy(cs)}
-                          className="text-xs font-semibold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                        <Link
+                          href={`/admin/editor?type=case_study&id=${cs.id}&tab=portfolio`}
+                          className="text-xs font-semibold text-purple-700 hover:text-purple-900 bg-purple-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1"
                         >
-                          <Edit3 className="w-3.5 h-3.5" /> Edit
-                        </button>
+                          <Edit3 className="w-3.5 h-3.5" /> Edit in Studio
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {
@@ -2626,22 +2710,21 @@ export default function AdminDashboardPage() {
               <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                    EDITORIAL &amp; SEO INSIGHTS CMS
+                    EDITORIAL &amp; SEO INSIGHTS CMS // FULL-PAGE STUDIO EDITOR
                   </span>
                   <h2 className="text-lg font-bold text-slate-900">
                     Manage Blog Articles ({blogs.length} Published)
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Create, edit, or delete blog articles (/blogs/[slug]).
+                    Write or edit blog articles with our Rich Formatting Toolbar &amp; Live Split Preview (/blogs/[slug]).
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddBlogOpen(true)}
+                <Link
+                  href="/admin/editor?type=blog&mode=create&tab=blogs"
                   className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
                 >
-                  <Plus className="w-4 h-4" /> Write New Article
-                </button>
+                  <Plus className="w-4 h-4" /> Write New Article in Studio
+                </Link>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -2682,13 +2765,12 @@ export default function AdminDashboardPage() {
                         <ExternalLink className="w-3 h-3" />
                       </Link>
                       <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setEditingBlog(post)}
-                          className="text-xs font-semibold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                        <Link
+                          href={`/admin/editor?type=blog&id=${post.id}&tab=blogs`}
+                          className="text-xs font-semibold text-purple-700 hover:text-purple-900 bg-purple-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1"
                         >
-                          <Edit3 className="w-3.5 h-3.5" /> Edit
-                        </button>
+                          <Edit3 className="w-3.5 h-3.5" /> Edit in Studio
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {
@@ -2718,19 +2800,18 @@ export default function AdminDashboardPage() {
                 <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      SOCIAL PROOF CMS
+                      SOCIAL PROOF CMS // FULL-PAGE STUDIO EDITOR
                     </span>
                     <h2 className="text-lg font-bold text-slate-900">
                       Verified Client Testimonials ({testimonials.length})
                     </h2>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsAddTestimonialOpen(true)}
+                  <Link
+                    href="/admin/editor?type=testimonial&mode=create&tab=testimonials_faqs"
                     className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
                   >
-                    <Plus className="w-4 h-4" /> Add Client Review
-                  </button>
+                    <Plus className="w-4 h-4" /> Add Client Review in Studio
+                  </Link>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -2762,22 +2843,14 @@ export default function AdminDashboardPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setEditingTestimonial({
-                                ...t,
-                                name: t.client_name || t.name || '',
-                                content: t.review || t.content || '',
-                                role: t.role || t.company_or_role || 'Founder',
-                                company: t.company || 'Enterprise Partner',
-                              })
-                            }
-                            className="p-1.5 text-slate-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg"
-                            title="Edit Review"
+                          <Link
+                            href={`/admin/editor?type=testimonial&id=${t.id}&tab=testimonials_faqs`}
+                            className="p-1.5 text-purple-700 hover:bg-purple-50 rounded-lg flex items-center gap-1 text-[11px] font-bold"
+                            title="Edit Review in Studio"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
-                          </button>
+                            <span>Studio</span>
+                          </Link>
                           <button
                             type="button"
                             onClick={() => {
@@ -2802,19 +2875,18 @@ export default function AdminDashboardPage() {
                 <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      KNOWLEDGE BASE CMS
+                      KNOWLEDGE BASE CMS // FULL-PAGE STUDIO EDITOR
                     </span>
                     <h2 className="text-lg font-bold text-slate-900">
                       Frequently Asked Questions ({faqs.length})
                     </h2>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsAddFaqOpen(true)}
+                  <Link
+                    href="/admin/editor?type=faq&mode=create&tab=testimonials_faqs"
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
                   >
-                    <Plus className="w-4 h-4" /> Add New FAQ
-                  </button>
+                    <Plus className="w-4 h-4" /> Add New FAQ in Studio
+                  </Link>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2823,14 +2895,14 @@ export default function AdminDashboardPage() {
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-xs sm:text-sm font-bold text-slate-900">{f.question}</h3>
                         <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setEditingFaq(f)}
-                            className="text-slate-600 hover:text-purple-700 hover:bg-purple-50 p-1 rounded"
-                            title="Edit FAQ"
+                          <Link
+                            href={`/admin/editor?type=faq&id=${f.id}&tab=testimonials_faqs`}
+                            className="text-purple-700 hover:bg-purple-50 px-2 py-1 rounded flex items-center gap-1 text-[11px] font-bold"
+                            title="Edit FAQ in Studio"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
-                          </button>
+                            <span>Studio</span>
+                          </Link>
                           <button
                             type="button"
                             onClick={() => {
@@ -2872,15 +2944,23 @@ export default function AdminDashboardPage() {
                       Live synced with the Homepage Trust Indicators Bar and Clients showcase.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      postAdminAction('save_client_brands', clientBrands, 'Verified Client Brands saved live!')
-                    }
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
-                  >
-                    <Save className="w-3.5 h-3.5" /> Save Client Brands
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2.5 self-start">
+                    <Link
+                      href="/admin/editor?type=client_brand&mode=create&tab=clients_team"
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add in Studio
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        postAdminAction('save_client_brands', clientBrands, 'Verified Client Brands saved live!')
+                      }
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Save Client Brands
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -2890,17 +2970,25 @@ export default function AdminDashboardPage() {
                         <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
                           ✓ {cb.tag}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next = clientBrands.filter((b) => b.id !== cb.id);
-                            setClientBrands(next);
-                            postAdminAction('save_client_brands', next, 'Client brand removed');
-                          }}
-                          className="text-rose-600 hover:bg-rose-50 p-1 rounded"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <Link
+                            href={`/admin/editor?type=client_brand&id=${cb.id}&tab=clients_team`}
+                            className="text-purple-700 hover:bg-purple-50 px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3" /> Studio
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = clientBrands.filter((b) => b.id !== cb.id);
+                              setClientBrands(next);
+                              postAdminAction('save_client_brands', next, 'Client brand removed');
+                            }}
+                            className="text-rose-600 hover:bg-rose-50 p-1 rounded"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                       <input
                         type="text"
@@ -2991,15 +3079,23 @@ export default function AdminDashboardPage() {
                     </h2>
                     <p className="text-xs text-slate-500">Live synced with the /about page Leadership section.</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      postAdminAction('save_leadership_team', leadershipTeam, 'Leadership team saved live!')
-                    }
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
-                  >
-                    <Save className="w-3.5 h-3.5" /> Save Leadership Team
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2.5 self-start">
+                    <Link
+                      href="/admin/editor?type=leader&mode=create&tab=clients_team"
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Leader in Studio
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        postAdminAction('save_leadership_team', leadershipTeam, 'Leadership team saved live!')
+                      }
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Save Leadership Team
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -3007,17 +3103,25 @@ export default function AdminDashboardPage() {
                     <div key={member.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-mono text-purple-700 font-bold">Leader #0{idx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next = leadershipTeam.filter((m) => m.id !== member.id);
-                            setLeadershipTeam(next);
-                            postAdminAction('save_leadership_team', next, 'Team member removed');
-                          }}
-                          className="text-rose-600 hover:bg-rose-50 p-1 rounded"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <Link
+                            href={`/admin/editor?type=leader&id=${member.id}&tab=clients_team`}
+                            className="text-purple-700 hover:bg-purple-50 px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3" /> Studio
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = leadershipTeam.filter((m) => m.id !== member.id);
+                              setLeadershipTeam(next);
+                              postAdminAction('save_leadership_team', next, 'Team member removed');
+                            }}
+                            className="text-rose-600 hover:bg-rose-50 p-1 rounded"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input
@@ -3112,15 +3216,23 @@ export default function AdminDashboardPage() {
                       Manage Service Pricing &amp; Retainer Packages ({pricingPackages.length} Tiers)
                     </h2>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      postAdminAction('save_pricing_packages', pricingPackages, 'Pricing packages updated!')
-                    }
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 self-start"
-                  >
-                    <Save className="w-3.5 h-3.5" /> Save Pricing Tiers
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2.5 self-start">
+                    <Link
+                      href="/admin/editor?type=pricing&mode=create&tab=clients_team"
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Tier in Studio
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        postAdminAction('save_pricing_packages', pricingPackages, 'Pricing packages updated!')
+                      }
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Save Pricing Tiers
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -3144,19 +3256,27 @@ export default function AdminDashboardPage() {
                           }}
                           className="px-2.5 py-1 rounded-full bg-white border border-purple-200 text-[10px] font-mono font-bold text-purple-700 w-36"
                         />
-                        <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={pkg.highlighted}
-                            onChange={(e) => {
-                              const next = [...pricingPackages];
-                              next[idx] = { ...pkg, highlighted: e.target.checked };
-                              setPricingPackages(next);
-                            }}
-                            className="accent-purple-600"
-                          />
-                          Featured
-                        </label>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/admin/editor?type=pricing&id=${pkg.id}&tab=clients_team`}
+                            className="text-purple-700 hover:underline text-[11px] font-bold flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3" /> Studio
+                          </Link>
+                          <label className="flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={pkg.highlighted}
+                              onChange={(e) => {
+                                const next = [...pricingPackages];
+                                next[idx] = { ...pkg, highlighted: e.target.checked };
+                                setPricingPackages(next);
+                              }}
+                              className="accent-purple-600"
+                            />
+                            Featured
+                          </label>
+                        </div>
                       </div>
 
                       <input
@@ -3218,13 +3338,13 @@ export default function AdminDashboardPage() {
               <div className="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                    TALENT &amp; HIRING PORTAL CMS
+                    TALENT &amp; HIRING PORTAL CMS // FULL-PAGE STUDIO EDITOR
                   </span>
                   <h2 className="text-lg font-bold text-slate-900">
                     Manage Careers &amp; Open Roles ({careers.length} Positions)
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Active positions immediately appear on the live /careers page.
+                    Create or edit job openings in the Dedicated Full-Page Studio Editor. Active positions appear live on /careers.
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5 self-start">
@@ -3236,13 +3356,12 @@ export default function AdminDashboardPage() {
                     <span>View /careers</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => setIsAddCareerOpen(true)}
+                  <Link
+                    href="/admin/editor?type=career&mode=create&tab=careers"
                     className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
                   >
-                    <Plus className="w-4 h-4" /> Post New Job Opening
-                  </button>
+                    <Plus className="w-4 h-4" /> Post Job Opening in Studio
+                  </Link>
                 </div>
               </div>
 
@@ -3298,13 +3417,12 @@ export default function AdminDashboardPage() {
                     <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-mono text-slate-400">ID: {job.id}</span>
                       <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setEditingCareer(job)}
-                          className="text-xs font-semibold text-slate-700 hover:text-purple-700 flex items-center gap-1"
+                        <Link
+                          href={`/admin/editor?type=career&id=${job.id}&tab=careers`}
+                          className="text-xs font-semibold text-purple-700 hover:text-purple-900 bg-purple-100/80 px-2.5 py-1 rounded-lg flex items-center gap-1"
                         >
-                          <Edit3 className="w-3.5 h-3.5" /> Edit Role
-                        </button>
+                          <Edit3 className="w-3.5 h-3.5" /> Edit Role in Studio
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {

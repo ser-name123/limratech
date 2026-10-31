@@ -18,6 +18,7 @@ import {
   Award 
 } from 'lucide-react';
 import { caseStudiesData } from '@/data/mockData';
+import { getServerCmsSnapshot } from '@/lib/cmsReader';
 import TechStackTicker from '@/components/TechStackTicker';
 import Testimonials from '@/components/Testimonials';
 import ContactCta from '@/components/ContactCta';
@@ -28,7 +29,9 @@ interface CaseStudyDetailProps {
 
 export async function generateMetadata({ params }: CaseStudyDetailProps): Promise<Metadata> {
   const { slug } = await params;
-  const study = caseStudiesData.find((c) => c.slug === slug);
+  const cms = await getServerCmsSnapshot();
+  const list = cms.caseStudies || caseStudiesData;
+  const study = list.find((c: any) => c.slug === slug);
 
   if (!study) {
     return {
@@ -49,13 +52,15 @@ export async function generateMetadata({ params }: CaseStudyDetailProps): Promis
 
 export default async function CaseStudyDetailPage({ params }: CaseStudyDetailProps) {
   const { slug } = await params;
-  const study = caseStudiesData.find((c) => c.slug === slug);
+  const cms = await getServerCmsSnapshot();
+  const list = cms.caseStudies || caseStudiesData;
+  const study = list.find((c: any) => c.slug === slug);
 
   if (!study) {
     notFound();
   }
 
-  const otherStudies = caseStudiesData.filter((c) => c.slug !== slug).slice(0, 3);
+  const otherStudies = list.filter((c: any) => c.slug !== slug).slice(0, 3);
 
   return (
     <div className="bg-[#f8fafc] text-slate-700 min-h-screen">
