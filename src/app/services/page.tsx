@@ -25,6 +25,7 @@ import TechStackTicker from '@/components/TechStackTicker';
 import ComparisonMatrix from '@/components/ComparisonMatrix';
 import Testimonials from '@/components/Testimonials';
 import CaseStudies from '@/components/CaseStudies';
+import SeoAuthoritySection from '@/components/SeoAuthoritySection';
 
 export default function ServicesPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -330,7 +331,20 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* 11. Contact Consultation CTA */}
+      {/* 11. Advanced SEO, JSON-LD Schema.org & Keyword Clusters */}
+      <SeoAuthoritySection
+        pageTitle="All Digital, Web, SEO, Mobile App & Software Services"
+        pageSlug="/services"
+        pageType="Hub"
+        parentLabel="Home"
+        parentHref="/"
+        description="Explore all 6 core service pillars and 36+ specialized digital solutions offered by LIMRA Digitech across India and global markets."
+        focusKeyword="Digital Marketing and Website Development Services India"
+        subOfferings={servicesData.map((s) => s.title)}
+        faqs={serviceFaqs}
+      />
+
+      {/* 12. Contact Consultation CTA */}
       <ContactCta />
 
     </div>

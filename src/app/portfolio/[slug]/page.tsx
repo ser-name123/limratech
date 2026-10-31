@@ -22,6 +22,7 @@ import { getServerCmsSnapshot } from '@/lib/cmsReader';
 import TechStackTicker from '@/components/TechStackTicker';
 import Testimonials from '@/components/Testimonials';
 import ContactCta from '@/components/ContactCta';
+import SeoAuthoritySection from '@/components/SeoAuthoritySection';
 
 interface CaseStudyDetailProps {
   params: Promise<{ slug: string }>;
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: CaseStudyDetailProps): Promis
   const { slug } = await params;
   const cms = await getServerCmsSnapshot();
   const list = cms.caseStudies || caseStudiesData;
-  const study = list.find((c: any) => c.slug === slug);
+  const study: any = list.find((c: any) => c.slug === slug);
 
   if (!study) {
     return {
@@ -39,12 +40,26 @@ export async function generateMetadata({ params }: CaseStudyDetailProps): Promis
     };
   }
 
+  const seoTitle = study.seo_title || `${study.title} (${study.client}) | Case Study – LIMRA Digitech`;
+  const seoDesc = study.seo_description || `${study.description} Verified Result: ${study.results}.`;
+  const canonicalUrl = study.canonical_url || `https://limradigitech.com/portfolio/${study.slug}`;
+
   return {
-    title: `${study.title} (${study.client}) | Case Study`,
-    description: `${study.description} Verified Result: ${study.results}.`,
+    title: seoTitle,
+    description: seoDesc,
+    keywords: [
+      study.focus_keyword || `${study.category} Case Study India`,
+      ...(study.secondary_keywords || []),
+      ...(study.technologies || []),
+      study.client,
+    ],
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
-      title: `${study.title} | LIMRA Digitech Case Study`,
-      description: study.description,
+      title: seoTitle,
+      description: seoDesc,
+      url: canonicalUrl,
       images: [study.image_url],
     },
   };
@@ -256,7 +271,20 @@ export default async function CaseStudyDetailPage({ params }: CaseStudyDetailPro
       {/* 9. Verified Client Testimonials */}
       <Testimonials />
 
-      {/* 10. Contact Lead Form */}
+      {/* 10. Advanced SEO, JSON-LD CaseStudy Schema & Keyword Clusters */}
+      <SeoAuthoritySection
+        pageTitle={`${study.title} (${study.client})`}
+        pageSlug={`/portfolio/${study.slug}`}
+        pageType="CaseStudy"
+        parentLabel="Portfolio & Case Studies"
+        parentHref="/portfolio"
+        description={study.description || (study as any).challenge || ''}
+        focusKeyword={(study as any).focus_keyword || `${study.category} Case Study India`}
+        keywords={(study as any).secondary_keywords || (study as any).technologies || []}
+        subOfferings={(study as any).technologies || []}
+      />
+
+      {/* 11. Contact Lead Form */}
       <ContactCta />
 
     </div>

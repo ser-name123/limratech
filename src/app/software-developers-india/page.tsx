@@ -2,14 +2,22 @@ import React from 'react';
 import type { Metadata } from 'next';
 import ServiceDetailView from '@/components/ServiceDetailView';
 import { servicesData } from '@/data/mockData';
+import { buildRouteMetadata } from '@/lib/seoEngine';
+import { getServerCmsSnapshot } from '@/lib/cmsReader';
 
-export const metadata: Metadata = {
-  title: 'Software Development Company in India | Custom Software Development Services',
-  description: 'Trusted Software Development Company in India. Custom SaaS applications, enterprise software architectures, microservices, and database systems.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildRouteMetadata('/software-developers-india', {
+    title: 'Software Development Company in India | Custom Software Development Services – LIMRA Digitech',
+    description:
+      'Trusted Software Development Company in India. Custom SaaS applications, enterprise ERP/CRM software architectures, microservices, and database systems.',
+  });
+}
 
-export default function SoftwareDevPage() {
-  const service = servicesData[5];
+export default async function SoftwareDevPage() {
+  const cms = await getServerCmsSnapshot();
+  const service =
+    (cms.services || []).find((s: any) => s.slug === 'software-developers-india') ||
+    servicesData[5];
 
   const benefits = [
     { title: 'Custom Cloud Architecture', desc: 'Bespoke microservices, serverless functions, and containerized Docker deployments engineered for zero downtime.' },

@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Hero from '@/components/Hero';
 import TechStackTicker from '@/components/TechStackTicker';
 import TrustIndicatorsBar from '@/components/TrustIndicatorsBar';
@@ -19,6 +20,12 @@ import HomeBlogsSection from '@/components/HomeBlogsSection';
 import FaqSection from '@/components/FaqSection';
 import ContactCta from '@/components/ContactCta';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
+import SeoAuthoritySection from '@/components/SeoAuthoritySection';
+import { buildRouteMetadata } from '@/lib/seoEngine';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildRouteMetadata('/');
+}
 
 export default function HomePage() {
   return (
@@ -109,7 +116,37 @@ export default function HomePage() {
         <FaqSection />
       </AnimateOnScroll>
 
-      {/* 18. High-Conversion Consultation Blueprint Lead Form */}
+      {/* 18. Enterprise SEO Keyword Graph, Schema.org @graph & Pan-India Coverage */}
+      <SeoAuthoritySection
+        pageTitle="Website Development, Technical SEO & Digital Marketing"
+        pageSlug="/"
+        pageType="Hub"
+        parentLabel="LIMRA Digitech"
+        parentHref="/"
+        description="LIMRA Digitech is India’s full-service Website Development, Technical SEO, Google & Meta Ads Lead Generation, Creative Design, Mobile App, and Custom Software Agency."
+        focusKeyword="Website Development & Digital Marketing Company India"
+        keywords={[
+          'Best Website Development Company in India',
+          'Digital Marketing & SEO Agency India',
+          'Lead Generation Company India',
+          'Creative Design & UI/UX Studio India',
+          'Mobile App Developer India (Flutter & iOS/Android)',
+          'Custom Software & Cloud ERP Developers India',
+          'Next.js WordPress Shopify Agency New Delhi',
+        ]}
+        subOfferings={[
+          'Next.js 16 & React Web Apps',
+          'WordPress & WooCommerce',
+          'Shopify & E-Commerce Stores',
+          'Technical SEO & Local GMB 3-Pack',
+          'Google Search & Shopping PPC',
+          'Meta Lead Generation Funnels',
+          'Flutter & Native Mobile Apps',
+          'Custom Cloud ERP & CRM Software',
+        ]}
+      />
+
+      {/* 19. High-Conversion Consultation Blueprint Lead Form */}
       <AnimateOnScroll direction="up" delayMs={50}>
         <ContactCta />
       </AnimateOnScroll>

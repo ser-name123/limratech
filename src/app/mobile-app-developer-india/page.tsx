@@ -2,14 +2,22 @@ import React from 'react';
 import type { Metadata } from 'next';
 import ServiceDetailView from '@/components/ServiceDetailView';
 import { servicesData } from '@/data/mockData';
+import { buildRouteMetadata } from '@/lib/seoEngine';
+import { getServerCmsSnapshot } from '@/lib/cmsReader';
 
-export const metadata: Metadata = {
-  title: 'Best App Development Company in India | Mobile App Development Company India',
-  description: 'Best App Development Company in India Delivering Custom Mobile Solutions. Native and cross-platform iOS & Android mobile apps with Flutter and React Native.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildRouteMetadata('/mobile-app-developer-india', {
+    title: 'Best App Development Company in India | Mobile App Development Company India – LIMRA Digitech',
+    description:
+      'Best App Development Company in India Delivering Custom Mobile Solutions. Native and cross-platform iOS & Android mobile apps with Flutter and React Native.',
+  });
+}
 
-export default function MobileAppPage() {
-  const service = servicesData[4];
+export default async function MobileAppPage() {
+  const cms = await getServerCmsSnapshot();
+  const service =
+    (cms.services || []).find((s: any) => s.slug === 'mobile-app-developer-india') ||
+    servicesData[4];
 
   const benefits = [
     { title: 'Cross-Platform Cost Efficiency', desc: 'Single codebase deployment across iOS and Android with React Native and Flutter without compromising native performance.' },

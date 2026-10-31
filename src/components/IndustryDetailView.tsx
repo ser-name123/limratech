@@ -26,6 +26,7 @@ import ComparisonMatrix from '@/components/ComparisonMatrix';
 import CaseStudies from '@/components/CaseStudies';
 import Testimonials from '@/components/Testimonials';
 import ContactCta from '@/components/ContactCta';
+import SeoAuthoritySection from '@/components/SeoAuthoritySection';
 
 const iconMap = {
   ShoppingBag,
@@ -358,7 +359,21 @@ export default function IndustryDetailView({ industry }: { industry: IndustryPag
         </div>
       </section>
 
-      {/* 11. Contact Lead Form CTA */}
+      {/* 11. Advanced On-Page SEO, JSON-LD Schema.org, Keyword Clusters & Geo-Targeting */}
+      <SeoAuthoritySection
+        pageTitle={industry.shortTitle || industry.title}
+        pageSlug={`/industries/${industry.slug}`}
+        pageType="Industry"
+        parentLabel="Industries We Serve"
+        parentHref="/industries"
+        description={industry.description}
+        focusKeyword={(industry as any).focus_keyword || `${industry.shortTitle} Digital Marketing & Software Solutions India`}
+        keywords={(industry as any).secondary_keywords || []}
+        subOfferings={((industry as any).solutions || (industry as any).tailoredSolutions || []).map((s: any) => s.title)}
+        faqs={industry.faqs || []}
+      />
+
+      {/* 12. Contact Lead Form CTA */}
       <ContactCta />
     </div>
   );

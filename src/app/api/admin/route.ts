@@ -175,6 +175,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, cms });
     }
 
+    if (action === 'save_page_seo_registry') {
+      cms.pageSeoRegistry = payload;
+      addAuditLog(`Updated Page-by-Page & Service SEO Registry (${payload.length} routes)`);
+      await writeCmsState(cms);
+      return NextResponse.json({ success: true, cms });
+    }
+
     if (action === 'save_services') {
       cms.services = payload;
       addAuditLog('Updated Core Services & Sub-Services Catalog');

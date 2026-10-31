@@ -55,6 +55,8 @@ import {
   LeadershipMemberItem,
   MilestoneItem,
   PricingPackageItem,
+  PageSeoEntry,
+  defaultPageSeoRegistry,
 } from '@/data/defaultCmsConfig';
 
 type AdminTab =
@@ -114,6 +116,10 @@ export default function AdminDashboardPage() {
   const [leadershipTeam, setLeadershipTeam] = useState<LeadershipMemberItem[]>(initialCmsSnapshot.leadershipTeam);
   const [milestones, setMilestones] = useState<MilestoneItem[]>(initialCmsSnapshot.milestones);
   const [pricingPackages, setPricingPackages] = useState<PricingPackageItem[]>(initialCmsSnapshot.pricingPackages);
+  const [pageSeoRegistry, setPageSeoRegistry] = useState<PageSeoEntry[]>(
+    initialCmsSnapshot.pageSeoRegistry || defaultPageSeoRegistry
+  );
+  const [seoCategoryFilter, setSeoCategoryFilter] = useState<string>('All');
   const [editingMegaPage, setEditingMegaPage] = useState<{
     type: 'industry' | 'technology';
     idx: number;
@@ -256,6 +262,9 @@ export default function AdminDashboardPage() {
           setLeadershipTeam(data.cms.leadershipTeam || initialCmsSnapshot.leadershipTeam);
           setMilestones(data.cms.milestones || initialCmsSnapshot.milestones);
           setPricingPackages(data.cms.pricingPackages || initialCmsSnapshot.pricingPackages);
+          setPageSeoRegistry(
+            data.cms.pageSeoRegistry || initialCmsSnapshot.pageSeoRegistry || defaultPageSeoRegistry
+          );
         }
       }
     } catch (err) {
@@ -3542,159 +3551,486 @@ export default function AdminDashboardPage() {
           )}
 
           {/* ==========================================
-              MODULE 11: SEO, SITEMAP, 301 REDIRECTS & GA4
+              MODULE 11: ENTERPRISE PAGE & SERVICE SEO, SCHEMA.ORG, GA4 & REDIRECTS
              ========================================== */}
           {activeTab === 'seo' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Global SEO & GA4 Config */}
-              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="space-y-8">
+              {/* 1. PAGE-BY-PAGE & SERVICE-BY-SERVICE SEO REGISTRY MATRIX */}
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5">
                   <div>
                     <span className="text-xs font-mono font-bold text-purple-700 uppercase">
-                      SEARCH &amp; ANALYTICS ENGINE
+                      PAGE-BY-PAGE &amp; SERVICE-BY-SERVICE SEO COMMAND CENTER
                     </span>
-                    <h2 className="text-lg font-bold text-slate-900">Global Meta, GA4 &amp; Search Console</h2>
+                    <h2 className="text-xl font-bold text-slate-900">
+                      Manage Dynamic Meta Titles, Focus Keywords, Schema.org &amp; OpenGraph ({pageSeoRegistry.length} Routes)
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Every route &amp; service page reads live from this SEO registry via Next.js generateMetadata() and injects @graph JSON-LD Schema.
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => postAdminAction('save_seo', seoCfg, 'SEO & Analytics configuration saved!')}
-                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
-                  >
-                    <Save className="w-3.5 h-3.5" /> Save SEO
-                  </button>
+
+                  <div className="flex flex-wrap items-center gap-2.5 self-start">
+                    <Link
+                      href="/admin/editor?type=page_seo&mode=create&tab=seo"
+                      className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-purple-800 text-white text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Route SEO in Studio
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        postAdminAction(
+                          'save_page_seo_registry',
+                          pageSeoRegistry,
+                          'All Page & Service SEO Settings Saved Live!'
+                        )
+                      }
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm"
+                    >
+                      <Save className="w-4 h-4" /> Save All Page SEO
+                    </button>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Default Meta Title</label>
-                  <input
-                    type="text"
-                    value={seoCfg.siteTitle}
-                    onChange={(e) => setSeoCfg({ ...seoCfg, siteTitle: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Global Meta Description</label>
-                  <textarea
-                    rows={3}
-                    value={seoCfg.metaDescription}
-                    onChange={(e) => setSeoCfg({ ...seoCfg, metaDescription: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">GA4 Measurement ID</label>
-                    <input
-                      type="text"
-                      value={seoCfg.ga4Id}
-                      onChange={(e) => setSeoCfg({ ...seoCfg, ga4Id: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono"
-                    />
+                {/* Category Filter Pills */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {['All', 'Service Page', 'Core Page', 'Hub Page'].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setSeoCategoryFilter(cat)}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                          seoCategoryFilter === cat
+                            ? 'bg-purple-600 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-purple-50 hover:text-purple-700'
+                        }`}
+                      >
+                        {cat} (
+                        {cat === 'All'
+                          ? pageSeoRegistry.length
+                          : pageSeoRegistry.filter((r) => r.category === cat).length}
+                        )
+                      </button>
+                    ))}
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">GSC Verification Token</label>
-                    <input
-                      type="text"
-                      value={seoCfg.gscVerification}
-                      onChange={(e) => setSeoCfg({ ...seoCfg, gscVerification: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono"
-                    />
+
+                  <div className="flex items-center gap-2 text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>JSON-LD @graph + Sitemap.xml + Speakable Active</span>
+                  </div>
+                </div>
+
+                {/* Route-by-Route SEO Cards Grid */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                  {pageSeoRegistry
+                    .filter((r) => seoCategoryFilter === 'All' || r.category === seoCategoryFilter)
+                    .map((entry) => {
+                      const realIdx = pageSeoRegistry.findIndex((p) => p.id === entry.id);
+                      return (
+                        <div
+                          key={entry.id}
+                          className="p-5 rounded-3xl bg-slate-50 border border-slate-200 hover:border-purple-300 space-y-3.5 transition-all"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                                {entry.category}
+                              </span>
+                              <span className="text-xs font-mono font-bold text-purple-700">{entry.route}</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                Schema: {entry.schemaType}
+                              </span>
+                              <Link
+                                href={`/admin/editor?type=page_seo&id=${entry.id}&tab=seo`}
+                                className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold flex items-center gap-1"
+                              >
+                                <Edit3 className="w-3 h-3" /> Full SEO Studio
+                              </Link>
+                              <Link
+                                href={entry.route}
+                                target="_blank"
+                                className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-purple-700"
+                                title="Open Live Page"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1">
+                                Page / Service Name
+                              </label>
+                              <input
+                                type="text"
+                                value={entry.pageName}
+                                onChange={(e) => {
+                                  const next = [...pageSeoRegistry];
+                                  next[realIdx] = { ...entry, pageName: e.target.value };
+                                  setPageSeoRegistry(next);
+                                }}
+                                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase text-slate-500 mb-1">
+                                Focus Keyword
+                              </label>
+                              <input
+                                type="text"
+                                value={entry.focusKeyword}
+                                onChange={(e) => {
+                                  const next = [...pageSeoRegistry];
+                                  next[realIdx] = { ...entry, focusKeyword: e.target.value };
+                                  setPageSeoRegistry(next);
+                                }}
+                                className="w-full px-3 py-1.5 rounded-xl border border-purple-200 bg-white text-xs font-bold text-purple-800"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[10px] font-mono uppercase text-slate-500">
+                                Meta Title (&lt;title&gt;)
+                              </label>
+                              <span className="text-[10px] font-mono text-slate-400">
+                                {entry.metaTitle.length} chars
+                              </span>
+                            </div>
+                            <input
+                              type="text"
+                              value={entry.metaTitle}
+                              onChange={(e) => {
+                                const next = [...pageSeoRegistry];
+                                next[realIdx] = { ...entry, metaTitle: e.target.value, ogTitle: e.target.value };
+                                setPageSeoRegistry(next);
+                              }}
+                              className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-blue-800"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[10px] font-mono uppercase text-slate-500">
+                                Meta Description
+                              </label>
+                              <span className="text-[10px] font-mono text-slate-400">
+                                {entry.metaDescription.length} chars
+                              </span>
+                            </div>
+                            <textarea
+                              rows={2}
+                              value={entry.metaDescription}
+                              onChange={(e) => {
+                                const next = [...pageSeoRegistry];
+                                next[realIdx] = {
+                                  ...entry,
+                                  metaDescription: e.target.value,
+                                  ogDescription: e.target.value,
+                                };
+                                setPageSeoRegistry(next);
+                              }}
+                              className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-600"
+                            />
+                          </div>
+
+                          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px]">
+                            <div className="flex flex-wrap gap-1">
+                              {(entry.secondaryKeywords || []).slice(0, 3).map((kw, ki) => (
+                                <span
+                                  key={ki}
+                                  className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] text-slate-600"
+                                >
+                                  {kw}
+                                </span>
+                              ))}
+                            </div>
+                            <span className="font-mono text-[10px] text-emerald-700 font-bold">
+                              ● {entry.robots} • Priority {entry.priority}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* 2. DEEP ARCHITECTURE PAGES SEO MATRIX (6 SERVICES + 8 INDUSTRIES + 8 TECH PAGES) */}
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 space-y-6">
+                <div>
+                  <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                    DEEP-ARCHITECTURE ENTITY SEO // SERVICES, INDUSTRIES &amp; TECHNOLOGIES
+                  </span>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Direct On-Page SEO &amp; Keyword Cluster Studio Launchers (22 Pillar Pages)
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Click any Service, Industry, or Technology below to open its full-page Studio Editor with Step 4 SEO, Schema.org, and Keyword Cluster controls.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {/* 6 Core Services SEO List */}
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="text-xs font-mono font-bold uppercase text-purple-700">
+                      6 Core Services SEO ({servicesList.length})
+                    </div>
+                    <div className="space-y-2">
+                      {servicesList.map((svc: any) => (
+                        <div
+                          key={svc.slug}
+                          className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-2"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-slate-900 truncate">{svc.title}</div>
+                            <div className="text-[10px] font-mono text-slate-500 truncate">/{svc.slug}</div>
+                          </div>
+                          <Link
+                            href={`/admin/editor?type=service&id=${svc.slug}&tab=seo`}
+                            className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 text-[11px] font-bold flex items-center gap-1 flex-shrink-0"
+                          >
+                            <Edit3 className="w-3 h-3" /> SEO Studio
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 8 Industries SEO List */}
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="text-xs font-mono font-bold uppercase text-indigo-700">
+                      8 Industry Pages SEO ({industriesList.length})
+                    </div>
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                      {industriesList.map((ind: any) => (
+                        <div
+                          key={ind.slug}
+                          className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-2"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-slate-900 truncate">{ind.shortTitle}</div>
+                            <div className="text-[10px] font-mono text-slate-500 truncate">/industries/{ind.slug}</div>
+                          </div>
+                          <Link
+                            href={`/admin/editor?type=industry&id=${ind.slug}&tab=seo`}
+                            className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-bold flex items-center gap-1 flex-shrink-0"
+                          >
+                            <Edit3 className="w-3 h-3" /> SEO Studio
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 8 Technologies SEO List */}
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="text-xs font-mono font-bold uppercase text-emerald-700">
+                      8 Technology Pages SEO ({technologiesList.length})
+                    </div>
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                      {technologiesList.map((tech: any) => (
+                        <div
+                          key={tech.slug}
+                          className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-2"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-slate-900 truncate">{tech.shortTitle}</div>
+                            <div className="text-[10px] font-mono text-slate-500 truncate">
+                              /technologies/{tech.slug}
+                            </div>
+                          </div>
+                          <Link
+                            href={`/admin/editor?type=technology&id=${tech.slug}&tab=seo`}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center gap-1 flex-shrink-0"
+                          >
+                            <Edit3 className="w-3 h-3" /> SEO Studio
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* 301 Redirects Manager */}
-              <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div>
-                    <span className="text-xs font-mono font-bold text-emerald-700 uppercase">
-                      URL REDIRECT MANAGER
-                    </span>
-                    <h2 className="text-lg font-bold text-slate-900">
-                      301 Redirect Rules ({seoCfg.redirects.length})
-                    </h2>
-                  </div>
-                  <div className="flex gap-2">
-                    <a
-                      href="/sitemap.xml"
-                      target="_blank"
-                      className="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-mono font-bold"
-                    >
-                      /sitemap.xml ↗
-                    </a>
-                    <a
-                      href="/robots.txt"
-                      target="_blank"
-                      className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 text-xs font-mono font-bold"
-                    >
-                      /robots.txt ↗
-                    </a>
-                  </div>
-                </div>
-
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {seoCfg.redirects.map((rule, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono"
-                    >
-                      <span>{rule.from}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-purple-700 font-bold">301 → {rule.to}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next = {
-                              ...seoCfg,
-                              redirects: seoCfg.redirects.filter((_, i) => i !== idx),
-                            };
-                            setSeoCfg(next);
-                          }}
-                          className="text-rose-500 hover:text-rose-700"
-                        >
-                          ×
-                        </button>
-                      </div>
+              {/* 3. GLOBAL TECHNICAL SEO, GA4, GTM, SEARCH CONSOLE & 301 REDIRECTS */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Global SEO & GA4 Config */}
+                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="text-xs font-mono font-bold text-purple-700 uppercase">
+                        SEARCH &amp; ANALYTICS ENGINE
+                      </span>
+                      <h2 className="text-lg font-bold text-slate-900">
+                        Global Meta, GA4, GTM &amp; Search Console
+                      </h2>
                     </div>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => postAdminAction('save_seo', seoCfg, 'SEO & Analytics configuration saved!')}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Save Global SEO
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Default Site Meta Title</label>
+                    <input
+                      type="text"
+                      value={seoCfg.siteTitle}
+                      onChange={(e) => setSeoCfg({ ...seoCfg, siteTitle: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Global Fallback Meta Description</label>
+                    <textarea
+                      rows={3}
+                      value={seoCfg.metaDescription}
+                      onChange={(e) => setSeoCfg({ ...seoCfg, metaDescription: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">GA4 Measurement ID</label>
+                      <input
+                        type="text"
+                        value={seoCfg.ga4Id}
+                        onChange={(e) => setSeoCfg({ ...seoCfg, ga4Id: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Google Tag Manager (GTM)</label>
+                      <input
+                        type="text"
+                        value={seoCfg.gtmId || 'GTM-LIMRA2026'}
+                        onChange={(e) => setSeoCfg({ ...seoCfg, gtmId: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">GSC Verification Token</label>
+                      <input
+                        type="text"
+                        value={seoCfg.gscVerification}
+                        onChange={(e) => setSeoCfg({ ...seoCfg, gscVerification: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Canonical Primary Domain</label>
+                      <input
+                        type="text"
+                        value={seoCfg.canonicalDomain}
+                        onChange={(e) => setSeoCfg({ ...seoCfg, canonicalDomain: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono text-purple-700"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2">
-                  <input
-                    type="text"
-                    placeholder="Old URL (e.g. /old-page)"
-                    value={newRedirectFrom}
-                    onChange={(e) => setNewRedirectFrom(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
-                  />
-                  <input
-                    type="text"
-                    placeholder="New URL (e.g. /services)"
-                    value={newRedirectTo}
-                    onChange={(e) => setNewRedirectTo(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!newRedirectFrom || !newRedirectTo) return;
-                      const next = {
-                        ...seoCfg,
-                        redirects: [
-                          { from: newRedirectFrom, to: newRedirectTo, permanent: true },
-                          ...seoCfg.redirects,
-                        ],
-                      };
-                      setSeoCfg(next);
-                      setNewRedirectFrom('');
-                      setNewRedirectTo('');
-                      postAdminAction('save_seo', next, 'Added 301 redirect rule');
-                    }}
-                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold"
-                  >
-                    + Add
-                  </button>
+                {/* 301 Redirects Manager */}
+                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="text-xs font-mono font-bold text-emerald-700 uppercase">
+                        URL REDIRECT MANAGER
+                      </span>
+                      <h2 className="text-lg font-bold text-slate-900">
+                        301 Redirect Rules ({seoCfg.redirects.length})
+                      </h2>
+                    </div>
+                    <div className="flex gap-2">
+                      <a
+                        href="/sitemap.xml"
+                        target="_blank"
+                        className="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-mono font-bold"
+                      >
+                        /sitemap.xml ↗
+                      </a>
+                      <a
+                        href="/robots.txt"
+                        target="_blank"
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 text-xs font-mono font-bold"
+                      >
+                        /robots.txt ↗
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {seoCfg.redirects.map((rule, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono"
+                      >
+                        <span>{rule.from}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-purple-700 font-bold">301 → {rule.to}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = {
+                                ...seoCfg,
+                                redirects: seoCfg.redirects.filter((_, i) => i !== idx),
+                              };
+                              setSeoCfg(next);
+                            }}
+                            className="text-rose-500 hover:text-rose-700"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <input
+                      type="text"
+                      placeholder="Old URL (e.g. /old-page)"
+                      value={newRedirectFrom}
+                      onChange={(e) => setNewRedirectFrom(e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                    />
+                    <input
+                      type="text"
+                      placeholder="New URL (e.g. /services)"
+                      value={newRedirectTo}
+                      onChange={(e) => setNewRedirectTo(e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newRedirectFrom || !newRedirectTo) return;
+                        const next = {
+                          ...seoCfg,
+                          redirects: [
+                            { from: newRedirectFrom, to: newRedirectTo, permanent: true },
+                            ...seoCfg.redirects,
+                          ],
+                        };
+                        setSeoCfg(next);
+                        setNewRedirectFrom('');
+                        setNewRedirectTo('');
+                        postAdminAction('save_seo', next, 'Added 301 redirect rule');
+                      }}
+                      className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                    >
+                      + Add
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

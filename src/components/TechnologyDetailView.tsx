@@ -25,6 +25,7 @@ import ComparisonMatrix from '@/components/ComparisonMatrix';
 import CaseStudies from '@/components/CaseStudies';
 import Testimonials from '@/components/Testimonials';
 import ContactCta from '@/components/ContactCta';
+import SeoAuthoritySection from '@/components/SeoAuthoritySection';
 
 const iconMap = {
   Code2,
@@ -339,7 +340,21 @@ export default function TechnologyDetailView({ technology }: { technology: Techn
         </div>
       </section>
 
-      {/* 11. Contact Lead Form CTA */}
+      {/* 11. Advanced On-Page SEO, JSON-LD Schema.org, Keyword Clusters & Geo-Targeting */}
+      <SeoAuthoritySection
+        pageTitle={technology.shortTitle || technology.title}
+        pageSlug={`/technologies/${technology.slug}`}
+        pageType="Technology"
+        parentLabel="Technologies & Stack"
+        parentHref="/technologies"
+        description={technology.description}
+        focusKeyword={(technology as any).focus_keyword || `${technology.shortTitle} Development Company in India`}
+        keywords={(technology as any).secondary_keywords || []}
+        subOfferings={(technology.capabilities || []).map((c) => c.title)}
+        faqs={technology.faqs || []}
+      />
+
+      {/* 12. Contact Lead Form CTA */}
       <ContactCta />
     </div>
   );

@@ -2,16 +2,16 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  Calendar, 
-  User, 
-  ArrowLeft, 
-  Clock, 
-  CheckCircle2, 
-  Sparkles, 
-  Share2, 
-  Bookmark, 
-  ShieldCheck, 
+import {
+  Calendar,
+  User,
+  ArrowLeft,
+  Clock,
+  CheckCircle2,
+  Sparkles,
+  Share2,
+  Bookmark,
+  ShieldCheck,
   ArrowRight,
   Zap
 } from 'lucide-react';
@@ -19,6 +19,7 @@ import { blogPostsData } from '@/data/mockData';
 import { getServerCmsSnapshot } from '@/lib/cmsReader';
 import ContactCta from '@/components/ContactCta';
 import Testimonials from '@/components/Testimonials';
+import SeoAuthoritySection from '@/components/SeoAuthoritySection';
 
 interface BlogDetailProps {
   params: Promise<{ slug: string }>;
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
   const { slug } = await params;
   const cms = await getServerCmsSnapshot();
   const list = cms.blogs || blogPostsData;
-  const post = list.find((p: any) => p.slug === slug);
+  const post: any = list.find((p: any) => p.slug === slug);
 
   if (!post) {
     return {
@@ -36,12 +37,23 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
     };
   }
 
+  const seoTitle = post.seo_title || `${post.title} | LIMRA Digitech Intelligence`;
+  const seoDesc = post.seo_description || post.excerpt;
+  const focusKw = post.focus_keyword || `${post.category} Agency India`;
+  const canonicalUrl = post.canonical_url || `https://limradigitech.com/blogs/${post.slug}`;
+
   return {
-    title: `${post.title} | LIMRA Digitech Intelligence`,
-    description: post.excerpt,
+    title: seoTitle,
+    description: seoDesc,
+    keywords: [focusKw, ...(post.secondary_keywords || []), post.category, 'LIMRA Digitech'],
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
-      title: post.title,
-      description: post.excerpt,
+      title: seoTitle,
+      description: seoDesc,
+      url: canonicalUrl,
+      type: 'article',
       images: [post.cover_image],
     },
   };
@@ -61,11 +73,11 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
 
   return (
     <div className="bg-[#f8fafc] text-slate-700 min-h-screen">
-      
+
       {/* 1. Header Navigation & Article Meta */}
       <section className="pt-16 pb-8 bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-8">
-          <Link 
+          <Link
             href="/blogs"
             className="inline-flex items-center gap-2 text-xs font-bold text-purple-700 hover:text-purple-900 mb-6 transition-colors font-mono"
           >
@@ -141,7 +153,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
       {/* 4. Full Article Content Body */}
       <section className="py-14 bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-8">
-          <div 
+          <div
             className="text-slate-800 leading-relaxed space-y-6 text-base sm:text-lg prose prose-slate max-w-none"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
@@ -247,7 +259,19 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
       {/* 9. Verified Client Testimonials */}
       <Testimonials />
 
-      {/* 10. Contact Consultation Lead Form */}
+      {/* 10. Advanced SEO, JSON-LD TechArticle Schema & Keyword Clusters */}
+      <SeoAuthoritySection
+        pageTitle={post.title}
+        pageSlug={`/blogs/${post.slug}`}
+        pageType="Blog"
+        parentLabel="Blogs & Insights"
+        parentHref="/blogs"
+        description={post.excerpt}
+        focusKeyword={(post as any).focus_keyword || `${post.category} Guide India`}
+        keywords={(post as any).secondary_keywords || [post.category, 'Technical SEO India', 'Next.js Architecture']}
+      />
+
+      {/* 11. Contact Consultation Lead Form */}
       <ContactCta />
 
     </div>

@@ -2,14 +2,22 @@ import React from 'react';
 import type { Metadata } from 'next';
 import ServiceDetailView from '@/components/ServiceDetailView';
 import { servicesData } from '@/data/mockData';
+import { buildRouteMetadata } from '@/lib/seoEngine';
+import { getServerCmsSnapshot } from '@/lib/cmsReader';
 
-export const metadata: Metadata = {
-  title: 'Lead Generation Company in India | Best Lead Generation Services India',
-  description: 'Best Lead Generation Company in India for Business Growth. Targeted B2B & B2C customer acquisition pipelines delivering qualified sales appointments.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildRouteMetadata('/lead-generation-company-india', {
+    title: 'Lead Generation Company in India | Best Lead Generation Services India – LIMRA Digitech',
+    description:
+      'Best Lead Generation Company in India for Business Growth. Targeted B2B & B2C customer acquisition pipelines delivering qualified sales appointments.',
+  });
+}
 
-export default function LeadGenPage() {
-  const service = servicesData[2];
+export default async function LeadGenPage() {
+  const cms = await getServerCmsSnapshot();
+  const service =
+    (cms.services || []).find((s: any) => s.slug === 'lead-generation-company-india') ||
+    servicesData[2];
 
   const benefits = [
     { title: 'Pre-Qualified Prospects Only', desc: 'Custom qualification filters eliminate tire-kickers and focus your sales team on ready-to-buy decision makers.' },

@@ -144,13 +144,50 @@ export interface AdminProfileConfig {
   }[];
 }
 
+export interface PageSeoEntry {
+  id: string;
+  route: string;
+  pageName: string;
+  category: 'Core Page' | 'Service Page' | 'Hub Page' | 'Legal Page';
+  metaTitle: string;
+  metaDescription: string;
+  focusKeyword: string;
+  secondaryKeywords: string[];
+  canonicalUrl: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: string;
+  robots: 'index, follow' | 'noindex, nofollow';
+  schemaType:
+    | 'WebSite'
+    | 'Service'
+    | 'ProfessionalService'
+    | 'FAQPage'
+    | 'CollectionPage'
+    | 'AboutPage'
+    | 'ContactPage';
+  priority: number;
+  changeFreq: 'daily' | 'weekly' | 'monthly';
+  targetLocations: string[];
+}
+
 export interface SeoAndRedirectsConfig {
   siteTitle: string;
   titleTemplate: string;
   metaDescription: string;
   canonicalDomain: string;
   ga4Id: string;
+  gtmId?: string;
   gscVerification: string;
+  bingVerification?: string;
+  defaultOgImage?: string;
+  twitterHandle?: string;
+  geoRegion?: string;
+  geoPlacename?: string;
+  enableJsonLdSchema?: boolean;
+  enableFaqSchema?: boolean;
+  enableBreadcrumbSchema?: boolean;
+  enableSpeakableSchema?: boolean;
   honeypotEnabled: boolean;
   redirects: { from: string; to: string; permanent: boolean }[];
 }
@@ -331,7 +368,17 @@ export const defaultSeoConfig: SeoAndRedirectsConfig = {
     'LIMRA Digitech is a premier digital marketing, web development, creative design, mobile app, and custom software solutions company in India.',
   canonicalDomain: 'https://limradigitech.com',
   ga4Id: 'G-LIMRA2026IN',
+  gtmId: 'GTM-LIMRA2026',
   gscVerification: 'limra-gsc-verified-token-2026',
+  bingVerification: 'limra-bing-webmaster-2026',
+  defaultOgImage: '/limra-logo.png',
+  twitterHandle: '@limradigitech',
+  geoRegion: 'IN-DL',
+  geoPlacename: 'New Delhi, India',
+  enableJsonLdSchema: true,
+  enableFaqSchema: true,
+  enableBreadcrumbSchema: true,
+  enableSpeakableSchema: true,
   honeypotEnabled: true,
   redirects: [
     { from: '/about-us', to: '/about', permanent: true },
@@ -347,6 +394,385 @@ export const defaultSeoConfig: SeoAndRedirectsConfig = {
     { from: '/blog', to: '/blogs', permanent: true },
   ],
 };
+
+export const defaultPageSeoRegistry: PageSeoEntry[] = [
+  {
+    id: 'seo-home',
+    route: '/',
+    pageName: 'Homepage — LIMRA Digitech',
+    category: 'Core Page',
+    metaTitle: 'LIMRA Digitech | Best Website Development, SEO & Digital Marketing Company in India',
+    metaDescription:
+      'LIMRA Digitech is India’s leading Website Development, Technical SEO, Google & Meta Ads Lead Generation, Creative Design, Mobile App, and Custom Software Agency.',
+    focusKeyword: 'Website Development & Digital Marketing Company India',
+    secondaryKeywords: [
+      'LIMRA Digitech',
+      'Best Web Development Company in India',
+      'Digital Marketing Agency New Delhi',
+      'SEO & Google Ads Agency India',
+      'Next.js WordPress Shopify Agency',
+      'Custom Software & Mobile App Developers',
+    ],
+    canonicalUrl: 'https://limradigitech.com/',
+    ogTitle: 'LIMRA Digitech | Smart Digital, Web, SEO & Software Solutions',
+    ogDescription:
+      'Scale your business with 99+ PageSpeed Next.js/WordPress/Shopify websites, ROI-driven SEO, Google & Meta Ads, Mobile Apps & Custom Software.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'WebSite',
+    priority: 1.0,
+    changeFreq: 'daily',
+    targetLocations: ['New Delhi', 'Mumbai', 'Bengaluru', 'Hyderabad', 'Pune', 'Pan-India', 'Global'],
+  },
+  {
+    id: 'seo-web-dev',
+    route: '/website-development-services',
+    pageName: 'Website Development Services',
+    category: 'Service Page',
+    metaTitle: 'Best Website Development Company in India | Next.js, WordPress & Shopify – LIMRA Digitech',
+    metaDescription:
+      'Hire the best Website Development Company in India. Custom Next.js 16, React, WordPress, Shopify, PHP, Laravel & Magento websites with 99+ Core Web Vitals & built-in SEO.',
+    focusKeyword: 'Best Website Development Company in India',
+    secondaryKeywords: [
+      'Website Development Services India',
+      'Custom Next.js Web Development',
+      'WordPress & WooCommerce Development India',
+      'Shopify E-Commerce Store Experts',
+      'PHP Laravel Web Application Agency',
+      'Corporate Website Redesign India',
+    ],
+    canonicalUrl: 'https://limradigitech.com/website-development-services',
+    ogTitle: 'Website Development Services in India | Next.js, WordPress & Shopify',
+    ogDescription:
+      'Sub-second websites engineered for 99+ Google PageSpeed, conversion rate optimization, and first-page SEO rankings.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'Service',
+    priority: 0.95,
+    changeFreq: 'weekly',
+    targetLocations: ['New Delhi', 'Mumbai', 'Bengaluru', 'Gurugram', 'Noida', 'Pan-India'],
+  },
+  {
+    id: 'seo-digital-marketing',
+    route: '/digital-marketing-agency-india',
+    pageName: 'Digital Marketing & SEO Agency',
+    category: 'Service Page',
+    metaTitle: 'Best Digital Marketing Agency in India | Technical SEO, Google Ads & SMM – LIMRA Digitech',
+    metaDescription:
+      'Result-oriented Digital Marketing Agency in India. Dominate Google Page 1 with Technical SEO, Local GMB 3-Pack, Google Search/Shopping PPC, and Meta Social Media Marketing.',
+    focusKeyword: 'Digital Marketing Agency in India',
+    secondaryKeywords: [
+      'Best SEO Company in India',
+      'Technical SEO & Core Web Vitals Agency',
+      'Google Ads PPC Management India',
+      'Local SEO & GMB 3-Pack Ranking',
+      'Social Media Marketing Agency India',
+      'E-Commerce Performance Marketing',
+    ],
+    canonicalUrl: 'https://limradigitech.com/digital-marketing-agency-india',
+    ogTitle: 'Best Digital Marketing & SEO Agency in India | LIMRA Digitech',
+    ogDescription:
+      '360° Organic SEO, Google Ads PPC, Local GMB Optimization, and Social Media Growth with transparent ROAS attribution.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'Service',
+    priority: 0.95,
+    changeFreq: 'weekly',
+    targetLocations: ['New Delhi', 'Mumbai', 'Bengaluru', 'Hyderabad', 'Chennai', 'Pan-India'],
+  },
+  {
+    id: 'seo-lead-gen',
+    route: '/lead-generation-company-india',
+    pageName: 'Lead Generation Company India',
+    category: 'Service Page',
+    metaTitle: 'Best Lead Generation Company in India | B2B, Meta Ads, Google PPC & Funnels – LIMRA Digitech',
+    metaDescription:
+      'Scale qualified sales inquiries with India’s top Lead Generation Company. High-intent Google Search PPC, Meta Lead Ads, WhatsApp automation & CRO landing page funnels.',
+    focusKeyword: 'Lead Generation Company in India',
+    secondaryKeywords: [
+      'B2B Lead Generation Agency India',
+      'Real Estate & Healthcare Lead Generation',
+      'Google & Meta Ads Lead Funnels',
+      'High Converting Landing Page Design',
+      'WhatsApp & CRM Lead Automation',
+      'Pay Per Lead Performance Marketing',
+    ],
+    canonicalUrl: 'https://limradigitech.com/lead-generation-company-india',
+    ogTitle: 'Performance Lead Generation Company in India | LIMRA Digitech',
+    ogDescription:
+      'Predictable B2B & B2C customer acquisition pipelines powered by Google Ads, Meta Ads, and high-converting sales funnels.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'Service',
+    priority: 0.95,
+    changeFreq: 'weekly',
+    targetLocations: ['New Delhi', 'Mumbai', 'Bengaluru', 'Pune', 'Ahmedabad', 'Pan-India'],
+  },
+  {
+    id: 'seo-creative-design',
+    route: '/creative-design-solutions-india',
+    pageName: 'Creative Design, UI/UX & Branding',
+    category: 'Service Page',
+    metaTitle: 'Creative Design Solutions India | UI/UX, Brand Identity, Graphics & Video – LIMRA Digitech',
+    metaDescription:
+      'Transform your brand identity with LIMRA Digitech’s Creative Design Solutions in India. Figma UI/UX systems, logo & brand guidelines, social ad creatives, and 2D/3D motion videos.',
+    focusKeyword: 'Creative Design Solutions India',
+    secondaryKeywords: [
+      'UI UX Design Agency India',
+      'Brand Identity & Logo Design India',
+      'Corporate Brochure & Packaging Design',
+      'Social Media Ad Creative Studio',
+      '2D 3D Explainer Video Production',
+      'Figma Design System Architects',
+    ],
+    canonicalUrl: 'https://limradigitech.com/creative-design-solutions-india',
+    ogTitle: 'Creative Design, UI/UX & Brand Identity Studio | LIMRA Digitech',
+    ogDescription:
+      'Conversion-engineered Figma UI/UX, memorable corporate branding, and scroll-stopping motion graphics.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'Service',
+    priority: 0.9,
+    changeFreq: 'weekly',
+    targetLocations: ['New Delhi', 'Mumbai', 'Bengaluru', 'Jaipur', 'Pan-India'],
+  },
+  {
+    id: 'seo-mobile-app',
+    route: '/mobile-app-developer-india',
+    pageName: 'Mobile App Development India',
+    category: 'Service Page',
+    metaTitle: 'Best Mobile App Developer in India | Android, iOS, Flutter & React Native – LIMRA Digitech',
+    metaDescription:
+      'Hire top Mobile App Developers in India. We build high-performance native Android (Kotlin), iOS (Swift), Flutter & React Native mobile applications with scalable cloud backends.',
+    focusKeyword: 'Mobile App Developer in India',
+    secondaryKeywords: [
+      'Android & iOS App Development Company India',
+      'Flutter Cross-Platform App Developers',
+      'React Native Mobile App Agency',
+      'On-Demand Delivery & E-Commerce Apps',
+      'FinTech & Telemedicine Mobile Apps',
+      'App Store Optimization ASO India',
+    ],
+    canonicalUrl: 'https://limradigitech.com/mobile-app-developer-india',
+    ogTitle: 'Mobile App Development Company in India (Android, iOS & Flutter)',
+    ogDescription:
+      'Enterprise-grade Android, iOS, and Flutter mobile apps engineered for 60fps performance, biometric security, and scale.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'Service',
+    priority: 0.9,
+    changeFreq: 'weekly',
+    targetLocations: ['New Delhi', 'Bengaluru', 'Hyderabad', 'Mumbai', 'Pune', 'Pan-India'],
+  },
+  {
+    id: 'seo-software-dev',
+    route: '/software-developers-india',
+    pageName: 'Custom Software Development India',
+    category: 'Service Page',
+    metaTitle: 'Custom Software Developers in India | Cloud ERP, CRM, SaaS & AI Solutions – LIMRA Digitech',
+    metaDescription:
+      'Leading Custom Software Developers in India. Enterprise ERP, CRM, SaaS platforms, HRMS, Inventory software, API integrations & AI automation built on Node.js, Python & PostgreSQL.',
+    focusKeyword: 'Custom Software Developers in India',
+    secondaryKeywords: [
+      'Custom Software Development Company India',
+      'Cloud ERP & CRM Software Development',
+      'B2B SaaS Product Engineering India',
+      'API Integration & Legacy Modernization',
+      'Enterprise Workflow Automation Software',
+      'PostgreSQL Supabase Cloud Architects',
+    ],
+    canonicalUrl: 'https://limradigitech.com/software-developers-india',
+    ogTitle: 'Custom Software, ERP, CRM & SaaS Developers in India | LIMRA Digitech',
+    ogDescription:
+      'Bespoke enterprise software, multi-tenant SaaS products, and automated cloud workflows tailored to your business logic.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'Service',
+    priority: 0.9,
+    changeFreq: 'weekly',
+    targetLocations: ['New Delhi', 'Bengaluru', 'Hyderabad', 'Mumbai', 'Chennai', 'Pan-India', 'Global'],
+  },
+  {
+    id: 'seo-services-hub',
+    route: '/services',
+    pageName: 'All Services Directory Hub',
+    category: 'Hub Page',
+    metaTitle: 'Our Digital, Web, SEO, Mobile App & Software Services | LIMRA Digitech India',
+    metaDescription:
+      'Explore LIMRA Digitech’s 6 core service pillars and 36+ specialized digital solutions: Website Development, SEO & Digital Marketing, Lead Generation, Design, Apps & Software.',
+    focusKeyword: 'Digital Marketing and Web Development Services India',
+    secondaryKeywords: ['Full Service Digital Agency India', 'Web App SEO Services', 'IT & Software Services'],
+    canonicalUrl: 'https://limradigitech.com/services',
+    ogTitle: 'All Services & Digital Capabilities | LIMRA Digitech',
+    ogDescription: 'Complete catalog of Web, SEO, Paid Ads, Creative Design, Mobile Apps, and Custom Software solutions.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'CollectionPage',
+    priority: 0.9,
+    changeFreq: 'weekly',
+    targetLocations: ['Pan-India', 'Global'],
+  },
+  {
+    id: 'seo-industries-hub',
+    route: '/industries',
+    pageName: 'Industries We Serve Hub',
+    category: 'Hub Page',
+    metaTitle: 'Industries We Serve | E-Commerce, Healthcare, Real Estate, FinTech & EdTech – LIMRA Digitech',
+    metaDescription:
+      'Domain-specific Website Development, SEO, Lead Generation & Custom Software across 8+ industries: E-Commerce, Healthcare, Real Estate, FinTech, Education, Hospitality & Manufacturing.',
+    focusKeyword: 'Industry Specific Digital Marketing & Software Solutions',
+    secondaryKeywords: ['Healthcare SEO & Web Design', 'Real Estate Lead Generation India', 'FinTech & EdTech Software'],
+    canonicalUrl: 'https://limradigitech.com/industries',
+    ogTitle: 'Industry-Specific Digital & Software Solutions | LIMRA Digitech',
+    ogDescription: 'Tailored digital growth blueprints and compliance-ready software across 8 key industry verticals.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'CollectionPage',
+    priority: 0.85,
+    changeFreq: 'weekly',
+    targetLocations: ['Pan-India', 'Global'],
+  },
+  {
+    id: 'seo-technologies-hub',
+    route: '/technologies',
+    pageName: 'Technologies & Engineering Stack Hub',
+    category: 'Hub Page',
+    metaTitle: 'Technologies We Master | Next.js, React, WordPress, Shopify, Laravel & Flutter – LIMRA Digitech',
+    metaDescription:
+      'Explore our modern engineering & MarTech stack: Next.js 16, React, TypeScript, WordPress, Shopify, PHP/Laravel, Flutter, React Native, Supabase, PostgreSQL, AWS & GA4.',
+    focusKeyword: 'Next.js WordPress Shopify Laravel Flutter Development India',
+    secondaryKeywords: ['Modern Web Tech Stack', 'Serverless Next.js Supabase', 'Headless E-Commerce Stack'],
+    canonicalUrl: 'https://limradigitech.com/technologies',
+    ogTitle: 'Engineering & MarTech Stack | LIMRA Digitech',
+    ogDescription: 'Full-stack mastery across Next.js, WordPress, Shopify, Laravel, Flutter, Cloud Databases, and SEO MarTech.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'CollectionPage',
+    priority: 0.85,
+    changeFreq: 'weekly',
+    targetLocations: ['Pan-India', 'Global'],
+  },
+  {
+    id: 'seo-portfolio',
+    route: '/portfolio',
+    pageName: 'Portfolio & Case Studies',
+    category: 'Hub Page',
+    metaTitle: 'Client Portfolio & Proven Case Studies | Web, SEO & Revenue Growth – LIMRA Digitech',
+    metaDescription:
+      'Browse verified case studies from LIMRA Digitech: 320% organic traffic growth, 99/100 Core Web Vitals, 4.8x Google Ads ROAS, and enterprise software deployments.',
+    focusKeyword: 'Web Development & SEO Case Studies India',
+    secondaryKeywords: ['Digital Agency Portfolio India', 'Website Redesign Results', 'SEO Traffic Case Studies'],
+    canonicalUrl: 'https://limradigitech.com/portfolio',
+    ogTitle: 'Verified Client Portfolio & Growth Case Studies | LIMRA Digitech',
+    ogDescription: 'Real-world engineering and performance marketing results across D2C, SaaS, Healthcare, and Real Estate.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'CollectionPage',
+    priority: 0.85,
+    changeFreq: 'weekly',
+    targetLocations: ['Pan-India', 'Global'],
+  },
+  {
+    id: 'seo-blogs',
+    route: '/blogs',
+    pageName: 'Blogs, SEO Guides & Engineering Insights',
+    category: 'Hub Page',
+    metaTitle: 'Digital Growth Blog | Technical SEO, Next.js, Google Ads & Web Engineering – LIMRA Digitech',
+    metaDescription:
+      'Actionable guides and Playbooks by LIMRA Digitech on Technical SEO, Core Web Vitals, Next.js 16 architecture, Google & Meta Ads ROAS, and conversion optimization.',
+    focusKeyword: 'Technical SEO and Web Development Blog India',
+    secondaryKeywords: ['Core Web Vitals Guide', 'Next.js SEO Playbook', 'Google Ads Lead Generation Tips'],
+    canonicalUrl: 'https://limradigitech.com/blogs',
+    ogTitle: 'LIMRA Digitech Editorial | SEO, Web & Growth Playbooks',
+    ogDescription: 'Deep-dive technical teardowns and digital marketing blueprints from our engineering and SEO leads.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'CollectionPage',
+    priority: 0.85,
+    changeFreq: 'daily',
+    targetLocations: ['Pan-India', 'Global'],
+  },
+  {
+    id: 'seo-about',
+    route: '/about',
+    pageName: 'About LIMRA Digitech',
+    category: 'Core Page',
+    metaTitle: 'About LIMRA Digitech | India’s Premier Web, SEO, Mobile App & Software Engineering Partner',
+    metaDescription:
+      'Learn about LIMRA Digitech’s mission, leadership team, 500+ delivered projects, 98.4% client retention, and code-first approach to digital growth.',
+    focusKeyword: 'About LIMRA Digitech India',
+    secondaryKeywords: ['Digital Agency Leadership India', 'Web & Software Company New Delhi'],
+    canonicalUrl: 'https://limradigitech.com/about',
+    ogTitle: 'About LIMRA Digitech | Engineering & Growth Leadership',
+    ogDescription: 'Meet the architects, SEO strategists, and designers behind 500+ successful digital transformations.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'AboutPage',
+    priority: 0.8,
+    changeFreq: 'monthly',
+    targetLocations: ['New Delhi', 'Pan-India'],
+  },
+  {
+    id: 'seo-clients',
+    route: '/clients',
+    pageName: 'Clients & Verified Testimonials',
+    category: 'Core Page',
+    metaTitle: 'Our Clients & 4.9/5 Verified Reviews | Trusted by 350+ Brands – LIMRA Digitech',
+    metaDescription:
+      'Discover why 350+ startups and enterprises across India trust LIMRA Digitech for Website Development, SEO, Lead Generation, and Custom Software.',
+    focusKeyword: 'LIMRA Digitech Client Reviews and Testimonials',
+    secondaryKeywords: ['Verified Digital Agency Reviews', 'Enterprise Web Development Clients'],
+    canonicalUrl: 'https://limradigitech.com/clients',
+    ogTitle: '350+ Happy Clients & Verified Testimonials | LIMRA Digitech',
+    ogDescription: '98.4% client retention and 4.9/5 Google rating across E-Commerce, Healthcare, FinTech, and B2B.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'CollectionPage',
+    priority: 0.8,
+    changeFreq: 'monthly',
+    targetLocations: ['Pan-India', 'Global'],
+  },
+  {
+    id: 'seo-careers',
+    route: '/careers',
+    pageName: 'Careers & Open Roles',
+    category: 'Core Page',
+    metaTitle: 'Careers at LIMRA Digitech | Join Our Next.js, SEO, Performance Marketing & Design Team',
+    metaDescription:
+      'Build the future of web engineering and algorithmic SEO at LIMRA Digitech. Explore open roles in Next.js, Flutter, Technical SEO, Google Ads, and UI/UX Design.',
+    focusKeyword: 'Careers at LIMRA Digitech',
+    secondaryKeywords: ['Next.js Developer Jobs Delhi', 'SEO Analyst Jobs India', 'Digital Marketing Careers'],
+    canonicalUrl: 'https://limradigitech.com/careers',
+    ogTitle: 'Careers & Engineering Culture | LIMRA Digitech',
+    ogDescription: 'Join our team of full-stack engineers, SEO strategists, and creative designers.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'CollectionPage',
+    priority: 0.75,
+    changeFreq: 'weekly',
+    targetLocations: ['New Delhi', 'Remote India'],
+  },
+  {
+    id: 'seo-contact',
+    route: '/contact-us',
+    pageName: 'Contact Us & Free Proposal',
+    category: 'Core Page',
+    metaTitle: 'Contact LIMRA Digitech | Request a Free Website, SEO or Software Proposal Today',
+    metaDescription:
+      'Get in touch with LIMRA Digitech (+91 9571302312 / limradigitech@gmail.com). Request a free technical SEO audit, website development quote, or custom software consultation.',
+    focusKeyword: 'Contact LIMRA Digitech',
+    secondaryKeywords: ['Request Website Quote India', 'Free SEO Audit Consultation', 'Hire Web Developers India'],
+    canonicalUrl: 'https://limradigitech.com/contact-us',
+    ogTitle: 'Contact LIMRA Digitech | Get a Free Custom Growth Proposal',
+    ogDescription: 'Speak directly with our senior architects and SEO strategists within 2 business hours.',
+    ogImage: '/limra-logo.png',
+    robots: 'index, follow',
+    schemaType: 'ContactPage',
+    priority: 0.9,
+    changeFreq: 'monthly',
+    targetLocations: ['New Delhi', 'Pan-India', 'Global'],
+  },
+];
 
 export interface CareerOpeningItem {
   id: string;
@@ -634,4 +1060,5 @@ export const initialCmsSnapshot = {
   leadershipTeam: defaultLeadershipTeam,
   milestones: defaultMilestones,
   pricingPackages: defaultPricingPackages,
+  pageSeoRegistry: defaultPageSeoRegistry,
 };

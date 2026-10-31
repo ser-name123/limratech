@@ -27,16 +27,25 @@ export async function generateMetadata({
     };
   }
 
+  const seoTitle = (technology as any).seo_title || `${technology.title} | LIMRA Digitech`;
+  const seoDesc = (technology as any).seo_description || technology.description || (technology as any).heroDescription;
+  const canonicalUrl = (technology as any).canonical_url || `https://limradigitech.com/technologies/${technology.slug}`;
+
   return {
-    title: `${technology.title} | LIMRA Digitech`,
-    description: technology.description || (technology as any).heroDescription,
+    title: seoTitle,
+    description: seoDesc,
+    keywords: [
+      (technology as any).focus_keyword || `${technology.shortTitle} Development Company India`,
+      ...((technology as any).secondary_keywords || []),
+      ...((technology.capabilities || []).map((c: any) => c.title)),
+    ],
     alternates: {
-      canonical: `/technologies/${technology.slug}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${technology.title} | LIMRA Digitech`,
-      description: technology.description || (technology as any).heroDescription,
-      url: `https://limradigitech.com/technologies/${technology.slug}`,
+      title: seoTitle,
+      description: seoDesc,
+      url: canonicalUrl,
       type: 'website',
     },
   };

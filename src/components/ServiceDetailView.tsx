@@ -27,6 +27,7 @@ import ContactCta from '@/components/ContactCta';
 import Testimonials from '@/components/Testimonials';
 import TechStackTicker from '@/components/TechStackTicker';
 import CaseStudies from '@/components/CaseStudies';
+import SeoAuthoritySection from '@/components/SeoAuthoritySection';
 
 interface ServiceDetailViewProps {
   service: ServiceItem;
@@ -507,7 +508,21 @@ export default function ServiceDetailView({
         </div>
       </section>
 
-      {/* 11. High-Conversion Consultation Blueprint Lead Form */}
+      {/* 11. Advanced On-Page SEO, JSON-LD Schema.org, Keyword Clusters & Geo-Targeting */}
+      <SeoAuthoritySection
+        pageTitle={service.title}
+        pageSlug={service.slug}
+        pageType="Service"
+        parentLabel="All Services"
+        parentHref="/services"
+        description={service.full_description || service.short_description}
+        focusKeyword={(service as any).focus_keyword || `Best ${service.title} Company in India`}
+        keywords={(service as any).secondary_keywords || []}
+        subOfferings={(service.sub_services || []).map((s) => s.name)}
+        faqs={serviceFaqs}
+      />
+
+      {/* 12. High-Conversion Consultation Blueprint Lead Form */}
       <ContactCta />
 
     </div>

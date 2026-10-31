@@ -2,14 +2,22 @@ import React from 'react';
 import type { Metadata } from 'next';
 import ServiceDetailView from '@/components/ServiceDetailView';
 import { servicesData } from '@/data/mockData';
+import { buildRouteMetadata } from '@/lib/seoEngine';
+import { getServerCmsSnapshot } from '@/lib/cmsReader';
 
-export const metadata: Metadata = {
-  title: 'Creative Design Company in India | Graphic Design & Branding Agency',
-  description: 'Creative Design Agency India For Modern Brands & Business Growth. Brand identity, Figma UI/UX, marketing collaterals and high-impact visual design.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildRouteMetadata('/creative-design-solutions-india', {
+    title: 'Creative Design Company in India | Graphic Design & Branding Agency – LIMRA Digitech',
+    description:
+      'Creative Design Agency India For Modern Brands & Business Growth. Brand identity, Figma UI/UX, marketing collaterals and high-impact visual design.',
+  });
+}
 
-export default function CreativeDesignPage() {
-  const service = servicesData[3];
+export default async function CreativeDesignPage() {
+  const cms = await getServerCmsSnapshot();
+  const service =
+    (cms.services || []).find((s: any) => s.slug === 'creative-design-solutions-india') ||
+    servicesData[3];
 
   const benefits = [
     { title: 'Distinct Brand Identity', desc: 'Crafting memorable logo systems, typography, and cohesive color palettes that elevate brand perception.' },
